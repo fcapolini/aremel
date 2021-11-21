@@ -253,6 +253,22 @@ describe("test preprocessor", () => {
 		expect(msg).toBe('');
 	});
 
+	it("should parse html5-test-page.html", () => {
+		var msg = '';
+		try {
+			var text = fs.readFileSync(rootPath + '/html5-test-page.html', {encoding: 'utf8'});
+			var doc = HtmlParser.parse(text);
+			expect(doc).toBeTruthy();
+			var counts = countNodes(doc);
+			expect(counts.elements).toBe(581);
+			expect(counts.texts).toBe(831);
+			expect(counts.comments).toBe(2);
+		} catch (ex:any) {
+			msg = `${ex}`;
+		}
+		expect(msg).toBe('');
+	});
+
 	it("shouldn't escape ampersands in attributes", () => {
 		var msg = '';
 		try {
