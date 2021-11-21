@@ -27,7 +27,6 @@ describe("test preprocessor", () => {
 
 	beforeAll(() => {
 		rootPath = process.cwd() + '/test/server/htmlparser';
-		console.log(rootPath);
 	});
 
 	it("should parse <html></html>", () => {

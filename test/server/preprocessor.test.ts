@@ -7,7 +7,6 @@ describe("test preprocessor", () => {
 
 	beforeAll(() => {
 		var rootPath = process.cwd() + '/test/server/preprocessor';
-		console.log(rootPath);
 		preprocessor = new Preprocessor(rootPath);
 	});
 
