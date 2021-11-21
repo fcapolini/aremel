@@ -239,7 +239,7 @@ describe("test preprocessor", () => {
 	it("should parse a big file", () => {
 		var msg = '';
 		try {
-			var text = fs.readFileSync(rootPath + '/google.txt', {encoding: 'utf8'});
+			var text = fs.readFileSync(rootPath + '/google.html', {encoding: 'utf8'});
 			var doc = HtmlParser.parse(text);
 			expect(doc).toBeTruthy();
 			var counts = countNodes(doc);
