@@ -26,29 +26,6 @@ interface SourcePos {
 	col: number,
 }
 
-export function domGetTop(doc:HtmlDocument, name:string): HtmlElement | undefined {
-	var root = doc.getFirstElementChild();
-	if (root) {
-		for (var n of root.children) {
-			if (n.type === ELEMENT_NODE && (n as HtmlElement).name === name) {
-				return n as HtmlElement;
-			}
-		}
-	}
-	return undefined;
-}
-
-function domEnsureHeadAndBody(doc:HtmlDocument) {
-	var e = doc.getFirstElementChild(), body, head;
-	if (!(body = domGetTop(doc, 'BODY'))) {
-		body = new HtmlElement(doc, e, 'BODY', 0, 0, doc.pos.origin);
-	}
-	if (!(head = domGetTop(doc, 'HEAD')) == null) {
-		head = new HtmlElement(doc, undefined, 'BODY', 0, 0, doc.pos.origin);
-		e?.addChild(head, body);
-	}
-}
-
 export default class Preprocessor {
 	rootPath: string;
 	parser: HtmlParser;
@@ -87,8 +64,12 @@ export default class Preprocessor {
 	}
 
 	getOrigin(i:number): string {
-		var fname = (i >= 0 && i < this.parser.origins.length ? this.parser.origins[i] : '');
-		fname.startsWith(this.rootPath) ? fname = fname.substr(this.rootPath.length) : null;
+		var fname = (i >= 0 && i < this.parser.origins.length
+				? this.parser.origins[i]
+				: '');
+		fname.startsWith(this.rootPath)
+				? fname = fname.substr(this.rootPath.length)
+				: null;
 		return fname;
 	}
 
@@ -110,9 +91,9 @@ export default class Preprocessor {
 		return ret;
 	}
 
-	// ===================================================================================
+	// =========================================================================
 	// includes
-	// ===================================================================================
+	// =========================================================================
 
 	readFile(fname:string,
 			currPath?:string,
@@ -134,7 +115,9 @@ export default class Preprocessor {
 			text = fs.readFileSync(filePath, {encoding: 'utf8'});
 		} catch (ex:any) {
 			var msg = `Could not read file "${fname}"`;
-			var f = (includedBy ? this.parser.origins[includedBy.pos.origin] : undefined);
+			var f = (includedBy
+					? this.parser.origins[includedBy.pos.origin]
+					: undefined);
 			var pos = (includedBy ? includedBy.pos.i1 : undefined);
 			throw new PreprocessorError(msg, f, this.rootPath, pos);
 		}
@@ -147,7 +130,8 @@ export default class Preprocessor {
 				this.processIncludes(ret, currPath);
 			} catch (ex:any) {
 				if (ex instanceof HtmlException) {
-					throw new PreprocessorError(ex.msg, ex.fname, this.rootPath, ex.pos, ex.row, ex.col);
+					throw new PreprocessorError(ex.msg, ex.fname, this.rootPath,
+							ex.pos, ex.row, ex.col);
 				}
 				if (ex instanceof PreprocessorError) {
 					throw ex;
@@ -160,7 +144,8 @@ export default class Preprocessor {
 			this.sources.push(text);
 			this.parser.origins.push(filePath);
 			ret = new HtmlDocument(origin);
-			var root = new HtmlElement(ret.ownerDocument, ret, 'lib', 0, 0, origin);
+			var root = new HtmlElement(ret.ownerDocument, ret, 'lib',
+					0, 0, origin);
 			new HtmlText(root.ownerDocument, root, text, 0, 0, origin);
 		}
 		return ret;
@@ -218,18 +203,18 @@ export default class Preprocessor {
 		}
 	}
 
-	// ===================================================================================
+	// =========================================================================
 	// macros
-	// ===================================================================================
+	// =========================================================================
 
 	processMacros(doc:HtmlDocument) {
 		this.collectMacros(doc);
 		this.expandMacros(doc);
 	}
 
-	// -----------------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
 	// collect
-	// -----------------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
 
 	collectMacros(p:HtmlElement) {
 		var tags = new Set<string>();
@@ -255,7 +240,8 @@ export default class Preprocessor {
 		if (!/^[_a-zA-Z0-9]+-[-:_a-zA-Z0-9]+$/.test(names[0])
 			|| !/^[-_a-zA-Z0-9]+$/.test(names[1])) {
 			throw new HtmlException(
-				this.parser.origins[e.pos.origin], 'Bad "tag" attribute (missing "-" in custom tag name)',
+				this.parser.origins[e.pos.origin],
+				'Bad "tag" attribute (missing "-" in custom tag name)',
 				e.pos.i1, this.sources[e.pos.origin]
 			);
 		}
@@ -284,17 +270,20 @@ export default class Preprocessor {
 		var slots = this.lookupTags(p, tags);
 		for (var e of slots) {
 			var s = e.getAttribute(SLOT_ARG);
-			var names = (s != null ? s.split(',') : null);
-			for (var name in names) {
-				if (name == null
-					|| (name = name.trim()).length < 1
-					|| ret.has(name)) {
-					throw new HtmlException(
-						this.parser.origins[e.pos.origin], 'Bad "name" attribute',
-						e.pos.i1, this.sources[e.pos.origin]
-					);
+			var names = (s ? s.split(',') : undefined);
+			if (names) {
+				for (var i in names) {
+					var name = names[i];
+					if ((name = name.trim()).length < 1
+						|| ret.has(name)) {
+						throw new HtmlException(
+							this.parser.origins[e.pos.origin],
+							'Bad/duplicated "name" attribute',
+							e.pos.i1, this.sources[e.pos.origin]
+						);
+					}
+					ret.set(name, e);
 				}
-				ret.set(name, e);
 			}
 		}
 		if (!ret.has('default')) {
@@ -306,9 +295,9 @@ export default class Preprocessor {
 		return ret;
 	}
 
-	// -----------------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
 	// expand
-	// -----------------------------------------------------------------------------------
+	// -------------------------------------------------------------------------
 
 	expandMacros(p:HtmlElement) {
 		var that = this;
@@ -340,9 +329,11 @@ export default class Preprocessor {
 		if (def.ext != null) {
 			ret = this.expandMacro(def.e, def.ext);
 		} else {
-			ret = new HtmlElement(def.e.ownerDocument, undefined, def.name2, use.pos.i1, use.pos.i2, use.pos.origin);
+			ret = new HtmlElement(def.e.ownerDocument, undefined, def.name2,
+					use.pos.i1, use.pos.i2, use.pos.origin);
 			for (var a of def.e.attributes.values()) {
-				var a2 = ret.setAttribute(a.name, a.value, a.quote, a.pos1?.i1, a.pos1?.i2, a.pos1?.origin);
+				var a2 = ret.setAttribute(a.name, a.value, a.quote,
+						a.pos1?.i1, a.pos1?.i2, a.pos1?.origin);
 				a2 ? a2.pos2 = a.pos1 : null;
 			}
 			ret.innerHTML = def.e.innerHTML;
@@ -390,9 +381,9 @@ export default class Preprocessor {
 		this.expandMacros(dst);
 	}
 
-	// ===================================================================================
+	// =========================================================================
 	// util
-	// ===================================================================================
+	// =========================================================================
 
 	lookupTags(p:HtmlElement, tags:Set<string>): Array<HtmlElement> {
 		var ret = new Array<HtmlElement>();
@@ -445,11 +436,38 @@ export class PreprocessorError {
 		this.pos = (pos ? pos : 0);
 		this.row = row;
 		this.col = col;	
-}
+	}
 
 	toString() {
 		return this.fname
 			? `${this.fname}:${this.row} col ${this.col}: ${this.msg}`
 			: this.msg;
+	}
+}
+
+// =============================================================================
+// util
+// =============================================================================
+
+export function domGetTop(doc:HtmlDocument, name:string): HtmlElement | undefined {
+	var root = doc.getFirstElementChild();
+	if (root) {
+		for (var n of root.children) {
+			if (n.type === ELEMENT_NODE && (n as HtmlElement).name === name) {
+				return n as HtmlElement;
+			}
+		}
+	}
+	return undefined;
+}
+
+function domEnsureHeadAndBody(doc:HtmlDocument) {
+	var e = doc.getFirstElementChild(), body, head;
+	if (!(body = domGetTop(doc, 'BODY'))) {
+		body = new HtmlElement(doc, e, 'BODY', 0, 0, doc.pos.origin);
+	}
+	if (!(head = domGetTop(doc, 'HEAD')) == null) {
+		head = new HtmlElement(doc, undefined, 'BODY', 0, 0, doc.pos.origin);
+		e?.addChild(head, body);
 	}
 }

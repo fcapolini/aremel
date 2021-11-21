@@ -155,7 +155,7 @@ describe("test preprocessor", () => {
 		expect(msg).toBe('');
 	});
 
-	it("should expand an macro with text", () => {
+	it("should expand a macro with text", () => {
 		var msg = '';
 		try {
 			var doc = preprocessor.read('test102.html');
@@ -246,6 +246,46 @@ describe("test preprocessor", () => {
 		expect(msg).toBe('');
 	});
 
+	it("should users nest macros (1)", () => {
+		var msg = '';
+		try {
+			var doc = preprocessor.read('test204.html');
+			expect(adjacentTextNodes(doc)).toBeFalsy();
+			expect(normalizeText(doc?.toString())).toBe(normalizeText(`<html>
+				<head>
+				</head>
+				<body>
+					<div class=\"kit-page\">
+						<div class=\"kit-nav\"></div>
+					</div>
+				</body>
+			</html>`));
+		} catch (ex:any) {
+			msg = `${ex}`;
+		}
+		expect(msg).toBe('');
+	});
+
+	it("should users nest macros (2)", () => {
+		var msg = '';
+		try {
+			var doc = preprocessor.read('testNestedMacros1.html');
+			expect(adjacentTextNodes(doc)).toBeFalsy();
+			expect(normalizeText(doc?.toString())).toBe(normalizeText(`<html>
+				<head>
+				</head>
+				<body>
+					<div class=\"kit-page\">
+						<div class=\"kit-nav\"><div>[[pageScrollY]] ([[pageScrollDeltaY]])</div></div>
+					</div>
+				</body>
+			</html>`));
+		} catch (ex:any) {
+			msg = `${ex}`;
+		}
+		expect(msg).toBe('');
+	});
+
 });
 
 // =============================================================================
@@ -284,6 +324,10 @@ function normalizeText(s?:string): string {
 	// @ts-ignore
 	return undefined;
 }
+
+// -----------------------------------------------------------------------------
+// stolen from Haxe implementation
+// -----------------------------------------------------------------------------
 
 // @ts-ignore
 function substr(s,pos,len) {
