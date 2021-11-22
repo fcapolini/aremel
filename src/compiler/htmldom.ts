@@ -1,4 +1,6 @@
+import { DomNode } from "../shared/dom";
 import HtmlParser from "./htmlparser";
+import { StringBuf } from "./util";
 
 export const ELEMENT_NODE = 1;
 export const TEXT_NODE = 2;
@@ -8,22 +10,6 @@ export interface HtmlPos {
 	origin: number,
 	i1: number,
 	i2: number,
-}
-
-class StringBuf {
-	parts: string[];
-
-	constructor() {
-		this.parts = [];
-	}
-
-	add(s:string) {
-		this.parts.push(s);
-	}
-
-	toString() {
-		return this.parts.join('');
-	}
 }
 
 export class HtmlNode {

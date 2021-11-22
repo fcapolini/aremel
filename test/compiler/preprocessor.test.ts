@@ -1,12 +1,12 @@
-import { ELEMENT_NODE, HtmlDocument, HtmlElement, TEXT_NODE } from "../../src/server/htmldom";
-import Preprocessor, { domGetTop, PreprocessorError } from "../../src/server/preprocessor";
+import { ELEMENT_NODE, HtmlDocument, HtmlElement, TEXT_NODE } from "../../src/compiler/htmldom";
+import Preprocessor, { domGetTop, PreprocessorError } from "../../src/compiler/preprocessor";
 
 let preprocessor:Preprocessor;
 
 describe("test preprocessor", () => {
 
 	beforeAll(() => {
-		var rootPath = process.cwd() + '/test/server/preprocessor';
+		var rootPath = process.cwd() + '/test/compiler/preprocessor';
 		preprocessor = new Preprocessor(rootPath);
 	});
 

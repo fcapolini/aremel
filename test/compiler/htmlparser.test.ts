@@ -1,5 +1,5 @@
-import { COMMENT_NODE, ELEMENT_NODE, HtmlDocument, HtmlElement, TEXT_NODE } from "../../src/server/htmldom";
-import HtmlParser, { HtmlException } from "../../src/server/htmlparser";
+import { COMMENT_NODE, ELEMENT_NODE, HtmlDocument, HtmlElement, TEXT_NODE } from "../../src/compiler/htmldom";
+import HtmlParser, { HtmlException } from "../../src/compiler/htmlparser";
 import fs from "fs";
 
 let rootPath:string;
@@ -26,7 +26,7 @@ function countNodes(doc:HtmlDocument): any {
 describe("test preprocessor", () => {
 
 	beforeAll(() => {
-		rootPath = process.cwd() + '/test/server/htmlparser';
+		rootPath = process.cwd() + '/test/compiler/htmlparser';
 	});
 
 	it("should parse <html></html>", () => {

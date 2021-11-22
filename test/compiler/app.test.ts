@@ -1,12 +1,12 @@
-import HtmlParser, { HtmlException } from "../../src/server/htmlparser";
-import App, { AppError } from "../../src/server/app";
+import HtmlParser, { HtmlException } from "../../src/compiler/htmlparser";
+import App, { AppError } from "../../src/compiler/app";
 
 let rootPath:string;
 
 describe("test server app", () => {
 
 	beforeAll(() => {
-		rootPath = process.cwd() + '/test/server/app';
+		rootPath = process.cwd() + '/test/compiler/app';
 	});
 
 	it("should load <html></html>", () => {
