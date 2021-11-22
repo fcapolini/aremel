@@ -1,4 +1,4 @@
-import { DomNode, DomElement, TEXT_NODE, DomTextNode } from "./dom";
+import { DomNode, DomElement, TEXT_NODE, DomTextNode, DomDocument } from "./dom";
 
 export interface RuntimeObj {
 	page: PageObj,
@@ -28,7 +28,7 @@ export interface RuntimeObj {
 }
 
 export interface PageObj {
-	doc: any,
+	doc: DomDocument,
 	nodes: Array<any>,
 	script?: string,
 }
