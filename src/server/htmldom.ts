@@ -29,13 +29,13 @@ class StringBuf {
 export class HtmlNode {
 	ownerDocument: HtmlDocument | undefined;
 	parentElement: HtmlElement | undefined;
-	type: number;
+	nodeType: number;
 	pos: HtmlPos;
 
 	constructor(doc:HtmlDocument|undefined, parent:HtmlElement|undefined, type:number, i1:number, i2:number, origin:number) {
 		this.ownerDocument = doc;
 		parent ? parent.addChild(this) : null;
-		this.type = type;
+		this.nodeType = type;
 		this.pos = {origin:origin, i1:i1, i2:i2};
 	}
 
@@ -145,7 +145,7 @@ export class HtmlElement extends HtmlNode {
 	getFirstElementChild(): HtmlElement | undefined {
 		for (var i in this.children) {
 			var n = this.children[i];
-			if (n.type === ELEMENT_NODE) {
+			if (n.nodeType === ELEMENT_NODE) {
 				return n as HtmlElement;
 			}
 		}
@@ -172,7 +172,7 @@ export class HtmlElement extends HtmlNode {
 	}
 
 	set innerText(s:string) {
-		if (this.children.length == 1 && this.children[0].type == TEXT_NODE) {
+		if (this.children.length == 1 && this.children[0].nodeType == TEXT_NODE) {
 			(this.children[0] as HtmlText).nodeValue = s;
 		} else {
 			while (this.children.length > 0) {

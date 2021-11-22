@@ -21,8 +21,8 @@ export interface RuntimeObj {
 	// XML: {parse:(s:string)=>any, stringify:(o:any)=>string},
 	// rgb: (c:string)=>string,
 	// mixColors: (c1:string,c2:string,ratio:number)=>string,
-	elementIndex: (e:DomElement)=>number,
-	isLastElement: (e:DomElement)=>boolean,
+	// elementIndex: (e:DomElement)=>number,
+	// isLastElement: (e:DomElement)=>boolean,
 	cb?: ()=>void,
 	root?: any,
 }
@@ -82,10 +82,10 @@ export function start(page:PageObj, cb?:()=>void): RuntimeObj {
 		// mixColors: (col1:string, col2:string, ratio:number) => {
 		// 	return ColorTools.mix(col1, col2, ratio);
 		// },
-		elementIndex: elementIndex,
-		isLastElement: (e:DomElement) => {
-			return elementIndex(e) >= (e.parentElement.childElementCount - 1);
-		},
+		// elementIndex: elementIndex,
+		// isLastElement: (e:DomElement) => {
+		// 	return elementIndex(e) >= (e.parentElement.childElementCount - 1);
+		// },
 		cb: cb,
 	};
 

@@ -5,17 +5,21 @@ export const TEXT_NODE = 3;
 export const COMMENT_NODE = 8;
 export const DOCUMENT_NODE = 9;
 
+// https://developer.mozilla.org/en-US/docs/Web/API/NodeList
 export interface NodeList {
 	length: number;
 	item: (i:number)=>DomNode|undefined;
 	forEach: (cb:(n:DomNode,i:number)=>void)=>void;
+	// serverRemove: (n:DomNode)=>void;
+	// serverAppend: (n:DomNode)=>void;
+	// serverInsert: (n:DomNode, ref:DomNode)=>void;
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/API/Node
 export interface DomNode {
 	nodeType: number;
-	ownerDocument: DomNode;
-	parentElement: DomElement;
+	ownerDocument: DomDocument | undefined;
+	parentElement: DomElement | undefined;
 }
 
 export interface DomTextNode extends DomNode {
@@ -27,6 +31,10 @@ export interface DomElement extends DomNode {
 	tagName: string; 
 	childNodes: NodeList;
 	childElementCount: number;
+	getFirstElementChild: ()=>DomElement|undefined;
+	appendChild: (n:DomNode)=>void;
+	insertBefore: (n:DomNode,ref:DomNode)=>void;
+	removeChild: (n:DomNode)=>void;
 	classList: {
 		add: (n:string)=>void,
 		remove: (n:string)=>void,
@@ -40,4 +48,7 @@ export interface DomElement extends DomNode {
 	removeAttribute: (key:string)=>void;
 	addEventListener: (t:string, l:(ev:any)=>void)=>void;
 	removeEventListener: (t:string, l:(ev:any)=>void)=>void;
+}
+
+export interface DomDocument extends DomNode {
 }

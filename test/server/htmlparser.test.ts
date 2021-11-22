@@ -9,12 +9,12 @@ function countNodes(doc:HtmlDocument): any {
 	function f(p:HtmlElement) {
 		for (var i in p.children) {
 			var n = p.children[i];
-			if (n.type == ELEMENT_NODE) {
+			if (n.nodeType == ELEMENT_NODE) {
 				ret.elements++;
 				f(n as HtmlElement);
-			} else if (n.type == TEXT_NODE) {
+			} else if (n.nodeType == TEXT_NODE) {
 				ret.texts++;
-			} else if (n.type == COMMENT_NODE) {
+			} else if (n.nodeType == COMMENT_NODE) {
 				ret.comments++;
 			}
 		}
@@ -37,7 +37,7 @@ describe("test preprocessor", () => {
 			expect(doc.name).toBe('#DOCUMENT');
 			expect(doc.attributes.size).toBe(0);
 			expect(doc.children.length).toBe(1);
-			expect(doc.children[0].type).toBe(ELEMENT_NODE);
+			expect(doc.children[0].nodeType).toBe(ELEMENT_NODE);
 			var e = doc.children[0] as HtmlElement;
 			expect(e.name).toBe('HTML');
 			expect(e.attributes.size).toBe(0);
@@ -57,7 +57,7 @@ describe("test preprocessor", () => {
 			expect(doc.name).toBe('#DOCUMENT');
 			expect(doc.attributes.size).toBe(0);
 			expect(doc.children.length).toBe(1);
-			expect(doc.children[0].type).toBe(ELEMENT_NODE);
+			expect(doc.children[0].nodeType).toBe(ELEMENT_NODE);
 			var e = doc.children[0] as HtmlElement;
 			expect(e.name).toBe('HTML');
 			expect(e.attributes.size).toBe(1);
@@ -101,7 +101,7 @@ describe("test preprocessor", () => {
 			expect(doc.name).toBe('#DOCUMENT');
 			expect(doc.attributes.size).toBe(0);
 			expect(doc.children.length).toBe(1);
-			expect(doc.children[0].type).toBe(ELEMENT_NODE);
+			expect(doc.children[0].nodeType).toBe(ELEMENT_NODE);
 			var e = doc.children[0] as HtmlElement;
 			expect(e.name).toBe('HTML');
 			expect(e.attributes.size).toBe(1);

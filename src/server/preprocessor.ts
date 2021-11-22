@@ -304,7 +304,7 @@ export default class Preprocessor {
 		function f(p:HtmlElement) {
 			var ret = false;
 			for (var n of p.children.slice()) {
-				if (n.type == ELEMENT_NODE) {
+				if (n.nodeType == ELEMENT_NODE) {
 					var name = (n as HtmlElement).name;
 					var def = that.macros.get(name);
 					if (def != null) {
@@ -351,7 +351,7 @@ export default class Preprocessor {
 		var slots = this.collectSlots(dst);
 		for (var n of src.children.slice()) {
 			var slotName = 'default', s;
-			if (n.type == ELEMENT_NODE
+			if (n.nodeType == ELEMENT_NODE
 				&& ((s = (n as HtmlElement).getAttribute(SLOT_ATTR)))) {
 				slotName = s;
 			}
@@ -389,7 +389,7 @@ export default class Preprocessor {
 		var ret = new Array<HtmlElement>();
 		function f(p:HtmlElement) {
 			for (var n of p.children) {
-				if (n.type === ELEMENT_NODE) {
+				if (n.nodeType === ELEMENT_NODE) {
 					if (tags.has((n as HtmlElement).name)) {
 						ret.push(n as HtmlElement);
 					} else {
@@ -405,7 +405,7 @@ export default class Preprocessor {
 	joinAdjacentTexts(e:HtmlElement) {
 		var prevTextNode:HtmlText|undefined = undefined;
 		for (var n of e.children.slice()) {
-			if (n.type === TEXT_NODE) {
+			if (n.nodeType === TEXT_NODE) {
 				if (prevTextNode != null) {
 					prevTextNode.nodeValue += (n as HtmlText).nodeValue;
 					n.remove();
@@ -453,7 +453,7 @@ export function domGetTop(doc:HtmlDocument, name:string): HtmlElement | undefine
 	var root = doc.getFirstElementChild();
 	if (root) {
 		for (var n of root.children) {
-			if (n.type === ELEMENT_NODE && (n as HtmlElement).name === name) {
+			if (n.nodeType === ELEMENT_NODE && (n as HtmlElement).name === name) {
 				return n as HtmlElement;
 			}
 		}

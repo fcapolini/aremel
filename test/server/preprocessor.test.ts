@@ -296,16 +296,16 @@ function adjacentTextNodes(doc?:HtmlDocument): boolean {
 	function f(e:HtmlElement) {
 		var prevType = -1;
 		for (var n of e.children) {
-			if (n.type === TEXT_NODE && n.type === prevType) {
+			if (n.nodeType === TEXT_NODE && n.nodeType === prevType) {
 				ret = true;
 			}
-			if (n.type == ELEMENT_NODE) {
+			if (n.nodeType == ELEMENT_NODE) {
 				f(n as HtmlElement);
 			}
 			if (ret) {
 				break;
 			}
-			prevType = n.type;
+			prevType = n.nodeType;
 		}
 	}
 	var root = doc?.getFirstElementChild();
