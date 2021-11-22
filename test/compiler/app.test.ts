@@ -1,5 +1,5 @@
-import HtmlParser, { HtmlException } from "../../src/compiler/htmlparser";
-import App, { AppError, DOM_AKA_ATTR, JS_AKA_VAR } from "../../src/compiler/app";
+import App, { JS_AKA_VAR, JS_AUTOHIDE_CLASS } from "../../src/compiler/app";
+import HtmlParser from "../../src/compiler/htmlparser";
 
 let rootPath:string;
 
@@ -76,6 +76,16 @@ describe("test server app", () => {
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
 		expect(app.root.props.size).toBe(2);
 		expect(app.root.props.get('event_click')?.val).toBe('[[(ev) => console.log(ev)]]');
+		expect(app.root.children.length).toBe(0);
+	});
+	
+	it('should load <html :hidden=[[true]]></html>', () => {
+		var doc = HtmlParser.parse('<html :hidden=[[true]]></html>');
+		var app = new App(doc);
+		expect(app.root).toBeDefined();
+		expect(app.root.dom).toBe(doc.getFirstElementChild());
+		expect(app.root.props.size).toBe(2);
+		expect(app.root.props.get(JS_AUTOHIDE_CLASS)?.val).toBe('[[true]]');
 		expect(app.root.children.length).toBe(0);
 	});
 	

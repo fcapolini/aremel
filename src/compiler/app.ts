@@ -1,5 +1,5 @@
 import { PageObj, RuntimeObj, ValueObj } from "../shared/runtime";
-import { HtmlDocument, HtmlElement, HtmlNode, HtmlPos } from "./htmldom";
+import { HtmlDocument, HtmlElement, HtmlNode, HtmlPos, ELEMENT_NODE, TEXT_NODE, HtmlText } from "./htmldom";
 import { makeCamelName } from "./util";
 
 export const DOM_DYNAMIC_ATTR_PREFIX = ':';
@@ -27,12 +27,12 @@ export const JS_DATA_VAR = 'data';
 export const JS_DATAOFFSET_VAR = 'dataOffset';
 export const JS_DATALENGTH_VAR = 'dataLength';
 export const JS_AUTOHIDE_CLASS = JS_CLASS_VALUE_PREFIX + '__cerereAutohide';
-export const CSS_AUTOHIDE_CLASS = '.__cerere-autohide';
+export const CSS_AUTOHIDE_CLASS = '__cerere-autohide';
 export const DOM_ID_ATTR = 'data-cerere';
 export const DOM_CLONEINDEX_ATTR = 'data-cerere-i';
 
 const attrAliases = new Map<string,string>();
-attrAliases.set(DOM_HIDDEN_ATTR, ':class___cerereAutohide');
+attrAliases.set(DOM_HIDDEN_ATTR, DOM_DYNAMIC_ATTR_PREFIX + JS_AUTOHIDE_CLASS);
 
 export default class App {
 	doc: HtmlDocument;
@@ -42,30 +42,9 @@ export default class App {
 	constructor(doc:HtmlDocument) {
 		this.doc = doc;
 		this.nodes = [];
-		this.root = this.load(undefined, doc.getFirstElementChild());
-	}
-
-	load(parent?:Scope, dom?:HtmlElement): Scope {
-		var ret = new Scope(parent, dom);
-		return ret;
-	}
-}
-
-export class Scope {
-	parent?: Scope;
-	dom?: HtmlElement;
-	props: Map<string,Prop>;
-	children: Scope[];
-
-	constructor(parent?:Scope, dom?:HtmlElement) {
-		if ((this.parent = parent)) {
-			parent.children.push(this);
-		}
-		this.children = [];
-		this.props = new Map();
-		if ((this.dom = dom)) {
-			this.load(dom, this.loadProps(dom), 0);
-		}
+		var root = doc.getFirstElementChild() as HtmlElement;
+		this.root = this.loadScope(root, this.loadProps(root), 0);
+		this.cleanupDom(root);
 	}
 
 	//TODO: forbid reserved props (__*)
@@ -118,25 +97,86 @@ export class Scope {
 				ret.set(DOM_AKA_ATTR, {key:DOM_AKA_ATTR, val:'body', pos:e.pos});
 				break;
 		}
-		if (ret != null) {
-			if (ret.has(DOM_AKA_ATTR)) {
-				ret.set(JS_AKA_VAR, ret.get(DOM_AKA_ATTR) as Prop);
-			}
-			ret.delete(DOM_AKA_ATTR);
-			if (ret.has(JS_DATA_VAR)) {
-				ret.set(JS_AUTOHIDE_CLASS, {
-					key: JS_AUTOHIDE_CLASS,
-					val: `[[!${JS_DATA_VAR}]]`,
-					pos: e.pos,
-				});
-			}
+		if (ret.has(DOM_AKA_ATTR)) {
+			ret.set(JS_AKA_VAR, ret.get(DOM_AKA_ATTR) as Prop);
+		}
+		ret.delete(DOM_AKA_ATTR);
+		if (ret.has(JS_DATA_VAR)) {
+			ret.set(JS_AUTOHIDE_CLASS, {
+				key: JS_AUTOHIDE_CLASS,
+				val: `[[!${JS_DATA_VAR}]]`,
+				pos: e.pos,
+			});
 		}
 		return ret;
 	}
 	
-	load(dom:HtmlElement, props:Map<string,Prop>, nesting:number) {
-		this.props = props;
+	loadScope(e:HtmlElement, props:Map<string,Prop>,
+				nesting:number, parent?:Scope): Scope {
+		var id = this.nodes.length;
+		var ret = new Scope(e, id, props, parent);
+		this.nodes.push(e);
+
+		var that = this;
+		function f(e:HtmlElement) {
+			for (var n of e.children) {
+				if (n.nodeType === ELEMENT_NODE) {
+					var p = that.loadProps(e);
+					if (p.size > 0) {
+						that.loadScope(n as HtmlElement, p, nesting + 1, ret);
+					} else {
+						f(n as HtmlElement);
+					}
+				} else if (n.nodeType === TEXT_NODE) {
+					if ((n as HtmlText).nodeValue.indexOf(DOM_EXP_MARKER1) >= 0) {
+						ret.texts.push(n as HtmlText);
+					}
+				}
+			}
+		}
+		f(e);
+
+		return ret;
 	}
+
+	cleanupDom(e:HtmlElement) {
+		function f(e:HtmlElement) {
+			for (var key of e.attributes.keys()) {
+				if (key.startsWith(DOM_DYNAMIC_ATTR_PREFIX)
+					|| (e.getAttribute(key) as string).indexOf(DOM_EXP_MARKER1) >= 0) {
+					e.setAttribute(key, undefined);
+				}
+			}
+			for (var n of e.children) {
+				if (n.nodeType === ELEMENT_NODE) {
+					f(n as HtmlElement);
+				}
+			}
+		}
+		f(e);
+	}
+
+}
+
+export class Scope {
+	parent?: Scope;
+	dom: HtmlElement;
+	id: number;
+	props: Map<string,Prop>;
+	texts: Array<HtmlText>;
+	children: Scope[];
+
+	constructor(dom:HtmlElement, id:number, props:Map<string,Prop>, parent?:Scope) {
+		if ((this.parent = parent)) {
+			parent.children.push(this);
+		}
+		this.dom = dom;
+		this.id = id;
+		this.props = props;
+		this.texts = [];
+		this.children = [];
+	}
+
 }
 
 interface Prop {
