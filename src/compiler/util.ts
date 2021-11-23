@@ -30,6 +30,17 @@ export function makeHyphenName(n:string):string {
 	});
 }
 
+export function normalizeText(s?:string): string {
+	if (s) {
+		// @ts-ignore
+		return new EReg('([\\s]+)', 'gm').map(s, (ereg) => {
+			return ereg.matched(1).indexOf('\n') >= 0 ? '\n' : ' ';
+		});
+	}
+	// @ts-ignore
+	return undefined;
+}
+
 // -----------------------------------------------------------------------------
 // stolen from Haxe implementation
 // -----------------------------------------------------------------------------

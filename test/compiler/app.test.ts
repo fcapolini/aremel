@@ -1,5 +1,6 @@
 import App, { JS_AKA_VAR, JS_AUTOHIDE_CLASS } from "../../src/compiler/app";
 import HtmlParser from "../../src/compiler/htmlparser";
+import { normalizeText } from "../../src/compiler/util";
 
 let rootPath:string;
 
@@ -89,4 +90,24 @@ describe("test server app", () => {
 		expect(app.root.children.length).toBe(0);
 	});
 	
+	it('should generate <html></html>', () => {
+		var doc = HtmlParser.parse('<html></html>');
+		var app = new App(doc);
+		var js = app.toString();
+		expect(js).toBe(normalizeText(`function(__rt) {
+			function __nn(v) {return v != null ? v : \"\"}
+			function __add(v) {__rt.values.push(v); return v;}
+			function __link(l) {__rt.links.push(l);}
+			function __ev(h) {__rt.evhandlers.push(h);}
+			function __domGetter(id) {return __rt.page.nodes[id];}
+			var __f, __get_data = null, data = null;
+			var __this = {};
+			var __dom = __this.__dom = __rt.page.nodes[0];
+			var __doc = __this.__doc = __dom.ownerDocument;
+			var __aka = __this.__aka = \"page\";
+			var __id = __this.__id = 0;
+			return __this;
+		}`));
+	});
+
 });

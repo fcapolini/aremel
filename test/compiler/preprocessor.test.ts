@@ -1,6 +1,6 @@
 import { ELEMENT_NODE, HtmlDocument, HtmlElement, TEXT_NODE } from "../../src/compiler/htmldom";
 import Preprocessor, { domGetTop, PreprocessorError } from "../../src/compiler/preprocessor";
-import { EReg } from "../../src/compiler/util";
+import { EReg, normalizeText } from "../../src/compiler/util";
 
 let preprocessor:Preprocessor;
 
@@ -312,15 +312,4 @@ function adjacentTextNodes(doc?:HtmlDocument): boolean {
 	var root = doc?.getFirstElementChild();
 	root ? f(root) : null;
 	return ret;
-}
-
-function normalizeText(s?:string): string {
-	if (s) {
-		// @ts-ignore
-		return new EReg('([\\s]+)', 'gm').map(s, (ereg) => {
-			return ereg.matched(1).indexOf('\n') >= 0 ? '\n' : ' ';
-		});
-	}
-	// @ts-ignore
-	return undefined;
 }
