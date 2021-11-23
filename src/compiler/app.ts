@@ -47,7 +47,7 @@ export default class App {
 		this._cleanupDom(root);
 	}
 
-	toString() {
+	compile() {
 		var sb = new StringBuf();
 		this.root.output(sb);
 		return sb.toString();
@@ -129,7 +129,7 @@ export default class App {
 		function f(e:HtmlElement) {
 			for (var n of e.children) {
 				if (n.nodeType === ELEMENT_NODE) {
-					var p = that._loadProps(e);
+					var p = that._loadProps(n as HtmlElement);
 					if (p.size > 0) {
 						that._loadScope(n as HtmlElement, p, nesting + 1, ret);
 					} else {
@@ -229,13 +229,13 @@ export class Scope {
 			this.children.forEach((s,i) => {
 				if (s.aka && !s.aka.startsWith('__')) {
 					i > 0 ? sb.add(',') : null;
-					sb.add(s.aka);
+					sb.add(`${s.aka},__get_${s.aka}`);
 				}
 			});
 			sb.add(';\n');
 			this.children.forEach((s,i) => {
 				if (s.aka && !s.aka.startsWith('__')) {
-					sb.add(`__get_${s} = function() {return ${s}};\n`);
+					sb.add(`__get_${s.aka} = function() {return ${s.aka}};\n`);
 				}
 			});
 		}
