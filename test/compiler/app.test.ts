@@ -90,7 +90,7 @@ describe("test server app", () => {
 		expect(app.root.children.length).toBe(0);
 	});
 	
-	it('should generate <html></html>', () => {
+	it('should compile <html></html>', () => {
 		var doc = HtmlParser.parse('<html></html>');
 		var app = new App(doc);
 		var js = app.compile();
@@ -110,7 +110,43 @@ describe("test server app", () => {
 		}`));
 	});
 
-	it('should generate <html><head></head><body></body></html>', () => {
+	it('should compile <html :v1="1"></html>', () => {
+		var doc = HtmlParser.parse('<html :v1="1"></html>');
+		var app = new App(doc);
+		var js = app.compile();
+		expect(js).toBe(normalizeText(`function(__rt) {
+			function __nn(v) {return v != null ? v : \"\"}
+			function __add(v) {__rt.values.push(v); return v;}
+			function __link(l) {__rt.links.push(l);}
+			function __ev(h) {__rt.evhandlers.push(h);}
+			function __domGetter(id) {return __rt.page.nodes[id];}
+			var __f, __get_data = null, data = null;
+			var __this = {};
+			var __dom = __this.__dom = __rt.page.nodes[0];
+			var __doc = __this.__doc = __dom.ownerDocument;
+			var __aka = __this.__aka = \"page\";
+			var __id = __this.__id = 0;\n` +
+			//
+			// start of v1 code
+			//
+			// 1) declaration
+			`var v1,__get_v1,__set_v1;\n` +
+			// 2) initialization
+			`v1 = __this.v1 = __add({v:"1"});\n` +
+			// 3) closure accessors
+			`__get_v1 = function() {return __rt.get(v1)}
+			__set_v1 = function(v) {return __rt.set(v1, v)}\n` +
+			// 4) object accessors
+			`Object.defineProperty(__this, "v1", {get:__get_v1, set:__set_v1});
+			Object.defineProperty(__this, "__value_v1", {get:function() {return v1}});\n` +
+			//
+			// end of v1 code
+			//
+			`return __this;
+		}`));
+	});
+
+	it('should compile <html><head></head><body></body></html>', () => {
 		var doc = HtmlParser.parse('<html><head></head><body></body></html>');
 		var app = new App(doc);
 		expect(app.root.children.length).toBe(2);

@@ -1,6 +1,8 @@
 import { ValueObj } from "../shared/runtime";
+import { isDynamic, parseExpr, patchExpr } from "./expr";
 import { ELEMENT_NODE, HtmlDocument, HtmlElement, HtmlNode, HtmlPos, HtmlText, TEXT_NODE } from "./htmldom";
-import { makeCamelName, StringBuf } from "./util";
+import Preprocessor from "./preprocessor";
+import { makeCamelName, makeHyphenName, StringBuf } from "./util";
 
 export const DOM_DYNAMIC_ATTR_PREFIX = ':';
 export const DOM_CLASS_ATTR_PREFIX = ':class-';
@@ -37,13 +39,15 @@ attrAliases.set(DOM_HIDDEN_ATTR, DOM_DYNAMIC_ATTR_PREFIX + JS_AUTOHIDE_CLASS);
 export default class App {
 	doc: HtmlDocument;
 	nodes: Array<HtmlNode>;
+	errors: Array<any>;
 	root: Scope;
 
-	constructor(doc:HtmlDocument) {
+	constructor(doc:HtmlDocument, prepro?:Preprocessor) {
 		this.doc = doc;
 		this.nodes = [];
+		this.errors = [];
 		var root = doc.getFirstElementChild() as HtmlElement;
-		this.root = this._loadScope(root, this._loadProps(root), 0);
+		this.root = this._loadScope(root, this._loadProps(root), 0, prepro);
 		this._cleanupDom(root);
 	}
 
@@ -119,10 +123,10 @@ export default class App {
 	}
 	
 	_loadScope(e:HtmlElement, props:Map<string,Prop>,
-				nesting:number, parent?:Scope): Scope {
+				nesting:number, prepro?:Preprocessor, parent?:Scope): Scope {
 		var id = this.nodes.length;
 		var aka = props.get(JS_AKA_VAR)?.val;
-		var ret = new Scope(e, id, props, aka, parent);
+		var ret = new Scope(this, e, id, props, aka, prepro, parent);
 		this.nodes.push(e);
 
 		var that = this;
@@ -131,7 +135,7 @@ export default class App {
 				if (n.nodeType === ELEMENT_NODE) {
 					var p = that._loadProps(n as HtmlElement);
 					if (p.size > 0) {
-						that._loadScope(n as HtmlElement, p, nesting + 1, ret);
+						that._loadScope(n as HtmlElement, p, nesting + 1, prepro, ret);
 					} else {
 						f(n as HtmlElement);
 					}
@@ -167,6 +171,8 @@ export default class App {
 }
 
 export class Scope {
+	app: App;
+	prepro?: Preprocessor;
 	parent?: Scope;
 	aka?: string;
 	dom: HtmlElement;
@@ -175,18 +181,31 @@ export class Scope {
 	texts: Array<HtmlText>;
 	children: Scope[];
 
-	constructor(dom:HtmlElement, id:number, props:Map<string,Prop>, aka?:string, parent?:Scope) {
+	constructor(app:App, dom:HtmlElement, id:number, props:Map<string,Prop>,
+				aka?:string, prepro?:Preprocessor, parent?:Scope) {
 		if ((this.parent = parent)) {
 			parent.children.push(this);
 		}
+		this.prepro = prepro;
 		this.aka = aka;
+		this.app = app;
 		this.dom = dom;
 		this.id = id;
 		this.props = props;
 		this.texts = [];
 		this.children = [];
+		if (props.has(JS_DATA_VAR)) {
+			this.ensureProp({key:JS_DATAOFFSET_VAR, val:'[[0]]'});
+			this.ensureProp({key:JS_DATALENGTH_VAR, val:'[[-1]]'});
+		}
 	}
 
+	ensureProp(prop:Prop) {
+		if (!this.props.has(prop.key)) {
+			this.props.set(prop.key, prop);
+		}
+	}
+	
 	output(sb:StringBuf) {
 		//
 		// enter scope
@@ -264,13 +283,181 @@ export class Scope {
 	}
 
 	_outputProps(sb:StringBuf) {
-		//TODO
+		var keys = new Array<string>();
+		for (var key of this.props.keys()) key != JS_AKA_VAR ? keys.push(key) : null;
+		keys = keys.sort((a, b) => (a > b ? 1 : (a < b ? -1 : 0)));
+		//
+		// add declarations
+		//
+		var names = new Array<string>();
+		keys.forEach((key) => {
+			if (!key.startsWith(JS_HANDLER_VALUE_PREFIX)
+					&& !key.startsWith(JS_EVENT_VALUE_PREFIX)) {
+				names.push(key);
+				names.push(`__get_${key}`);
+				names.push(`__set_${key}`);
+			}
+		});
+		if (names.length > 0) {
+			sb.add('var ' + names.join(',') + ';\n');
+		}
+		//
+		// add initializations
+		//
+		for (var key of keys) {
+			// non-handlers first
+			if (!key.startsWith(JS_HANDLER_VALUE_PREFIX)) {
+				this._outputProp(key, this.props.get(key) as Prop, sb);
+			}
+		}
+		for (var key of keys) {
+			// handlers second
+			if (key.startsWith(JS_HANDLER_VALUE_PREFIX)) {
+				this._outputProp(key, this.props.get(key) as Prop, sb);
+			}
+		}
+		if (this.props.has(JS_DATA_VAR)) {
+			var paths = new Set<string>([JS_DATAOFFSET_VAR, JS_DATALENGTH_VAR]);
+			this._addLinks(this._makeLink(JS_DATA_VAR, paths, []), sb);
+		}
+	}
+
+	_outputProp(key:string, prop:Prop, sb:StringBuf) {
+		var val = prop.val;
+		var isHandler = key.startsWith(JS_HANDLER_VALUE_PREFIX);
+		var isEvHandler = key.startsWith(JS_EVENT_VALUE_PREFIX);
+		var domLinkerPre = '';
+		var domLinkerPost = '';
+		if (key.startsWith(JS_CLASS_VALUE_PREFIX)) {
+			domLinkerPre = `__rt.linkClass(__dom,"${
+				makeHyphenName(key.substr(JS_CLASS_VALUE_PREFIX.length))
+			}",`;
+			domLinkerPost = ')';
+		} else if (key.startsWith(JS_STYLE_VALUE_PREFIX)) {
+			domLinkerPre = `__rt.linkStyle(__dom,"${
+				makeHyphenName(key.substr(JS_STYLE_VALUE_PREFIX.length))
+			}",`;
+			domLinkerPost = ')';
+		} else if (key.startsWith(JS_ATTR_VALUE_PREFIX)) {
+			domLinkerPre = `__rt.linkAttr(__dom,"${
+				makeHyphenName(key.substr(JS_ATTR_VALUE_PREFIX.length))
+			}",`;
+			domLinkerPost = ')';
+		} else if (key === JS_DATA_VAR) {
+			domLinkerPre = '__rt.linkData(__this,';
+			domLinkerPost = ')';
+		}
+		if (typeof val === 'string') {
+			if (isDynamic(val)) {
+				try {
+					var sourcePos = (this.prepro && prop.pos
+						? this.prepro.getSourcePos(prop.pos)
+						: undefined);
+					var expr = (sourcePos
+						? parseExpr(val, sourcePos.fname, sourcePos.line)
+						: parseExpr(val));
+					var paths = new Set<string>();
+					expr = patchExpr(expr, paths, (key == 'data'));
+					var src = expr.toString();
+					if (!isEvHandler) {
+						if (src.startsWith('{') && src.endsWith('}')) {
+							src = src.substr(1, src.length - 2).trim();
+						}
+					}
+					if (isHandler) {
+						var path = key.substr(JS_HANDLER_VALUE_PREFIX.length);
+						sb.add(`__rt.linkHandler(function() {${src}}, ${path});\n`);
+					} else if (isEvHandler) {
+						key = key.substr(JS_EVENT_VALUE_PREFIX.length);
+						var p = key.split(':');
+						var dom = (p.length > 1 ? p[0] : '__dom');
+						var evtype = (p.length > 0 ? p[p.length - 1] : '');
+						sb.add(`__ev({e:${dom},t:"${evtype}",h:${src}});\n`);
+					} else {
+						if (this.parent && key === JS_DATA_VAR) {
+							sb.add('if (__self) {\n');
+						}
+						sb.add(`${key} = __this.${key} = __add(`
+							+ domLinkerPre
+							+ (src.startsWith('function(')
+								? `{v:${src}}`
+								: `{fn:function() {${src}}}`)
+							+ domLinkerPost
+							+ ');\n');
+						if (paths.size > 0) {
+							this._addLinks(this._makeLink(key, paths, []), sb);
+						}
+						if (this.parent && key === JS_DATA_VAR) {
+							sb.add('} else {\n');
+							sb.add('data = __this.data = __outer_data;\n');
+							sb.add('}\n');
+						}
+					}
+				} catch (ex:any) {
+					this.app.errors.push({msg:`addProp(${key}): ${ex}`, pos:prop.pos});
+				}
+			} else {
+				val = val.replace('\n', '\\n');
+				val = val.replace('\r', '');
+				val = val.replace('\t', '\\t');
+				val = val.replace('"', '\\"');
+				sb.add(`${key} = __this.${key} = __add(`
+					+ domLinkerPre
+					+ `{v:"${val}"}`
+					+ domLinkerPost
+					+ ');\n');
+			}
+		} else {
+			sb.add(`${key} = __this.${key} = __add(`
+				+ domLinkerPre
+				+ `{v:${val}}`
+				+ domLinkerPost
+				+ ');\n');
+		}
+		if (!isHandler && !isEvHandler) {
+			sb.add(`__get_${key} = function() {return __rt.get(${key})}\n`);
+			sb.add(`__set_${key} = function(v) {return __rt.set(${key}, v)}\n`);
+			sb.add(`Object.defineProperty(__this, "${key}", {get:__get_${key}, set:__set_${key}});\n`);
+			sb.add(`Object.defineProperty(__this, "__value_${key}", {get:function() {return ${key}}});\n`);
+		}
 	}
 
 	_outputTexts(sb:StringBuf) {
 		//TODO
 	}
 
+	_makeLink(name:string, paths:Set<string>, links:Array<ValueLink>): Array<ValueLink> {
+		// patch references to 'data.*'
+		var pp = new Array<string>();
+		for (var p of paths) pp.push(p);
+		for (p of pp) {
+			if (p.startsWith('data.')) {
+				paths.delete(p);
+				paths.add('data');
+			}
+		}
+		// add value link
+		for (var p of paths) {
+			if (name === 'data' && p === 'data') {
+				links.push({observer:'data', observed:'__outer_data'});
+			} else {
+				links.push({observer:name, observed:p});
+			}
+		}
+		return links;
+	}
+
+	_addLinks(links:Array<ValueLink>, sb:StringBuf) {
+		for (var l of links) {
+			sb.add(`__link({"o":${l.observer}, "v":function() {return ${l.observed};}});\n`);
+		}
+	}
+
+}
+
+interface ValueLink {
+	observer: string,
+	observed: string,
 }
 
 interface Prop {
