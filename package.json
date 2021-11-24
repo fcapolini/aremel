@@ -21,6 +21,7 @@
     "@types/express": "^4.17.13",
     "acorn": "^8.6.0",
     "acorn-walk": "^8.2.0",
+    "escodegen": "^2.0.0",
     "express": "^4.17.1"
   }
 }

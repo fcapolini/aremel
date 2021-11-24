@@ -77,6 +77,8 @@ add [Jest Test Explorer](https://marketplace.visualstudio.com/items?itemName=kav
 ```bash
 npm install acorn
 npm install acorn-walk
+# escodegen is used to turn parsed JS back to source code
+npm install escodegen
 ```
 
 ### Express

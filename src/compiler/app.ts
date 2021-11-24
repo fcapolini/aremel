@@ -357,31 +357,30 @@ export class Scope {
 						? parseExpr(val, sourcePos.fname, sourcePos.line)
 						: parseExpr(val));
 					var paths = new Set<string>();
-					expr = patchExpr(expr, paths, (key == 'data'));
-					var src = expr.toString();
+					var code = patchExpr(expr, paths, (key == 'data'));
 					if (!isEvHandler) {
-						if (src.startsWith('{') && src.endsWith('}')) {
-							src = src.substr(1, src.length - 2).trim();
+						if (code.startsWith('{') && code.endsWith('}')) {
+							code = code.substr(1, code.length - 2).trim();
 						}
 					}
 					if (isHandler) {
 						var path = key.substr(JS_HANDLER_VALUE_PREFIX.length);
-						sb.add(`__rt.linkHandler(function() {${src}}, ${path});\n`);
+						sb.add(`__rt.linkHandler(function() {${code}}, ${path});\n`);
 					} else if (isEvHandler) {
 						key = key.substr(JS_EVENT_VALUE_PREFIX.length);
 						var p = key.split(':');
 						var dom = (p.length > 1 ? p[0] : '__dom');
 						var evtype = (p.length > 0 ? p[p.length - 1] : '');
-						sb.add(`__ev({e:${dom},t:"${evtype}",h:${src}});\n`);
+						sb.add(`__ev({e:${dom},t:"${evtype}",h:${code}});\n`);
 					} else {
 						if (this.parent && key === JS_DATA_VAR) {
 							sb.add('if (__self) {\n');
 						}
 						sb.add(`${key} = __this.${key} = __add(`
 							+ domLinkerPre
-							+ (src.startsWith('function(')
-								? `{v:${src}}`
-								: `{fn:function() {${src}}}`)
+							+ (code.startsWith('function(')
+								? `{v:${code}}`
+								: `{fn:function() {${code}}}`)
 							+ domLinkerPost
 							+ ');\n');
 						if (paths.size > 0) {

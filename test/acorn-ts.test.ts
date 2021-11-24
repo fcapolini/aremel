@@ -1,11 +1,27 @@
 import {Node, Parser} from "acorn";
 import {full, simple} from "acorn-walk";
+const escodegen = require("escodegen")
 
 describe("test acorn basics (TS)", () => {
 
 	it("should parse '1 + 1'", () => {
 		let node:Node = Parser.parse('1 + 1', {ecmaVersion: 2015});
 		expect(node.type).toBe('Program');
+		expect(escodegen.generate(node)).toBe('1 + 1;');
+	});
+
+	it("should parse '1\n+ 1'", () => {
+		let node:Node = Parser.parse(`1
+		+ 1`, {ecmaVersion: 2015});
+		expect(node.type).toBe('Program');
+		expect(escodegen.generate(node)).toBe(`1 + 1;`);
+	});
+
+	it("should parse '1/*NL*/+ 1'", () => {
+		let node:Node = Parser.parse(`1
+		+ 1`, {ecmaVersion: 2015});
+		expect(node.type).toBe('Program');
+		expect(escodegen.generate(node)).toBe(`1 + 1;`);
 	});
 
 	it("should simple-walk 'a + 1'", () => {
