@@ -1,8 +1,5 @@
-import { Node, Parser } from "acorn";
-import { full } from "acorn-walk";
 import { DOM_EXP_MARKER1, DOM_EXP_MARKER2, JS_NOTNULL_FN } from "./app";
 import { StringBuf } from "./util";
-const escodegen = require("escodegen");
 
 export interface Expr {
 	src: string,
@@ -55,31 +52,4 @@ function escape(s:string): string {
 	s = s.replace("'", "\\'");
 	s = s.replace('"', '\\"');
 	return s;
-}
-
-export function patchExpr(expr:Expr, paths?:Set<string>, patchData=false): string {
-	var locals = new Set(['null', 'true', 'false', 'console', 'document', 'window']);
-	var node = Parser.parse(expr.src, {ecmaVersion: 2015});
-	!paths ? paths = new Set() : null;
-	full(node, (node:any, state, type) => {
-		switch (type) {
-			case 'Identifier':
-				if (!locals.has(node.name)) {
-
-				}
-				break;
-		}
-	});
-	var ret = escodegen.generate(node);
-	return ret;
-}
-
-/*
-(1) turns accesses to non-local, non '__' identifiers into calls to their getters
-(2) turns assignments to non-local, non '__' identifiers into calls to their setters
-(3) collects local identifiers
-(4) special treatment for unary operators on non-local, non '__' identifiers
-*/
-function patchIds(node:Node) {
-
 }

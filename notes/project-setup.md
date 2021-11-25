@@ -70,7 +70,7 @@ npm test
 
 add [Jest Test Explorer](https://marketplace.visualstudio.com/items?itemName=kavod-io.vscode-jest-test-adapter) VSC extension
 
-### Acorn
+### Acorn - no, replaced with Babel
 
 [Acorn](https://github.com/acornjs/acorn) ([npm](https://www.npmjs.com/package/acorn)) JavaScript parser
 
@@ -79,6 +79,28 @@ npm install acorn
 npm install acorn-walk
 # escodegen is used to turn parsed JS back to source code
 npm install escodegen
+```
+
+Removed:
+
+```bash
+npm remove acorn
+npm remove @types/acorn
+acorn-walk
+escodegen
+```
+
+
+
+### Babel
+
+[Babel](https://babeljs.io)
+
+```bash
+# npm install @babel/core
+npm install @babel/parser
+npm install @babel/traverse
+npm install @babel/generator
 ```
 
 ### Express
@@ -106,13 +128,6 @@ app.listen(PORT, () => {
 ```bash
 cd out
 node express.js
-```
-
-### Parse5
-
-```bash
-npm install --save parse5
-npm i -D @types/parse5
 ```
 
 ### Aremel

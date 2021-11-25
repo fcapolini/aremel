@@ -1,11 +1,7 @@
 import { JS_NOTNULL_FN } from "../../src/compiler/app";
-import { patchExpr, prepareExpr } from "../../src/compiler/expr";
+import { prepareExpr } from "../../src/compiler/expr";
 
 describe("test expressions", () => {
-
-	// =========================================================================
-	// prepareExpr()
-	// =========================================================================
 
 	it("should prepare empty expressions", () => {
 		expect(prepareExpr('')).toBe("''");
@@ -72,13 +68,5 @@ describe("test expressions", () => {
 			{list:["a","b","c"]}
 		]`);
 	});
-
-	// =========================================================================
-	// patchExpr()
-	// =========================================================================
-
-	// it("should replace direct access with getter call", () => {
-	// 	expect(patchExpr('v1 + 2')).toBe('__get_v1() + 2');
-	// });
 
 });

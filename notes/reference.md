@@ -3,6 +3,9 @@
 * [AcornJS](https://github.com/acornjs/acorn), [npm](https://www.npmjs.com/package/acorn)
 * [ESTree Spec](https://github.com/estree/estree)
 * [escodegen](https://github.com/estools/escodegen)
+* [BabelJs](https://babeljs.io/docs/en/)
+  * [Step-by-step guide for writing a custom babel transformation](https://lihautan.com/step-by-step-guide-for-writing-a-babel-transformation/)
+  * [estexplorer](https://astexplorer.net)
 * [Compiler API (TypeScript)](https://learning-notes.mistermicheels.com/javascript/typescript/compiler-api) very interesting [but not yet stable](https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API); we'll stick to Acorn for the time being
 * [Express](http://expressjs.com)
 * [Using TypeScript with Node.js and Express](https://blog.logrocket.com/typescript-with-node-js-and-express/)

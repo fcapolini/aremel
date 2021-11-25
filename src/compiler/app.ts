@@ -1,5 +1,6 @@
 import { ValueObj } from "../shared/runtime";
-import { isDynamic, parseExpr, patchExpr } from "./expr";
+import { patchExpr } from "./code";
+import { isDynamic, parseExpr } from "./expr";
 import { ELEMENT_NODE, HtmlDocument, HtmlElement, HtmlNode, HtmlPos, HtmlText, TEXT_NODE } from "./htmldom";
 import Preprocessor from "./preprocessor";
 import { makeCamelName, makeHyphenName, StringBuf } from "./util";
@@ -179,6 +180,8 @@ export class Scope {
 	id: number;
 	props: Map<string,Prop>;
 	texts: Array<HtmlText>;
+	values: Map<string,Prop>;
+	references: Map<string, Set<string>>;
 	children: Scope[];
 
 	constructor(app:App, dom:HtmlElement, id:number, props:Map<string,Prop>,
@@ -193,19 +196,15 @@ export class Scope {
 		this.id = id;
 		this.props = props;
 		this.texts = [];
+		this.values = new Map();
+		this.references = new Map();
 		this.children = [];
 		if (props.has(JS_DATA_VAR)) {
-			this.ensureProp({key:JS_DATAOFFSET_VAR, val:'[[0]]'});
-			this.ensureProp({key:JS_DATALENGTH_VAR, val:'[[-1]]'});
+			this._ensureProp({key:JS_DATAOFFSET_VAR, val:'[[0]]'});
+			this._ensureProp({key:JS_DATALENGTH_VAR, val:'[[-1]]'});
 		}
 	}
 
-	ensureProp(prop:Prop) {
-		if (!this.props.has(prop.key)) {
-			this.props.set(prop.key, prop);
-		}
-	}
-	
 	output(sb:StringBuf) {
 		//
 		// enter scope
@@ -356,8 +355,8 @@ export class Scope {
 					var expr = (sourcePos
 						? parseExpr(val, sourcePos.fname, sourcePos.line)
 						: parseExpr(val));
-					var paths = new Set<string>();
-					var code = patchExpr(expr, paths, (key == 'data'));
+					var refPaths = new Set<string>();
+					var code = patchExpr(expr, refPaths, (key == 'data'));
 					if (!isEvHandler) {
 						if (code.startsWith('{') && code.endsWith('}')) {
 							code = code.substr(1, code.length - 2).trim();
@@ -366,6 +365,7 @@ export class Scope {
 					if (isHandler) {
 						var path = key.substr(JS_HANDLER_VALUE_PREFIX.length);
 						sb.add(`__rt.linkHandler(function() {${code}}, ${path});\n`);
+						this.references.set(key, new Set([path]));
 					} else if (isEvHandler) {
 						key = key.substr(JS_EVENT_VALUE_PREFIX.length);
 						var p = key.split(':');
@@ -383,8 +383,10 @@ export class Scope {
 								: `{fn:function() {${code}}}`)
 							+ domLinkerPost
 							+ ');\n');
-						if (paths.size > 0) {
-							this._addLinks(this._makeLink(key, paths, []), sb);
+						this.values.set(key, prop);
+						if (refPaths.size > 0) {
+							this._addLinks(this._makeLink(key, refPaths, []), sb);
+							this.references.set(key, refPaths);
 						}
 						if (this.parent && key === JS_DATA_VAR) {
 							sb.add('} else {\n');
@@ -452,6 +454,12 @@ export class Scope {
 		}
 	}
 
+	_ensureProp(prop:Prop) {
+		if (!this.props.has(prop.key)) {
+			this.props.set(prop.key, prop);
+		}
+	}
+	
 }
 
 interface ValueLink {
