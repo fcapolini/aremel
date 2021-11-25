@@ -70,7 +70,7 @@ npm test
 
 add [Jest Test Explorer](https://marketplace.visualstudio.com/items?itemName=kavod-io.vscode-jest-test-adapter) VSC extension
 
-### Acorn - no, replaced with Babel
+### Acorn (no, replaced with Babel)
 
 [Acorn](https://github.com/acornjs/acorn) ([npm](https://www.npmjs.com/package/acorn)) JavaScript parser
 
@@ -89,8 +89,6 @@ npm remove @types/acorn
 acorn-walk
 escodegen
 ```
-
-
 
 ### Babel
 

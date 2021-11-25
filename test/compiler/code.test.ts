@@ -11,7 +11,7 @@ describe("test code", () => {
 		expect(refs.has('v1')).toBeTruthy();
 	});
 
-	it("should collect patch read access", () => {
+	it("should patch read access", () => {
 		var expr:Expr = {src:'v1', code:''};
 		var refs = new Set<string>();
 		patchExpr(expr, refs);
@@ -20,13 +20,23 @@ describe("test code", () => {
 		expect(expr.code).toBe('__get_v1();');
 	});
 
-	it("should collect patch write access", () => {
+	it("should patch write access", () => {
 		var expr:Expr = {src:'v1 = 1', code:''};
 		var refs = new Set<string>();
 		patchExpr(expr, refs);
 		expect(refs.size).toBe(1);
 		expect(refs.has('v1')).toBeTruthy();
 		expect(expr.code).toBe('__set_v1(1);');
+	});
+
+	it("should patch access", () => {
+		var expr:Expr = {src:'v1 = v2', code:''};
+		var refs = new Set<string>();
+		patchExpr(expr, refs);
+		expect(refs.size).toBe(2);
+		expect(refs.has('v1')).toBeTruthy();
+		expect(refs.has('v2')).toBeTruthy();
+		expect(expr.code).toBe('__set_v1(__get_v2());');
 	});
 
 });

@@ -9,7 +9,6 @@ export function patchExpr(expr:Expr, refPaths:Set<string>, patchData=false): str
 	collectLocalIds(expr, locals);
 	var refs = new Map<string,Set<string>>();
 	const output = patchIds(expr, locals, refs, patchData);
-	// refs.forEach((paths) => paths.forEach((path) => refPaths.add(path)));
 	refs.forEach((v:Set<string>, k:string) => {
 		v.forEach((v:string) => {
 			refPaths.add(v);
