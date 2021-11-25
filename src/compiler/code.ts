@@ -1,6 +1,6 @@
 import { BabelFileResult, PluginObj, PluginPass, transformSync } from '@babel/core';
 import { NodePath } from '@babel/traverse';
-import { callExpression, identifier, NullLiteralTypeAnnotation } from "@babel/types";
+import { callExpression, identifier } from "@babel/types";
 import { Expr } from './expr';
 
 // https://lihautan.com/babel-ast-explorer/
@@ -26,7 +26,8 @@ function collectLocalIds(expr:Expr, locals:Set<string>) {
 					visitor: {
 						Identifier(path:NodePath) {
 							if (path.isIdentifier()) {
-								if (path.parent.type === 'VariableDeclarator') {
+								if (path.key === 'id' &&
+										path.parent.type === 'VariableDeclarator') {
 									locals.add(path.node.name);
 								}
 							}

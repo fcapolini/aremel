@@ -295,6 +295,7 @@ export class Scope {
 				names.push(key);
 				names.push(`__get_${key}`);
 				names.push(`__set_${key}`);
+				// names.push(`__upd_${key}`);
 			}
 		});
 		if (names.length > 0) {
@@ -418,6 +419,7 @@ export class Scope {
 		if (!isHandler && !isEvHandler) {
 			sb.add(`__get_${key} = function() {return __rt.get(${key})}\n`);
 			sb.add(`__set_${key} = function(v) {return __rt.set(${key}, v)}\n`);
+			// sb.add(`__upd_${key} = function(incr, pre) {return __rt.upd(${key}, incr, pre)}\n`);
 			sb.add(`Object.defineProperty(__this, "${key}", {get:__get_${key}, set:__set_${key}});\n`);
 			sb.add(`Object.defineProperty(__this, "__value_${key}", {get:function() {return ${key}}});\n`);
 		}

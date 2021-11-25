@@ -9,6 +9,7 @@ export interface RuntimeObj {
 	evhandlers: Array<{e:DomElement, t:string, h:(v:any)=>void}>,
 	get: (o:ValueObj)=>any,
 	set: (o:ValueObj, v:any)=>any,
+	// upd: (o:ValueObj, incr:boolean, pre:boolean)=>any,
 	linkClass: (e:DomElement, n:string, o:ValueObj)=>ValueObj,
 	linkStyle: (e:DomElement, n:string, o:ValueObj)=>ValueObj,
 	linkAttr: (e:DomElement, n:string, o:ValueObj)=>ValueObj,
@@ -59,6 +60,7 @@ export function start(page:PageObj, cb?:()=>void): RuntimeObj {
 		evhandlers: [],
 		get: get,
 		set: set,
+		// upd: upd,
 		linkClass: linkClass,
 		linkStyle: linkStyle,
 		linkAttr: linkAttr,
@@ -148,6 +150,11 @@ export function start(page:PageObj, cb?:()=>void): RuntimeObj {
 		}
 		return value.v;
 	}
+
+	// function upd(value:ValueObj, incr:boolean, pre:boolean) {
+	// 	//TODO
+	// 	return value.v;
+	// }
 
 	function handle(value:ValueObj) {
 		if (value.callbacks != null) {
