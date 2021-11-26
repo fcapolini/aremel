@@ -4,12 +4,14 @@ import { callExpression, identifier, memberExpression } from "@babel/types";
 import { AppScope } from "./appscope";
 import { Expr, isDynamic, parseExpr } from "./expr";
 import { SourcePos } from "./preprocessor";
+import { StringBuf } from './util';
 
 export class AppValue {
 	scope: AppScope;
 	key: string;
 	val: any;
 	expr: Expr|undefined;
+	refs: Set<string>;
 	spos: SourcePos|undefined;
 
 	constructor(scope:AppScope, key:string, val:any, spos?:SourcePos) {
@@ -21,31 +23,56 @@ export class AppValue {
 		} else {
 			this.val = val;
 		}
+		this.refs = new Set();
 		this.spos = spos;
 	}
 
 	compile() {
 		if (this.expr) {
-			var refPaths = new Set<string>();
-			this.patchExpr(this.expr, refPaths);
+			this._patchExpr(this.expr);
 		}
 	}
 
-	patchExpr(expr:Expr, refPaths:Set<string>, patchData=false): string {
+	output(sb:StringBuf, addAccessors=true): StringBuf {
+		var key = this.key;
+		var val = this.val;
+		var expr = this.expr;
+		if (expr) {
+			if (expr.code.startsWith('function(')) {
+				sb.add(`__this.${key} = __add({v:${expr.code}});\n`);
+			} else {
+				sb.add(`__this.${key} = __add({fn:function() {${expr.code}}});\n`);
+			}
+		} else if (typeof val === 'string') {
+			val = val.replace('\n', '\\n');
+			val = val.replace('\r', '');
+			val = val.replace('\t', '\\t');
+			val = val.replace('"', '\\"');
+			sb.add(`__this.${key} = __add({v:"${val}"});\n`);
+		} else {
+			sb.add(`__this.${key} = __add({v:${val}});\n`);
+		}
+		if (addAccessors) {
+			// get/set value
+			sb.add(`Object.defineProperty(__this, "${key}", {`
+				+ `get:function() {return __rt.get(${key})}, `
+				+ `set:function(v) {return __rt.set(${key}, v)}});\n`);
+			// get value object as `__value_<name>`
+			sb.add(`Object.defineProperty(__this, "__value_${key}", `
+				+ `{get:function() {return ${key}}});\n`);
+		}
+		return sb;
+	}
+
+	_patchExpr(expr:Expr, rpatchData=false): string {
 		var locals = new Set(['null', 'true', 'false', 'console', 'document', 'window']);
-		this.collectLocalIds(expr, locals);
-		var refs = new Map<string,Set<string>>();
-		const output = this.patchIds(expr, locals, refs, patchData);
-		refs.forEach((v:Set<string>, k:string) => {
-			v.forEach((v:string) => {
-				refPaths.add(v);
-			});
-		});
+		this._collectLocalIds(expr, locals);
+		const output = this._patchIds(expr, locals);
 		expr.code = output?.code ? output?.code : '';
 		return expr.code;
 	}
 	
-	collectLocalIds(expr:Expr, locals:Set<string>) {
+	_collectLocalIds(expr:Expr, locals:Set<string>) {
 		transformSync(expr.src, {
 			plugins: [
 				function collectLocalIds() {
@@ -68,10 +95,8 @@ export class AppValue {
 	
 	// turns accesses to non-local, non '__' identifiers into fields of the
 	// relevant `__scope_<id>` object
-	patchIds(expr:Expr,
-			locals:Set<string>,
-			refPaths:Map<string,Set<string>>,
-			patchData:boolean): BabelFileResult | null {
+	_patchIds(expr:Expr,
+			locals:Set<string>): BabelFileResult | null {
 		var that = this;
 		return transformSync(expr.src, {
 			parserOpts: {
@@ -86,9 +111,7 @@ export class AppValue {
 							Identifier(path:NodePath) {
 								if (path.isIdentifier()) {
 									if (!locals.has(path.node.name)) {
-										var paths = new Set<string>();
-										refPaths.set(path.node.name, paths);
-										that.patchId(path, paths, patchData);
+										that._patchId(path);
 									}
 								}
 							},
@@ -99,7 +122,7 @@ export class AppValue {
 		});
 	}
 	
-	patchId(path:NodePath, refPaths:Set<string>, patchData=false) {
+	_patchId(path:NodePath) {
 		if (path.isIdentifier()) {
 			if (!path.node.name.startsWith('__')) {
 				if (path.key !== 'id' || path.parent.type !== 'VariableDeclarator') {
@@ -107,9 +130,9 @@ export class AppValue {
 					if (path.key !== 'property') {
 						// not a dot access
 						var name = path.node.name;
-						refPaths.add(name);
-						var scope = this.getScopeForIdentifier(name);
+						var scope = this._getScopeForIdentifier(name);
 						if (scope) {
+							this.refs.add(scope.id + '.' + name);
 							path.replaceWith(memberExpression(
 								identifier('__scope_' + scope.id),
 								identifier(name)
@@ -123,7 +146,7 @@ export class AppValue {
 		}
 	}
 	
-	getScopeForIdentifier(name:string): AppScope | undefined {
+	_getScopeForIdentifier(name:string): AppScope | undefined {
 		var scope:AppScope|undefined = this.scope;
 		while (scope) {
 			if (scope.values.has(name)) {

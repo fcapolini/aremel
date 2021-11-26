@@ -48,8 +48,13 @@ export class AppScope {
 		});
 	}
 
-	output(cb:StringBuf) {
+	output(sb:StringBuf): StringBuf {
 		//TODO
+		var keys = new Array();
+		this.values.forEach((v, k) => keys.push(k));
+		keys = keys.sort((a, b) => (a > b ? 1 : (a < b ? -1 : 0)));
+		keys.forEach((k) => this.values.get(k)?.output(sb));
+		return sb;
 	}
 
 }

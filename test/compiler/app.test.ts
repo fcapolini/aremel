@@ -1,6 +1,7 @@
 import App, { JS_AKA_VAR, JS_AUTOHIDE_CLASS } from "../../src/compiler/app";
+import { AppValue } from "../../src/compiler/appvalue";
 import HtmlParser from "../../src/compiler/htmlparser";
-import { normalizeText } from "../../src/compiler/util";
+import { normalizeText, StringBuf } from "../../src/compiler/util";
 
 let rootPath:string;
 
@@ -100,6 +101,30 @@ describe("test server app", () => {
 		var body = app.root.children[0];
 		expect(body.aka).toBe('body');
 		expect(body.values.get('v1')?.val).toBe('a');
+	});
+
+	it('should load <html><body :v1="a" :v2=[[v1 + "!"]]/></html>', () => {
+		var doc = HtmlParser.parse('<html><body :v1="a" :v2=[[v1 + "!"]]/></html>');
+		var app = new App(doc);
+		expect(app.root).toBeDefined();
+		expect(app.root.dom).toBe(doc.getFirstElementChild());
+		expect(app.root.values.size).toBe(0);
+		expect(app.root.children.length).toBe(1);
+
+		var body = app.root.children[0];
+		expect(body.aka).toBe('body');
+		expect(body.values.get('v1')?.val).toBe('a');
+		expect(body.values.get('v2')?.expr?.src).toBe('v1 + "!"');
+		expect(body.values.get('v2')?.refs.size).toBe(1);
+		expect(body.values.get('v2')?.refs.has('1.v1')).toBeTruthy();
+
+		var v1 = body.values.get('v1') as AppValue;
+		var v1code = v1.output(new StringBuf(), false).toString();
+		expect(v1code).toBe('__this.v1 = __add({v:"a"});\n');
+		
+		var v2 = body.values.get('v2') as AppValue;
+		var v2code = v2.output(new StringBuf(), false).toString();
+		expect(v2code).toBe('__this.v2 = __add({fn:function() {__scope_1.v1 + "!";}});\n');
 	});
 
 	// it('should compile <html></html>', () => {

@@ -50,16 +50,12 @@ export default class App {
 		this.errors = [];
 		var root = doc.getFirstElementChild() as HtmlElement;
 		this.root = this._loadScope(root, this._loadProps(root), 0, prepro);
+		this.root.compile();
 		this._cleanupDom(root);
 	}
 
-	compile() {
-		// this.root.collectValues();
-		// this.root.patchCode();
-		this.root.compile();
-		var sb = new StringBuf();
-		this.root.output(sb);
-		return sb.toString();
+	generate() {
+		return this.root.output(new StringBuf()).toString();
 	}
 
 	//TODO: forbid reserved props (__*)
