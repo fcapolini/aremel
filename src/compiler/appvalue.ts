@@ -54,11 +54,11 @@ export class AppValue {
 		}
 		if (addAccessors) {
 			// get/set value
-			sb.add(`Object.defineProperty(__this, "${key}", {`
+			sb.add(`Object.defineProperty(__this,"${key}",{`
 				+ `get:function() {return __rt.get(${key})}, `
 				+ `set:function(v) {return __rt.set(${key}, v)}});\n`);
 			// get value object as `__value_<name>`
-			sb.add(`Object.defineProperty(__this, "__value_${key}", `
+			sb.add(`Object.defineProperty(__this,"__value_${key}",`
 				+ `{get:function() {return ${key}}});\n`);
 		}
 		return sb;
