@@ -60,6 +60,13 @@ export class AppValue {
 			// get value object as `__value_<name>`
 			sb.add(`Object.defineProperty(__this,"__value_${key}",`
 				+ `{get:function() {return ${key}}});\n`);
+			// link to references values
+			this.refs.forEach((ref) => {
+				var p = ref.split('.');
+				var observer = `__this.__value_${key}`;
+				var observed = `__scope_${p[0]}.__value_${p[1]}`;
+				sb.add(`__link({"o":${observer}, "v":function() {return ${observed};}});\n`);
+			});
 		}
 		return sb;
 	}

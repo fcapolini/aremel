@@ -52,15 +52,20 @@ export class AppScope {
 
 		// enter scope
 		if (this.parent) {
-			sb.add(`__f = function(__outer,__outer_get_data,__outer_data,__add,__link,__ev,__domGetter,__self) {\n`);
-			sb.add(`var __this = __scope_${this.id} = {__outer:__outer,__dom:__rt.page.nodes[${this.id}],__self:__self};\n`);
+			sb.add(`__f = function(__outer,__outer_get_data,__outer_data,__add,`
+				+ `__link,__ev,__domGetter,__self) {\n`);
+			sb.add(`var __this = __scope_${this.id} = {__outer:__outer,`
+				+ `__dom:__rt.page.nodes[${this.id}],__self:__self};\n`);
 		} else {
 			sb.add(`function(__rt) {\n`
+				+ `var __f;\n`
 				+ `function __nn(v) {return v != null ? v : "";}\n`
 				+ `function __add(v) {__rt.values.push(v); return v;}\n`
 				+ `function __link(l) {__rt.links.push(l);}\n`
 				+ `function __ev(h) {__rt.evhandlers.push(h);}\n`);
-			sb.add(`var __this = __scope_${this.id} = {__dom:__rt.page.nodes[${this.id}],__doc:__dom.ownerDocument};\n`);
+			sb.add(`var __this = __scope_${this.id} = `
+				+ `{__dom:__rt.page.nodes[${this.id}],`
+				+ `__doc:__dom.ownerDocument};\n`);
 		}
 
 		// values
@@ -69,17 +74,11 @@ export class AppScope {
 		keys = keys.sort((a, b) => (a > b ? 1 : (a < b ? -1 : 0)));
 		keys.forEach((k) => this.values.get(k)?.output(sb));
 
-		// child scopes
-		var scopeNames = new Array();
-		this.children.forEach(child => {if (child.aka) scopeNames.push(child.aka)});
-		if (scopeNames.length > 0) {
-			sb.add(`var ${scopeNames.join(',')};\n`);
-		}
 		this.children.forEach(child => {
 			child.output(sb);
 			sb.add('\n');
 			if (child.aka) {
-				sb.add(`${child.aka} = `);
+				sb.add(`__this.${child.aka} = `);
 			}
 			sb.add(`__f(__this,__get_data,data,__add,__link,__ev,__domGetter,__f);\n`);
 		});
