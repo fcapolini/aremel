@@ -15,8 +15,8 @@ describe("test server app", () => {
 		var app = new App(doc);
 		expect(app.root).toBeDefined();
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
-		expect(app.root.props.size).toBe(1);
-		expect(app.root.props.get(JS_AKA_VAR)?.val).toBe('page');
+		expect(app.root.values.size).toBe(0);
+		expect(app.root.aka).toBe('page');
 		expect(app.root.children.length).toBe(0);
 	});
 
@@ -25,8 +25,8 @@ describe("test server app", () => {
 		var app = new App(doc);
 		expect(app.root).toBeDefined();
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
-		expect(app.root.props.size).toBe(2);
-		expect(app.root.props.get('v1')?.val).toBe('a');
+		expect(app.root.values.size).toBe(1);
+		expect(app.root.values.get('v1')?.val).toBe('a');
 		expect(app.root.children.length).toBe(0);
 	});
 
@@ -35,8 +35,8 @@ describe("test server app", () => {
 		var app = new App(doc);
 		expect(app.root).toBeDefined();
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
-		expect(app.root.props.size).toBe(2);
-		expect(app.root.props.get('class_myPage')?.val).toBe('[[true]]');
+		expect(app.root.values.size).toBe(1);
+		expect(app.root.values.get('class_myPage')?.expr?.src).toBe('true');
 		expect(app.root.children.length).toBe(0);
 	});
 
@@ -45,8 +45,8 @@ describe("test server app", () => {
 		var app = new App(doc);
 		expect(app.root).toBeDefined();
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
-		expect(app.root.props.size).toBe(2);
-		expect(app.root.props.get('style_fontSize')?.val).toBe('1rm');
+		expect(app.root.values.size).toBe(1);
+		expect(app.root.values.get('style_fontSize')?.val).toBe('1rm');
 		expect(app.root.children.length).toBe(0);
 	});
 
@@ -55,8 +55,8 @@ describe("test server app", () => {
 		var app = new App(doc);
 		expect(app.root).toBeDefined();
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
-		expect(app.root.props.size).toBe(2);
-		expect(app.root.props.get('attr_dataName')?.val).toBe('jolly');
+		expect(app.root.values.size).toBe(1);
+		expect(app.root.values.get('attr_dataName')?.val).toBe('jolly');
 		expect(app.root.children.length).toBe(0);
 	});
 
@@ -65,8 +65,8 @@ describe("test server app", () => {
 		var app = new App(doc);
 		expect(app.root).toBeDefined();
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
-		expect(app.root.props.size).toBe(2);
-		expect(app.root.props.get('on_v1')?.val).toBe('[[console.log(v1)]]');
+		expect(app.root.values.size).toBe(1);
+		expect(app.root.values.get('on_v1')?.expr?.src).toBe('console.log(v1)');
 		expect(app.root.children.length).toBe(0);
 	});
 
@@ -75,8 +75,8 @@ describe("test server app", () => {
 		var app = new App(doc);
 		expect(app.root).toBeDefined();
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
-		expect(app.root.props.size).toBe(2);
-		expect(app.root.props.get('event_click')?.val).toBe('[[(ev) => console.log(ev)]]');
+		expect(app.root.values.size).toBe(1);
+		expect(app.root.values.get('event_click')?.expr?.src).toBe('(ev) => console.log(ev)');
 		expect(app.root.children.length).toBe(0);
 	});
 	
@@ -85,108 +85,120 @@ describe("test server app", () => {
 		var app = new App(doc);
 		expect(app.root).toBeDefined();
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
-		expect(app.root.props.size).toBe(2);
-		expect(app.root.props.get(JS_AUTOHIDE_CLASS)?.val).toBe('[[true]]');
+		expect(app.root.values.size).toBe(1);
+		expect(app.root.values.get(JS_AUTOHIDE_CLASS)?.expr?.src).toBe('true');
 		expect(app.root.children.length).toBe(0);
 	});
 	
-	it('should compile <html></html>', () => {
-		var doc = HtmlParser.parse('<html></html>');
+	it('should load <html><body :v1="a"/></html>', () => {
+		var doc = HtmlParser.parse('<html><body :v1="a"/></html>');
 		var app = new App(doc);
-		var js = app.compile();
-		expect(js).toBe(normalizeText(`function(__rt) {
-			function __nn(v) {return v != null ? v : \"\"}
-			function __add(v) {__rt.values.push(v); return v;}
-			function __link(l) {__rt.links.push(l);}
-			function __ev(h) {__rt.evhandlers.push(h);}
-			function __domGetter(id) {return __rt.page.nodes[id];}
-			var __f, __get_data = null, data = null;
-			var __this = {};
-			var __dom = __this.__dom = __rt.page.nodes[0];
-			var __doc = __this.__doc = __dom.ownerDocument;
-			var __aka = __this.__aka = \"page\";
-			var __id = __this.__id = 0;
-			return __this;
-		}`));
+		expect(app.root).toBeDefined();
+		expect(app.root.dom).toBe(doc.getFirstElementChild());
+		expect(app.root.values.size).toBe(0);
+		expect(app.root.children.length).toBe(1);
+		var body = app.root.children[0];
+		expect(body.aka).toBe('body');
+		expect(body.values.get('v1')?.val).toBe('a');
 	});
 
-	it('should compile <html :v1="1"></html>', () => {
-		var doc = HtmlParser.parse('<html :v1="1"></html>');
-		var app = new App(doc);
-		var js = app.compile();
-		expect(js).toBe(normalizeText(`function(__rt) {
-			function __nn(v) {return v != null ? v : \"\"}
-			function __add(v) {__rt.values.push(v); return v;}
-			function __link(l) {__rt.links.push(l);}
-			function __ev(h) {__rt.evhandlers.push(h);}
-			function __domGetter(id) {return __rt.page.nodes[id];}
-			var __f, __get_data = null, data = null;
-			var __this = {};
-			var __dom = __this.__dom = __rt.page.nodes[0];
-			var __doc = __this.__doc = __dom.ownerDocument;
-			var __aka = __this.__aka = \"page\";
-			var __id = __this.__id = 0;\n` +
-			//
-			// start of v1 code
-			//
-			// 1) declaration
-			`var v1,__get_v1,__set_v1;\n` +
-			// 2) initialization
-			`v1 = __this.v1 = __add({v:"1"});\n` +
-			// 3) closure accessors
-			`__get_v1 = function() {return __rt.get(v1)}
-			__set_v1 = function(v) {return __rt.set(v1, v)}\n` +
-			// 4) object accessors
-			`Object.defineProperty(__this, "v1", {get:__get_v1, set:__set_v1});
-			Object.defineProperty(__this, "__value_v1", {get:function() {return v1}});\n` +
-			//
-			// end of v1 code
-			//
-			`return __this;
-		}`));
-	});
+	// it('should compile <html></html>', () => {
+	// 	var doc = HtmlParser.parse('<html></html>');
+	// 	var app = new App(doc);
+	// 	var js = app.compile();
+	// 	expect(js).toBe(normalizeText(`function(__rt) {
+	// 		function __nn(v) {return v != null ? v : \"\"}
+	// 		function __add(v) {__rt.values.push(v); return v;}
+	// 		function __link(l) {__rt.links.push(l);}
+	// 		function __ev(h) {__rt.evhandlers.push(h);}
+	// 		function __domGetter(id) {return __rt.page.nodes[id];}
+	// 		var __f, __get_data = null, data = null;
+	// 		var __this = {};
+	// 		var __dom = __this.__dom = __rt.page.nodes[0];
+	// 		var __doc = __this.__doc = __dom.ownerDocument;
+	// 		var __aka = __this.__aka = \"page\";
+	// 		var __id = __this.__id = 0;
+	// 		return __this;
+	// 	}`));
+	// });
 
-	it('should compile <html><head></head><body></body></html>', () => {
-		var doc = HtmlParser.parse('<html><head></head><body></body></html>');
-		var app = new App(doc);
-		expect(app.root.children.length).toBe(2);
-		expect(app.root.aka).toBe('page');
-		expect(app.root.children[0].aka).toBe('head');
-		expect(app.root.children[1].aka).toBe('body');
-		var js = app.compile();
-		expect(js).toBe(normalizeText(`function(__rt) {
-			function __nn(v) {return v != null ? v : ""}
-			function __add(v) {__rt.values.push(v); return v;}
-			function __link(l) {__rt.links.push(l);}
-			function __ev(h) {__rt.evhandlers.push(h);}
-			function __domGetter(id) {return __rt.page.nodes[id];}
-			var __f, __get_data = null, data = null;
-			var __this = {};
-			var __dom = __this.__dom = __rt.page.nodes[0];
-			var __doc = __this.__doc = __dom.ownerDocument;
-			var __aka = __this.__aka = \"page\";
-			var __id = __this.__id = 0;
-			var head,__get_head,body,__get_body;
-			__get_head = function() {return head};
-			__get_body = function() {return body};
-			__f = function(__outer,__outer_get_data,__outer_data,__add,__link,__ev,__domGetter,__self) {
-				var __dom = __domGetter(1);
-				var __this = {__outer:__outer,__dom:__dom,__self:__self};
-				var __aka = __this.__aka = "head";
-				var __id = __this.__id = 1;
-				return __this;
-			}
-			head = __this.head = __f(__this,__get_data,data,__add,__link,__ev,__domGetter,__f);
-			__f = function(__outer,__outer_get_data,__outer_data,__add,__link,__ev,__domGetter,__self) {
-				var __dom = __domGetter(2);
-				var __this = {__outer:__outer,__dom:__dom,__self:__self};
-				var __aka = __this.__aka = "body";
-				var __id = __this.__id = 2;
-				return __this;
-			}
-			body = __this.body = __f(__this,__get_data,data,__add,__link,__ev,__domGetter,__f);
-			return __this;
-		}`));
-	});
+	// it('should compile <html :v1="1"></html>', () => {
+	// 	var doc = HtmlParser.parse('<html :v1="1"></html>');
+	// 	var app = new App(doc);
+	// 	var js = app.compile();
+	// 	expect(js).toBe(normalizeText(`function(__rt) {
+	// 		function __nn(v) {return v != null ? v : \"\"}
+	// 		function __add(v) {__rt.values.push(v); return v;}
+	// 		function __link(l) {__rt.links.push(l);}
+	// 		function __ev(h) {__rt.evhandlers.push(h);}
+	// 		function __domGetter(id) {return __rt.page.nodes[id];}
+	// 		var __f, __get_data = null, data = null;
+	// 		var __this = {};
+	// 		var __dom = __this.__dom = __rt.page.nodes[0];
+	// 		var __doc = __this.__doc = __dom.ownerDocument;
+	// 		var __aka = __this.__aka = \"page\";
+	// 		var __id = __this.__id = 0;\n` +
+	// 		//
+	// 		// start of v1 code
+	// 		//
+	// 		// 1) declaration
+	// 		`var v1,__get_v1,__set_v1;\n` +
+	// 		// 2) initialization
+	// 		`v1 = __this.v1 = __add({v:"1"});\n` +
+	// 		// 3) closure accessors
+	// 		`__get_v1 = function() {return __rt.get(v1)}
+	// 		__set_v1 = function(v) {return __rt.set(v1, v)}\n` +
+	// 		// 4) object accessors
+	// 		`Object.defineProperty(__this, "v1", {get:__get_v1, set:__set_v1});
+	// 		Object.defineProperty(__this, "__value_v1", {get:function() {return v1}});\n` +
+	// 		//
+	// 		// end of v1 code
+	// 		//
+	// 		`return __this;
+	// 	}`));
+	// });
+
+	// it('should compile <html><head></head><body></body></html>', () => {
+	// 	var doc = HtmlParser.parse('<html><head></head><body></body></html>');
+	// 	var app = new App(doc);
+	// 	expect(app.root.children.length).toBe(2);
+	// 	expect(app.root.aka).toBe('page');
+	// 	expect(app.root.children[0].aka).toBe('head');
+	// 	expect(app.root.children[1].aka).toBe('body');
+	// 	var js = app.compile();
+	// 	expect(js).toBe(normalizeText(`function(__rt) {
+	// 		function __nn(v) {return v != null ? v : ""}
+	// 		function __add(v) {__rt.values.push(v); return v;}
+	// 		function __link(l) {__rt.links.push(l);}
+	// 		function __ev(h) {__rt.evhandlers.push(h);}
+	// 		function __domGetter(id) {return __rt.page.nodes[id];}
+	// 		var __f, __get_data = null, data = null;
+	// 		var __this = {};
+	// 		var __dom = __this.__dom = __rt.page.nodes[0];
+	// 		var __doc = __this.__doc = __dom.ownerDocument;
+	// 		var __aka = __this.__aka = \"page\";
+	// 		var __id = __this.__id = 0;
+	// 		var head,__get_head,body,__get_body;
+	// 		__get_head = function() {return head};
+	// 		__get_body = function() {return body};
+	// 		__f = function(__outer,__outer_get_data,__outer_data,__add,__link,__ev,__domGetter,__self) {
+	// 			var __dom = __domGetter(1);
+	// 			var __this = {__outer:__outer,__dom:__dom,__self:__self};
+	// 			var __aka = __this.__aka = "head";
+	// 			var __id = __this.__id = 1;
+	// 			return __this;
+	// 		}
+	// 		head = __this.head = __f(__this,__get_data,data,__add,__link,__ev,__domGetter,__f);
+	// 		__f = function(__outer,__outer_get_data,__outer_data,__add,__link,__ev,__domGetter,__self) {
+	// 			var __dom = __domGetter(2);
+	// 			var __this = {__outer:__outer,__dom:__dom,__self:__self};
+	// 			var __aka = __this.__aka = "body";
+	// 			var __id = __this.__id = 2;
+	// 			return __this;
+	// 		}
+	// 		body = __this.body = __f(__this,__get_data,data,__add,__link,__ev,__domGetter,__f);
+	// 		return __this;
+	// 	}`));
+	// });
 
 });

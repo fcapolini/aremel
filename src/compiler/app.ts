@@ -1,4 +1,5 @@
 import { AppNode } from "./appnode";
+import { AppScope } from "./appscope";
 import { ELEMENT_NODE, HtmlDocument, HtmlElement, HtmlNode, HtmlPos, HtmlText, TEXT_NODE } from "./htmldom";
 import Preprocessor from "./preprocessor";
 import { makeCamelName, StringBuf } from "./util";
@@ -32,6 +33,8 @@ export const CSS_AUTOHIDE_CLASS = '__cerere-autohide';
 export const DOM_ID_ATTR = 'data-cerere';
 export const DOM_CLONEINDEX_ATTR = 'data-cerere-i';
 
+export const nonValues = new Set([JS_AKA_VAR]);
+
 const attrAliases = new Map<string,string>();
 attrAliases.set(DOM_HIDDEN_ATTR, DOM_DYNAMIC_ATTR_PREFIX + JS_AUTOHIDE_CLASS);
 
@@ -39,20 +42,21 @@ export default class App {
 	doc: HtmlDocument;
 	nodes: Array<HtmlNode>;
 	errors: Array<any>;
-	root: AppNode;
+	root: AppScope;
 
 	constructor(doc:HtmlDocument, prepro?:Preprocessor) {
 		this.doc = doc;
 		this.nodes = [];
 		this.errors = [];
 		var root = doc.getFirstElementChild() as HtmlElement;
-		this.root = this._loadNode(root, this._loadProps(root), 0, prepro);
+		this.root = this._loadScope(root, this._loadProps(root), 0, prepro);
 		this._cleanupDom(root);
 	}
 
 	compile() {
-		this.root.collectValues();
-		this.root.patchCode();
+		// this.root.collectValues();
+		// this.root.patchCode();
+		this.root.compile();
 		var sb = new StringBuf();
 		this.root.output(sb);
 		return sb.toString();
@@ -123,11 +127,40 @@ export default class App {
 		return ret;
 	}
 	
-	_loadNode(e:HtmlElement, props:Map<string,Prop>,
-				nesting:number, prepro?:Preprocessor, parent?:AppNode): AppNode {
+	// _loadNode(e:HtmlElement, props:Map<string,Prop>,
+	// 			nesting:number, prepro?:Preprocessor, parent?:AppNode): AppNode {
+	// 	var id = this.nodes.length;
+	// 	var aka = props.get(JS_AKA_VAR)?.val;
+	// 	var ret = new AppNode(this, e, id, props, aka, prepro, parent);
+	// 	this.nodes.push(e);
+
+	// 	var that = this;
+	// 	function f(e:HtmlElement) {
+	// 		for (var n of e.children) {
+	// 			if (n.nodeType === ELEMENT_NODE) {
+	// 				var p = that._loadProps(n as HtmlElement);
+	// 				if (p.size > 0) {
+	// 					that._loadNode(n as HtmlElement, p, nesting + 1, prepro, ret);
+	// 				} else {
+	// 					f(n as HtmlElement);
+	// 				}
+	// 			} else if (n.nodeType === TEXT_NODE) {
+	// 				if ((n as HtmlText).nodeValue.indexOf(DOM_EXP_MARKER1) >= 0) {
+	// 					ret.texts.push(n as HtmlText);
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// 	f(e);
+
+	// 	return ret;
+	// }
+
+	_loadScope(e:HtmlElement, props:Map<string,Prop>,
+				nesting:number, prepro?:Preprocessor, parent?:AppScope): AppScope {
 		var id = this.nodes.length;
 		var aka = props.get(JS_AKA_VAR)?.val;
-		var ret = new AppNode(this, e, id, props, aka, prepro, parent);
+		var ret = new AppScope(id, e, props, prepro, parent);
 		this.nodes.push(e);
 
 		var that = this;
@@ -136,7 +169,7 @@ export default class App {
 				if (n.nodeType === ELEMENT_NODE) {
 					var p = that._loadProps(n as HtmlElement);
 					if (p.size > 0) {
-						that._loadNode(n as HtmlElement, p, nesting + 1, prepro, ret);
+						that._loadScope(n as HtmlElement, p, nesting + 1, prepro, ret);
 					} else {
 						f(n as HtmlElement);
 					}

@@ -8,8 +8,8 @@ export interface Expr {
 	lineNr?: number,
 }
 
-export function isDynamic(s:string) {
-	return s.indexOf(DOM_EXP_MARKER1) >= 0;
+export function isDynamic(s:any) {
+	return (s && typeof s === 'string' && s.indexOf(DOM_EXP_MARKER1) >= 0);
 }
 
 export function parseExpr(s:string, origin?:string, lineNr=1): Expr {

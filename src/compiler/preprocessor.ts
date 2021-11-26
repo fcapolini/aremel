@@ -20,7 +20,7 @@ interface Definition {
 	ext?: Definition,
 }
 
-interface SourcePos {
+export interface SourcePos {
 	fname: string,
 	line: number,
 	col: number,
