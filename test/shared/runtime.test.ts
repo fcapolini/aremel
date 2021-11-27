@@ -1,6 +1,6 @@
 import App from "../../src/compiler/app";
 import HtmlParser from "../../src/compiler/htmlparser";
-import { start } from "../../src/shared/runtime";
+import { make } from "../../src/shared/runtime";
 
 describe("test runtime", () => {
 
@@ -8,7 +8,7 @@ describe("test runtime", () => {
 		var doc = HtmlParser.parse('<html><body/></html>');
 		var app = new App(doc);
 		var page = app.output();
-		var rt = start(page);
+		var rt = make(page);
 		var root = eval(`(${page.script})(rt)`);
 		expect(root.__dom.tagName).toBe('HTML');
 	});
@@ -17,13 +17,16 @@ describe("test runtime", () => {
 		var doc = HtmlParser.parse('<html :v1=[[1]]><body :v2=[[v1 * 2]]/></html>');
 		var app = new App(doc);
 		var page = app.output();
-		var rt = start(page);
+		var rt = make(page);
 		var root = eval(`(${page.script})(rt)`);
+		rt.start();
 		expect(root.__dom.tagName).toBe('HTML');
 		var v1 = root.v1;
 		expect(v1).toBe(1);
 		var v2 = root.body.v2;
 		expect(v2).toBe(2);
+		root.v1++;
+		expect(root.body.v2).toBe(4);
 	});
 
 });
