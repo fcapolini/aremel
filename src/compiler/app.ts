@@ -1,4 +1,5 @@
-import { AppNode } from "./appnode";
+import { DomDocument } from "../shared/dom";
+import { PageObj } from "../shared/runtime";
 import { AppScope } from "./appscope";
 import { ELEMENT_NODE, HtmlDocument, HtmlElement, HtmlNode, HtmlPos, HtmlText, TEXT_NODE } from "./htmldom";
 import Preprocessor from "./preprocessor";
@@ -54,24 +55,14 @@ export default class App {
 		this._cleanupDom(root);
 	}
 
-	output() {
-		// return this.root.output(new StringBuf()).toString();
+	output(): PageObj {
 		var sb = new StringBuf();
-
-		// enter app
-		// sb.add(`function(__rt) {\n`);
-		// sb.add(`function __nn(v) {return v != null ? v : ""}\n`);
-		// sb.add(`function __add(v) {__rt.values.push(v); return v;}\n`);
-		// sb.add(`function __link(l) {__rt.links.push(l);}\n`);
-		// sb.add(`function __ev(h) {__rt.evhandlers.push(h);}\n`);
-
-		// scopes
 		this.root.output(sb);
-
-		// exit app
-		// sb.add(`}`);
-
-		return sb.toString();
+		return {
+			doc: this.doc as DomDocument,
+			nodes: this.nodes,
+			script: sb.toString()
+		};
 	}
 
 	//TODO: forbid reserved props (__*)

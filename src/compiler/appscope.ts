@@ -54,18 +54,21 @@ export class AppScope {
 		if (this.parent) {
 			sb.add(`__f = function(__outer,__outer_get_data,__outer_data,__add,`
 				+ `__link,__ev,__domGetter,__self) {\n`);
-			sb.add(`var __this = __scope_${this.id} = {__outer:__outer,`
-				+ `__dom:__rt.page.nodes[${this.id}],__self:__self};\n`);
+			sb.add(`var __this, __scope_${this.id};\n`);
+			sb.add(`__this = __scope_${this.id} = {__outer:__outer,`
+				+ `__dom:__domGetter(${this.id}),__self:__self};\n`);
 		} else {
 			sb.add(`function(__rt) {\n`
-				+ `var __f;\n`
+				+ `var __f, __get_data = null, data = null;\n`
 				+ `function __nn(v) {return v != null ? v : "";}\n`
 				+ `function __add(v) {__rt.values.push(v); return v;}\n`
 				+ `function __link(l) {__rt.links.push(l);}\n`
-				+ `function __ev(h) {__rt.evhandlers.push(h);}\n`);
-			sb.add(`var __this = __scope_${this.id} = `
-				+ `{__dom:__rt.page.nodes[${this.id}],`
-				+ `__doc:__dom.ownerDocument};\n`);
+				+ `function __ev(h) {__rt.evhandlers.push(h);}\n`
+				+ `function __domGetter(id) {return __rt.page.nodes[id];}\n`);
+			sb.add(`var __this, __scope_${this.id};\n`);
+			sb.add(`__this = __scope_${this.id} = `
+				+ `{__dom:__domGetter(${this.id}),`
+				+ `__doc:__rt.page.doc};\n`);
 		}
 
 		// values

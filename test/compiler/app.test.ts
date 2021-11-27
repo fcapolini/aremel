@@ -126,16 +126,19 @@ describe("test server app", () => {
 		var v2code = v2.output(new StringBuf(), false).toString();
 		expect(v2code).toBe('__this.v2 = __add({fn:function() {__scope_1.v1 + "!";}});\n');
 
-		expect (app.root.output(new StringBuf()).toString()).toBe(normalizeText(
+		expect (app.output().script).toBe(normalizeText(
 		`function(__rt) {
-			var __f;
+			var __f, __get_data = null, data = null;
 			function __nn(v) {return v != null ? v : "";}
 			function __add(v) {__rt.values.push(v); return v;}
 			function __link(l) {__rt.links.push(l);}
 			function __ev(h) {__rt.evhandlers.push(h);}
-			var __this = __scope_0 = {__dom:__rt.page.nodes[0],__doc:__dom.ownerDocument};
+			function __domGetter(id) {return __rt.page.nodes[id];}
+			var __this, __scope_0;
+			__this = __scope_0 = {__dom:__rt.page.nodes[0],__doc:__rt.page.doc};
 			__f = function(__outer,__outer_get_data,__outer_data,__add,__link,__ev,__domGetter,__self) {
-				var __this = __scope_1 = {__outer:__outer,__dom:__rt.page.nodes[1],__self:__self};
+				var __this, __scope_1;
+				__this = __scope_1 = {__outer:__outer,__dom:__rt.page.nodes[1],__self:__self};
 				__this.v1 = __add({v:"a"});
 				Object.defineProperty(__this,"v1",{get:function() {return __rt.get(v1)}, set:function(v) {return __rt.set(v1, v)}});
 				Object.defineProperty(__this,"__value_v1",{get:function() {return v1}});
