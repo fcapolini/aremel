@@ -1,6 +1,6 @@
 import { BabelFileResult, PluginObj, PluginPass, transformSync } from '@babel/core';
 import { NodePath } from '@babel/traverse';
-import { callExpression, identifier, memberExpression } from "@babel/types";
+import { ExpressionStatement, identifier, memberExpression, Program, returnStatement } from "@babel/types";
 import { AppScope } from "./appscope";
 import { Expr, isDynamic, parseExpr } from "./expr";
 import { SourcePos } from "./preprocessor";
@@ -74,7 +74,7 @@ export class AppValue {
 	_patchExpr(expr:Expr, rpatchData=false): string {
 		var locals = new Set(['null', 'true', 'false', 'console', 'document', 'window']);
 		this._collectLocalIds(expr, locals);
-		const output = this._patchIds(expr, locals);
+		const output = this._patchCode(expr, locals);
 		expr.code = output?.code ? output?.code : '';
 		return expr.code;
 	}
@@ -102,7 +102,7 @@ export class AppValue {
 	
 	// turns accesses to non-local, non '__' identifiers into fields of the
 	// relevant `__scope_<id>` object
-	_patchIds(expr:Expr,
+	_patchCode(expr:Expr,
 			locals:Set<string>): BabelFileResult | null {
 		var that = this;
 		return transformSync(expr.src, {
@@ -112,7 +112,7 @@ export class AppValue {
 			},
 			retainLines: true,
 			plugins: [
-				function myCustomPlugin(): PluginObj<PluginPass> {
+				function patchIds(): PluginObj<PluginPass> {
 					return {
 						visitor: {
 							Identifier(path:NodePath) {
@@ -124,6 +124,26 @@ export class AppValue {
 							},
 						},
 					};
+				},
+				function addReturn(): PluginObj<PluginPass> {
+					return {
+						visitor: {
+							ExpressionStatement(path:NodePath) {
+								if (path.isExpressionStatement() &&
+										path.parentPath.isProgram()) {
+									var node:ExpressionStatement = path.node;
+									var program = path.parent as Program;
+									var i = program.body.indexOf(node);
+									if (i == (program.body.length - 1)) {
+										// console.log(node);
+										path.replaceWith(returnStatement(
+											node.expression
+										));
+									}
+								}
+							}
+						}
+					}
 				},
 			],
 		});

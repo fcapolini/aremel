@@ -20,8 +20,10 @@ describe("test runtime", () => {
 		var rt = start(page);
 		var root = eval(`(${page.script})(rt)`);
 		expect(root.__dom.tagName).toBe('HTML');
-		// var v = root.v1;
-		// expect(v).toBe(1);
+		var v1 = root.v1;
+		expect(v1).toBe(1);
+		var v2 = root.body.v2;
+		expect(v2).toBe(2);
 	});
 
 });

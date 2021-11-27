@@ -124,7 +124,7 @@ describe("test server app", () => {
 
 		var v2 = body.values.get('v2') as AppValue;
 		var v2code = v2.output(new StringBuf(), false).toString();
-		expect(v2code).toBe('var v2 = __this.v2 = __add({fn:function() {__scope_1.v1 + "!";}});\n');
+		expect(v2code).toBe('var v2 = __this.v2 = __add({fn:function() {return __scope_1.v1 + "!";}});\n');
 
 		expect (app.output().script).toBe(normalizeText(
 		`function(__rt) {
@@ -142,7 +142,7 @@ describe("test server app", () => {
 				var v1 = __this.v1 = __add({v:"a"});
 				Object.defineProperty(__this,"v1",{get:function() {return __rt.get(v1)}, set:function(v) {return __rt.set(v1, v)}});
 				Object.defineProperty(__this,"__value_v1",{get:function() {return v1}});
-				var v2 = __this.v2 = __add({fn:function() {__scope_1.v1 + "!";}});
+				var v2 = __this.v2 = __add({fn:function() {return __scope_1.v1 + "!";}});
 				Object.defineProperty(__this,"v2",{get:function() {return __rt.get(v2)}, set:function(v) {return __rt.set(v2, v)}});
 				Object.defineProperty(__this,"__value_v2",{get:function() {return v2}});
 				__link({"o":__this.__value_v2, "v":function() {return __scope_1.__value_v1;}});
@@ -166,13 +166,13 @@ describe("test server app", () => {
 			function __domGetter(id) {return __rt.page.nodes[id];}
 			var __this, __scope_0;
 			__this = __scope_0 = {__dom:__domGetter(0),__doc:__rt.page.doc};
-			var v1 = __this.v1 = __add({fn:function() {1;}});
+			var v1 = __this.v1 = __add({fn:function() {return 1;}});
 			Object.defineProperty(__this,\"v1\",{get:function() {return __rt.get(v1)}, set:function(v) {return __rt.set(v1, v)}});
 			Object.defineProperty(__this,\"__value_v1\",{get:function() {return v1}});
 			__f = function(__outer,__outer_get_data,__outer_data,__add,__link,__ev,__domGetter,__self) {
 				var __this, __scope_1;
 				__this = __scope_1 = {__outer:__outer,__dom:__domGetter(1),__self:__self};
-				var v2 = __this.v2 = __add({fn:function() {__scope_0.v1 * 2;}});
+				var v2 = __this.v2 = __add({fn:function() {return __scope_0.v1 * 2;}});
 				Object.defineProperty(__this,\"v2\",{get:function() {return __rt.get(v2)}, set:function(v) {return __rt.set(v2, v)}});
 				Object.defineProperty(__this,\"__value_v2\",{get:function() {return v2}});
 				__link({\"o\":__this.__value_v2, \"v\":function() {return __scope_0.__value_v1;}});
