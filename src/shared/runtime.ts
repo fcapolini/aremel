@@ -107,7 +107,7 @@ export function start(page:PageObj, cb?:()=>void): RuntimeObj {
 				try {
 					value.v = value.fn();
 				} catch (ignored:any) {
-					//TODO
+					//FIXME: log runtime errors
 				}
 			}
 			if (!areEqual(value.v, ret)) {

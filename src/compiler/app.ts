@@ -105,7 +105,7 @@ export default class App {
 				ret.set(key, {key:key, val:val, pos:attr.pos2});
 			}
 		}
-		switch (e.name) {
+		switch (e.tagName) {
 			case 'HTML':
 				ret.set(DOM_AKA_ATTR, {key:DOM_AKA_ATTR, val:'page', pos:e.pos});
 				break;

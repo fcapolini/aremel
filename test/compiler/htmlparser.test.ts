@@ -34,12 +34,12 @@ describe("test preprocessor", () => {
 		try {
 			var doc = HtmlParser.parse('<html></html>');
 			expect(doc).toBeTruthy();
-			expect(doc.name).toBe('#DOCUMENT');
+			expect(doc.tagName).toBe('#DOCUMENT');
 			expect(doc.attributes.size).toBe(0);
 			expect(doc.children.length).toBe(1);
 			expect(doc.children[0].nodeType).toBe(ELEMENT_NODE);
 			var e = doc.children[0] as HtmlElement;
-			expect(e.name).toBe('HTML');
+			expect(e.tagName).toBe('HTML');
 			expect(e.attributes.size).toBe(0);
 			expect(e.children.length).toBe(0);
 			expect(doc.toString()).toBe('<html></html>');
@@ -54,12 +54,12 @@ describe("test preprocessor", () => {
 		try {
 			var doc = HtmlParser.parse('<html lang="en"></html>');
 			expect(doc).toBeTruthy();
-			expect(doc.name).toBe('#DOCUMENT');
+			expect(doc.tagName).toBe('#DOCUMENT');
 			expect(doc.attributes.size).toBe(0);
 			expect(doc.children.length).toBe(1);
 			expect(doc.children[0].nodeType).toBe(ELEMENT_NODE);
 			var e = doc.children[0] as HtmlElement;
-			expect(e.name).toBe('HTML');
+			expect(e.tagName).toBe('HTML');
 			expect(e.attributes.size).toBe(1);
 			expect(e.getAttribute('lang')).toBe('en');
 			expect(e.children.length).toBe(0);
@@ -98,12 +98,12 @@ describe("test preprocessor", () => {
 		try {
 			var doc = HtmlParser.parse('<html :lang="en"></html>');
 			expect(doc).toBeTruthy();
-			expect(doc.name).toBe('#DOCUMENT');
+			expect(doc.tagName).toBe('#DOCUMENT');
 			expect(doc.attributes.size).toBe(0);
 			expect(doc.children.length).toBe(1);
 			expect(doc.children[0].nodeType).toBe(ELEMENT_NODE);
 			var e = doc.children[0] as HtmlElement;
-			expect(e.name).toBe('HTML');
+			expect(e.tagName).toBe('HTML');
 			expect(e.attributes.size).toBe(1);
 			expect(e.getAttribute(':lang')).toBe('en');
 			expect(e.children.length).toBe(0);

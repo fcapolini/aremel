@@ -120,11 +120,11 @@ describe("test server app", () => {
 
 		var v1 = body.values.get('v1') as AppValue;
 		var v1code = v1.output(new StringBuf(), false).toString();
-		expect(v1code).toBe('__this.v1 = __add({v:"a"});\n');
+		expect(v1code).toBe('var v1 = __this.v1 = __add({v:"a"});\n');
 
 		var v2 = body.values.get('v2') as AppValue;
 		var v2code = v2.output(new StringBuf(), false).toString();
-		expect(v2code).toBe('__this.v2 = __add({fn:function() {__scope_1.v1 + "!";}});\n');
+		expect(v2code).toBe('var v2 = __this.v2 = __add({fn:function() {__scope_1.v1 + "!";}});\n');
 
 		expect (app.output().script).toBe(normalizeText(
 		`function(__rt) {
@@ -135,17 +135,47 @@ describe("test server app", () => {
 			function __ev(h) {__rt.evhandlers.push(h);}
 			function __domGetter(id) {return __rt.page.nodes[id];}
 			var __this, __scope_0;
-			__this = __scope_0 = {__dom:__rt.page.nodes[0],__doc:__rt.page.doc};
+			__this = __scope_0 = {__dom:__domGetter(0),__doc:__rt.page.doc};
 			__f = function(__outer,__outer_get_data,__outer_data,__add,__link,__ev,__domGetter,__self) {
 				var __this, __scope_1;
-				__this = __scope_1 = {__outer:__outer,__dom:__rt.page.nodes[1],__self:__self};
-				__this.v1 = __add({v:"a"});
+				__this = __scope_1 = {__outer:__outer,__dom:__domGetter(1),__self:__self};
+				var v1 = __this.v1 = __add({v:"a"});
 				Object.defineProperty(__this,"v1",{get:function() {return __rt.get(v1)}, set:function(v) {return __rt.set(v1, v)}});
 				Object.defineProperty(__this,"__value_v1",{get:function() {return v1}});
-				__this.v2 = __add({fn:function() {__scope_1.v1 + "!";}});
+				var v2 = __this.v2 = __add({fn:function() {__scope_1.v1 + "!";}});
 				Object.defineProperty(__this,"v2",{get:function() {return __rt.get(v2)}, set:function(v) {return __rt.set(v2, v)}});
 				Object.defineProperty(__this,"__value_v2",{get:function() {return v2}});
 				__link({"o":__this.__value_v2, "v":function() {return __scope_1.__value_v1;}});
+				return __this;
+			}
+			__this.body = __f(__this,__get_data,data,__add,__link,__ev,__domGetter,__f);
+			return __this;
+		}`));
+	});
+
+	it('should load <html :v1=[[1]]><body :v2=[[v1 * 2]]/></html>', () => {
+		var doc = HtmlParser.parse('<html :v1=[[1]]><body :v2=[[v1 * 2]]/></html>');
+		var app = new App(doc);
+		expect (app.output().script).toBe(normalizeText(
+		`function(__rt) {
+			var __f, __get_data = null, data = null;
+			function __nn(v) {return v != null ? v : \"\";}
+			function __add(v) {__rt.values.push(v); return v;}
+			function __link(l) {__rt.links.push(l);}
+			function __ev(h) {__rt.evhandlers.push(h);}
+			function __domGetter(id) {return __rt.page.nodes[id];}
+			var __this, __scope_0;
+			__this = __scope_0 = {__dom:__domGetter(0),__doc:__rt.page.doc};
+			var v1 = __this.v1 = __add({fn:function() {1;}});
+			Object.defineProperty(__this,\"v1\",{get:function() {return __rt.get(v1)}, set:function(v) {return __rt.set(v1, v)}});
+			Object.defineProperty(__this,\"__value_v1\",{get:function() {return v1}});
+			__f = function(__outer,__outer_get_data,__outer_data,__add,__link,__ev,__domGetter,__self) {
+				var __this, __scope_1;
+				__this = __scope_1 = {__outer:__outer,__dom:__domGetter(1),__self:__self};
+				var v2 = __this.v2 = __add({fn:function() {__scope_0.v1 * 2;}});
+				Object.defineProperty(__this,\"v2\",{get:function() {return __rt.get(v2)}, set:function(v) {return __rt.set(v2, v)}});
+				Object.defineProperty(__this,\"__value_v2\",{get:function() {return v2}});
+				__link({\"o\":__this.__value_v2, \"v\":function() {return __scope_0.__value_v1;}});
 				return __this;
 			}
 			__this.body = __f(__this,__get_data,data,__add,__link,__ev,__domGetter,__f);

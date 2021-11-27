@@ -55,7 +55,7 @@ export const VOID_ELEMENTS = new Set(['AREA', 'BASE', 'BR', 'COL', 'EMBED',
 ]);
 
 export class HtmlElement extends HtmlNode {
-	name: string;
+	tagName: string;
 	attributes: Map<string, HtmlAttribute>;
 	children: Array<HtmlNode>;
 	selfclose: boolean;
@@ -67,7 +67,7 @@ export class HtmlElement extends HtmlNode {
 
 	constructor(doc:HtmlDocument | undefined, parent:HtmlElement|undefined, name:string, i1:number, i2:number, origin:number) {
 		super(doc, parent, ELEMENT_NODE, i1, i2, origin);
-		this.name = name.toUpperCase();
+		this.tagName = name.toUpperCase();
 		this.attributes = new Map();
 		this.children = [];
 		this.selfclose = false;
@@ -125,7 +125,7 @@ export class HtmlElement extends HtmlNode {
 	}
 
 	isVoid(): boolean {
-		return VOID_ELEMENTS.has(this.name);
+		return VOID_ELEMENTS.has(this.tagName);
 	}
 
 	getFirstElementChild(): HtmlElement | undefined {
@@ -169,7 +169,7 @@ export class HtmlElement extends HtmlNode {
 	}
 
 	override output(sb:StringBuf, sort=false): StringBuf {
-		var name = this.name.toLowerCase();
+		var name = this.tagName.toLowerCase();
 		sb.add('<'); sb.add(name);
 
 		var keys = this.getAttributeNames();

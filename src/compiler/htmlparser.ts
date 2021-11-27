@@ -40,13 +40,13 @@ export default class HtmlParser {
 				if (closure) {
 					var name = s.substring(i1, i2).toUpperCase();
 					if (s.charCodeAt(i2) == '>'.charCodeAt(0)) {
-						if (name == p.name) {
+						if (name == p.tagName) {
 							i1 = i2 + 1;
 							closetag = name;
 							break;
 						} else {
 							throw new HtmlException(
-								`Found </${name}> instead of </${p.name}>`,
+								`Found </${name}> instead of </${p.tagName}>`,
 								this.origins[origin], i1, s
 							);
 						}
@@ -75,8 +75,8 @@ export default class HtmlParser {
 				i3 = i1 = i2;
 			}
 		}
-		if (!p.name.startsWith('#') && closetag !== p.name) {
-			throw new HtmlException(`expected </${p.name}>`,
+		if (!p.tagName.startsWith('#') && closetag !== p.tagName) {
+			throw new HtmlException(`expected </${p.tagName}>`,
 									this.origins[origin], i1, s);
 		}
 		return i1;
@@ -98,9 +98,9 @@ export default class HtmlParser {
 			);
 		}
 		i1++;
-		if (!selfclose && !VOID_ELEMENTS.has(e.name)) {
-			if (SKIP_CONTENT_TAGS.has(e.name)) {
-				var res = this.skipContent(e.name, s, i1, origin);
+		if (!selfclose && !VOID_ELEMENTS.has(e.tagName)) {
+			if (SKIP_CONTENT_TAGS.has(e.tagName)) {
+				var res = this.skipContent(e.tagName, s, i1, origin);
 				if (!res) {
 					throw new HtmlException(
 						'Unterminated tag ${e.name}',

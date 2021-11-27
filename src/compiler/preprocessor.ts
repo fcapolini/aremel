@@ -159,7 +159,7 @@ export default class Preprocessor {
 		for (var e of includes) {
 			var src = e.getAttribute(INCLUDE_ARG);
 			if (src && (src = src.trim()).length > 0) {
-				this.processInclude(e, src, e.name === IMPORT_TAG, currPath);
+				this.processInclude(e, src, e.tagName === IMPORT_TAG, currPath);
 			} else {
 				throw new HtmlException(
 					'Missing "src" attribute', this.parser.origins[e.pos.origin],
@@ -305,7 +305,7 @@ export default class Preprocessor {
 			var ret = false;
 			for (var n of p.children.slice()) {
 				if (n.nodeType == ELEMENT_NODE) {
-					var name = (n as HtmlElement).name;
+					var name = (n as HtmlElement).tagName;
 					var def = that.macros.get(name);
 					if (def != null) {
 						var e = that.expandMacro(n as HtmlElement, def);
@@ -390,7 +390,7 @@ export default class Preprocessor {
 		function f(p:HtmlElement) {
 			for (var n of p.children) {
 				if (n.nodeType === ELEMENT_NODE) {
-					if (tags.has((n as HtmlElement).name)) {
+					if (tags.has((n as HtmlElement).tagName)) {
 						ret.push(n as HtmlElement);
 					} else {
 						f(n as HtmlElement);
@@ -453,7 +453,7 @@ export function domGetTop(doc:HtmlDocument, name:string): HtmlElement | undefine
 	var root = doc.getFirstElementChild();
 	if (root) {
 		for (var n of root.children) {
-			if (n.nodeType === ELEMENT_NODE && (n as HtmlElement).name === name) {
+			if (n.nodeType === ELEMENT_NODE && (n as HtmlElement).tagName === name) {
 				return n as HtmlElement;
 			}
 		}
