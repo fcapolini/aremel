@@ -73,6 +73,15 @@ export class AppValue {
 
 	_patchExpr(expr:Expr, rpatchData=false): string {
 		var locals = new Set(['null', 'true', 'false', 'console', 'document', 'window']);
+
+		// workaround:
+		// in order to prevent babeljs to parse e.g. "foo" as a directive
+		// instead of an expression statement, we prefix expressions starting
+		// with `"` or `'` with an empty statement
+		if (expr.src.startsWith('"') || expr.src.startsWith("'")) {
+			expr.src = ';' + expr.src;
+		}
+
 		this._collectLocalIds(expr, locals);
 		const output = this._patchCode(expr, locals);
 		expr.code = output?.code ? output?.code : '';
@@ -107,8 +116,9 @@ export class AppValue {
 		var that = this;
 		return transformSync(expr.src, {
 			parserOpts: {
+				sourceType: 'script',
 				sourceFilename: expr.origin,
-				startLine: expr.lineNr
+				startLine: expr.lineNr,
 			},
 			retainLines: true,
 			plugins: [

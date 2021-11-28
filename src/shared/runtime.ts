@@ -12,10 +12,10 @@ export interface RuntimeObj {
 	add: (o:any, k:string, v:ValueObj)=>ValueObj,
 	get: (o:ValueObj)=>any,
 	set: (o:ValueObj, v:any)=>any,
-	linkClass: (e:DomElement, n:string, o:ValueObj)=>ValueObj,
-	linkStyle: (e:DomElement, n:string, o:ValueObj)=>ValueObj,
-	linkAttr: (e:DomElement, n:string, o:ValueObj)=>ValueObj,
-	linkHandler: (h:()=>void, o:ValueObj)=>void,
+	// linkClass: (e:DomElement, n:string, o:ValueObj)=>ValueObj,
+	// linkStyle: (e:DomElement, n:string, o:ValueObj)=>ValueObj,
+	// linkAttr: (e:DomElement, n:string, o:ValueObj)=>ValueObj,
+	// linkHandler: (h:()=>void, o:ValueObj)=>void,
 	tnode: (e:DomElement, n:string)=>any,
 	// linkData: (v:any, o:ValueObj)=>ValueObj,
 	// addRequest: (r:RequestObj)=>void,
@@ -65,10 +65,10 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 		add: add,
 		get: get,
 		set: set,
-		linkClass: linkClass,
-		linkStyle: linkStyle,
-		linkAttr: linkAttr,
-		linkHandler: linkHandler,
+		// linkClass: linkClass,
+		// linkStyle: linkStyle,
+		// linkAttr: linkAttr,
+		// linkHandler: linkHandler,
 		tnode: tnode,
 		// linkData: linkData,
 		// addRequest: addRequest,
@@ -173,11 +173,6 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 		}
 		return value.v;
 	}
-
-	// function upd(value:ValueObj, incr:boolean, pre:boolean) {
-	// 	//TODO
-	// 	return value.v;
-	// }
 
 	function handle(value:ValueObj) {
 		if (value.callbacks != null) {

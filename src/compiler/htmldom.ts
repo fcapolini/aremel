@@ -1,4 +1,3 @@
-import { DomNode } from "../shared/dom";
 import HtmlParser from "./htmlparser";
 import { StringBuf } from "./util";
 
@@ -59,11 +58,10 @@ export class HtmlElement extends HtmlNode {
 	attributes: Map<string, HtmlAttribute>;
 	children: Array<HtmlNode>;
 	selfclose: boolean;
-	// innerHTML(get,set): string;
-	// public inline function get_innerHTML() return getInnerHTML();
-	// public inline function set_innerHTML(s:string) return setInnerHTML(s);
-	// innerText(null,set): string;
-	// public inline function set_innerText(s:string) return setInnerText(s);
+
+	classList: {add:(name:string)=>void, remove:(name:string)=>void, classes?:Set<string>};
+	// classAttr: Array<string> | undefined;
+	style: {setProperty:(k:string,v:string)=>void, removeProperty:(k:string)=>void, styles?:Map<string,string>};
 
 	constructor(doc:HtmlDocument | undefined, parent:HtmlElement|undefined, name:string, i1:number, i2:number, origin:number) {
 		super(doc, parent, ELEMENT_NODE, i1, i2, origin);
@@ -71,6 +69,24 @@ export class HtmlElement extends HtmlNode {
 		this.attributes = new Map();
 		this.children = [];
 		this.selfclose = false;
+		this.classList = {
+			add: function(name:string) {
+				!this.classes ? this.classes = new Set() : null;
+				this.classes.add(name.trim());
+			},
+			remove: function(name:string) {
+				this.classes ? this.classes.delete(name.trim()) : null;
+			}
+		};
+		this.style = {
+			setProperty: function(k:string, v:string) {
+				!this.styles ? this.styles = new Map() : null;
+				this.styles.set(k, v);
+			},
+			removeProperty: function(k:string) {
+				this.styles ? this.styles.delete(k) : null;
+			},
+		}
 	}
 
 	addChild(child:HtmlNode, before?:HtmlNode) {
@@ -85,28 +101,58 @@ export class HtmlElement extends HtmlNode {
 
 	setAttribute(name:string, value?:string, quote?:string,
 				i1?:number, i2?:number, origin?:number): HtmlAttribute | undefined {
-		var a = this.attributes.get(name);
-		if (!a) {
-			if (value != undefined) {
-				this.attributes.set(
-					name,
-					(a = new HtmlAttribute(name, value, quote ? quote : '"',
-						i1, i2, origin))
-				);
-			}
-		} else {
-			if (value == undefined) {
-				this.attributes.delete(name);
+		// if (name === 'class') {
+		// 	this.setClassAttribute(value);
+		// 	return undefined;
+		// } else if (name === 'style') {
+		// 	//TODO
+		// 	return undefined;
+		// } else {
+			var a = this.attributes.get(name);
+			if (!a) {
+				if (value != undefined) {
+					this.attributes.set(
+						name,
+						(a = new HtmlAttribute(name, value, quote ? quote : '"',
+							i1, i2, origin))
+					);
+				}
 			} else {
-				a.value = value;
-				a.quote = quote ? quote : a.quote;
-				if (i1 && i2 && origin) {
-					a.pos1 = {origin:origin, i1:i1, i2:i2};
+				if (value == undefined) {
+					this.attributes.delete(name);
+				} else {
+					a.value = value;
+					a.quote = quote ? quote : a.quote;
+					if (i1 && i2 && origin) {
+						a.pos1 = {origin:origin, i1:i1, i2:i2};
+					}
 				}
 			}
-		}
-		return a;
+			return a;
+		// }
 	}
+
+	removeAttribute(name:string) {
+		this.attributes.delete(name);
+	}
+
+	// setClassAttribute(value?:string) {
+	// 	var cc = (value ? normalizeText(value).trim().split(' ') : []);
+	// 	if (this.classAttr) {
+	// 		for (var c of this.classAttr) {
+	// 			if (cc.indexOf(c) < 0) {
+	// 				this.classList.remove(c);
+	// 			}
+	// 		}
+	// 	}
+	// 	for (var c of cc) {
+	// 		if (!this.classAttr || this.classAttr.indexOf(c) < 0) {
+	// 			this.classList.add(c);
+	// 		}
+	// 	}
+	// 	this.classAttr = cc;
+	// 	return undefined;
+	// }
 
 	getAttribute(name:string): string | undefined {
 		var a = this.attributes.get(name);
@@ -173,6 +219,19 @@ export class HtmlElement extends HtmlNode {
 		sb.add('<'); sb.add(name);
 
 		var keys = this.getAttributeNames();
+
+		if (this.classList.classes && this.classList.classes.size > 0) {
+			var sep = '';
+			sb.add(' class="');
+			this.classList.classes.forEach((v) => {sb.add(sep + v); sep = '';});
+			sb.add('"');
+		}
+
+		if (this.style.styles && this.style.styles.size > 0) {
+			sb.add(' style="');
+			this.style.styles.forEach((v, k) => sb.add(k + ':' + v + ';'));
+			sb.add('"');
+		}
 
 		this.attributes.forEach((a) => {
 			if (a) {
