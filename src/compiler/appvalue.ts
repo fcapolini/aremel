@@ -78,13 +78,19 @@ export class AppValue {
 		// in order to prevent babeljs to parse e.g. "foo" as a directive
 		// instead of an expression statement, we prefix expressions starting
 		// with `"` or `'` with an empty statement
-		if (expr.src.startsWith('"') || expr.src.startsWith("'")) {
+		if (/^\s*['"]/.test(expr.src)) {
 			expr.src = ';' + expr.src;
 		}
 
 		this._collectLocalIds(expr, locals);
 		const output = this._patchCode(expr, locals);
 		expr.code = output?.code ? output?.code : '';
+
+		// remove possible initial empty statement due to workaround above
+		if (expr.code.startsWith(';')) {
+			expr.code = expr.code.substr(1);
+		}
+
 		return expr.code;
 	}
 	

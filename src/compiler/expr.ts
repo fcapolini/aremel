@@ -37,7 +37,7 @@ export function prepareExpr(s:string): string {
 			sb.add("'" + escape(s.substring(i, i1)) + "'+");
 		}
 		sb.add(exprStart);
-		sb.add(s.substring(i1 + DOM_EXP_MARKER1.length, i2).trim());
+		sb.add(s.substring(i1 + DOM_EXP_MARKER1.length, i2));
 		sb.add(exprEnd);
 		i = i2 + DOM_EXP_MARKER2.length;
 	}
