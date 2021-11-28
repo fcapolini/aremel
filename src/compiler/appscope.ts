@@ -1,6 +1,7 @@
-import { JS_AKA_VAR, nonValues, Prop } from "./app";
+import { DomElement, DomNode, DomTextNode } from "../shared/dom";
+import { JS_AKA_VAR, JS_TEXT_VALUE_PREFIX, nonValues, Prop } from "./app";
 import { AppValue } from "./appvalue";
-import { HtmlElement, HtmlText } from "./htmldom";
+import { HtmlElement } from "./htmldom";
 import Preprocessor from "./preprocessor";
 import { StringBuf } from "./util";
 
@@ -10,7 +11,7 @@ export class AppScope {
 	aka: String | undefined;
 	parent: AppScope | undefined;
 	children: Array<AppScope>;
-	texts: Array<HtmlText>;
+	texts: Array<DomTextNode>;
 	values: Map<string,AppValue>;
 
 	constructor(id:number,
@@ -39,10 +40,20 @@ export class AppScope {
 		}
 	}
 
-	compile() {
+	compile(prepro?:Preprocessor) {
+		// add text values
+		for (var t of this.texts) {
+			// @ts-ignore
+			var spos = prepro && t.pos ? prepro.getSourcePos(t.pos) : undefined;
+			var key = JS_TEXT_VALUE_PREFIX + this._getTextPath(t);
+			var value = new AppValue(this, key, t.nodeValue, spos);
+			this.values.set(key, value);
+		}
+		// compile values
 		this.values.forEach((value, key) => {
 			value.compile();
 		});
+		// compile children
 		this.children.forEach((child) => {
 			child.compile();
 		});
@@ -90,6 +101,26 @@ export class AppScope {
 		sb.add(`return __this;\n}`);
 
 		return sb;
+	}
+
+	_getTextPath(n:DomNode): string {
+		var ret = [], p;
+		while (n != this.dom && (p = n.parentElement)) {
+			var i = this._domChildIndex(p, n);
+			ret.unshift(i);
+			n = p;
+		}
+		return ret.join('_');
+	}
+
+	_domChildIndex(parent:DomElement, child:DomNode): number {
+		var ret = -1;
+		parent.childNodes.forEach((n, i) => {
+			if (n === child) {
+				ret = i;
+			}
+		});
+		return ret;
 	}
 
 }

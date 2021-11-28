@@ -1,4 +1,4 @@
-import { JS_ATTR_VALUE_PREFIX, JS_CLASS_VALUE_PREFIX, JS_DATA_VAR, JS_STYLE_VALUE_PREFIX, nonValues } from "../compiler/app";
+import { JS_ATTR_VALUE_PREFIX, JS_CLASS_VALUE_PREFIX, JS_DATA_VAR, JS_STYLE_VALUE_PREFIX, JS_TEXT_VALUE_PREFIX, nonValues } from "../compiler/app";
 import { makeHyphenName } from "../compiler/util";
 import { DomNode, DomElement, TEXT_NODE, DomTextNode, DomDocument } from "./dom";
 
@@ -15,7 +15,6 @@ export interface RuntimeObj {
 	// linkClass: (e:DomElement, n:string, o:ValueObj)=>ValueObj,
 	// linkStyle: (e:DomElement, n:string, o:ValueObj)=>ValueObj,
 	// linkAttr: (e:DomElement, n:string, o:ValueObj)=>ValueObj,
-	// linkHandler: (h:()=>void, o:ValueObj)=>void,
 	tnode: (e:DomElement, n:string)=>any,
 	// linkData: (v:any, o:ValueObj)=>ValueObj,
 	// addRequest: (r:RequestObj)=>void,
@@ -65,10 +64,6 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 		add: add,
 		get: get,
 		set: set,
-		// linkClass: linkClass,
-		// linkStyle: linkStyle,
-		// linkAttr: linkAttr,
-		// linkHandler: linkHandler,
 		tnode: tnode,
 		// linkData: linkData,
 		// addRequest: addRequest,
@@ -115,6 +110,8 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 			linkStyle(o.__dom, makeHyphenName(k.substr(JS_STYLE_VALUE_PREFIX.length)), v);
 		} else if (k.startsWith(JS_ATTR_VALUE_PREFIX)) {
 			linkAttr(o.__dom, makeHyphenName(k.substr(JS_ATTR_VALUE_PREFIX.length)), v);
+		} else if (k.startsWith(JS_TEXT_VALUE_PREFIX)) {
+			linkText(o.__dom, k.substr(JS_ATTR_VALUE_PREFIX.length), v);
 		} else if (k === JS_DATA_VAR) {
 			// linkData(o, v);
 		}
@@ -213,16 +210,17 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 		return value;
 	}
 	
-	// function linkHandler(handler:()=>void, value:ValueObj) {
-	// 	addCallback(value, (v) => {
-	// 		handler();
-	// 		return v;
-	// 	});
-	// }
+	function linkText(dom:DomElement, name:string, value:ValueObj) {
+		var node = tnode(dom, name);
+		addCallback(value, (v) => {
+			node ? node.nodeValue = (v ? '' + v : '') : null;
+		});
+		return value;
+	}
 
 	function tnode(e:DomElement, path:string): DomTextNode | undefined {
 		var ret:DomTextNode|undefined = undefined;
-		var p = path.split('.');
+		var p = path.split('_');
 		for (var i in p) {
 			var v = p[i];
 			var n = e.childNodes.item(parseInt(v));

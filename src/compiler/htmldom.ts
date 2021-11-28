@@ -1,9 +1,10 @@
+import { DomNode, DomNodeList } from "../shared/dom";
 import HtmlParser from "./htmlparser";
 import { StringBuf } from "./util";
 
 export const ELEMENT_NODE = 1;
-export const TEXT_NODE = 2;
-export const COMMENT_NODE = 3;
+export const TEXT_NODE = 3;
+export const COMMENT_NODE = 8;
 
 export interface HtmlPos {
 	origin: number,
@@ -182,6 +183,25 @@ export class HtmlElement extends HtmlNode {
 			}
 		}
 		return undefined;
+	}
+
+	get childNodes(): DomNodeList {
+		return {
+			length: this.children.length,
+			item: (i) => {
+				if (i >= 0 && i < this.children.length) {
+					return (this.children[i] as DomNode);
+				} else {
+					return undefined;
+				}
+			},
+			forEach: (cb) => {
+				var i = 0;
+				for (var child of this.children) {
+					cb(child as DomNode, i++);
+				}
+			},
+		}
 	}
 
 	get innerHTML() {

@@ -6,7 +6,7 @@ export const COMMENT_NODE = 8;
 export const DOCUMENT_NODE = 9;
 
 // https://developer.mozilla.org/en-US/docs/Web/API/NodeList
-export interface NodeList {
+export interface DomNodeList {
 	length: number;
 	item: (i:number)=>DomNode|undefined;
 	forEach: (cb:(n:DomNode,i:number)=>void)=>void;
@@ -29,7 +29,7 @@ export interface DomTextNode extends DomNode {
 // https://developer.mozilla.org/en-US/docs/Web/API/Element
 export interface DomElement extends DomNode {
 	tagName: string; 
-	childNodes: NodeList;
+	childNodes: DomNodeList;
 	childElementCount: number;
 	getFirstElementChild: ()=>DomElement|undefined;
 	appendChild: (n:DomNode)=>void;

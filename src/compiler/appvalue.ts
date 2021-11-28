@@ -68,7 +68,7 @@ export class AppValue {
 			// get/set value
 			sb.add(`Object.defineProperty(__this,"${key}",{`
 				+ `get:function() {return __rt.get(${key})}, `
-				+ `set:function(v) {return __rt.set(${key}, v)}});\n`);
+				+ `set:function(__v_) {return __rt.set(${key}, __v_)}});\n`);
 			// get value object as `__value_<name>`
 			sb.add(`Object.defineProperty(__this,"__value_${key}",`
 				+ `{get:function() {return ${key}}});\n`);

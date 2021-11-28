@@ -58,6 +58,14 @@ describe("test runtime", () => {
 		expect(root.v2).toBe(6);
 	});
 
+	it("should reflect texts", () => {
+		var doc = HtmlParser.parse('<html :v=[["Bob"]]>Hello [[v]].</html>');
+		var root = run(doc);
+		expect(doc.toString()).toBe('<html>Hello Bob.</html>');
+		root.v = null;
+		expect(doc.toString()).toBe('<html>Hello .</html>');
+	});
+
 });
 
 function run(doc:HtmlDocument): any {

@@ -1,4 +1,4 @@
-import { DomDocument } from "../shared/dom";
+import { DomDocument, DomTextNode } from "../shared/dom";
 import { PageObj } from "../shared/runtime";
 import { AppScope } from "./appscope";
 import { ELEMENT_NODE, HtmlDocument, HtmlElement, HtmlNode, HtmlPos, HtmlText, TEXT_NODE } from "./htmldom";
@@ -24,6 +24,7 @@ export const JS_CLASS_VALUE_PREFIX = 'class_';
 export const JS_STYLE_VALUE_PREFIX = 'style_';
 export const JS_ATTR_VALUE_PREFIX = 'attr_';
 export const JS_HANDLER_VALUE_PREFIX = 'on_';
+export const JS_TEXT_VALUE_PREFIX = 'text_';
 export const JS_EVENT_VALUE_PREFIX = 'event_';
 export const JS_NOTNULL_FN = '__nn';
 export const JS_DATA_VAR = 'data';
@@ -149,7 +150,7 @@ export default class App {
 					}
 				} else if (n.nodeType === TEXT_NODE) {
 					if ((n as HtmlText).nodeValue.indexOf(DOM_EXP_MARKER1) >= 0) {
-						ret.texts.push(n as HtmlText);
+						ret.texts.push(n as any);
 					}
 				}
 			}
