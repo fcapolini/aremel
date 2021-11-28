@@ -213,12 +213,12 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 		return value;
 	}
 	
-	function linkHandler(handler:()=>void, value:ValueObj) {
-		addCallback(value, (v) => {
-			handler();
-			return v;
-		});
-	}
+	// function linkHandler(handler:()=>void, value:ValueObj) {
+	// 	addCallback(value, (v) => {
+	// 		handler();
+	// 		return v;
+	// 	});
+	// }
 
 	function tnode(e:DomElement, path:string): DomTextNode | undefined {
 		var ret:DomTextNode|undefined = undefined;

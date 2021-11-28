@@ -1,6 +1,7 @@
 import { BabelFileResult, PluginObj, PluginPass, transformSync } from '@babel/core';
 import { NodePath } from '@babel/traverse';
 import { ExpressionStatement, identifier, memberExpression, Program, returnStatement } from "@babel/types";
+import { JS_HANDLER_VALUE_PREFIX } from "./app";
 import { AppScope } from "./appscope";
 import { Expr, isDynamic, parseExpr } from "./expr";
 import { SourcePos } from "./preprocessor";
@@ -30,6 +31,17 @@ export class AppValue {
 	compile() {
 		if (this.expr) {
 			this._patchExpr(this.expr);
+			if (this.key.startsWith(JS_HANDLER_VALUE_PREFIX)) {
+				this.refs.clear();
+				var name = this.key.substr(JS_HANDLER_VALUE_PREFIX.length);
+				var scopeId = this._getScopeForIdentifier(name);
+				var scope = this._getScopeForIdentifier(name);
+				if (scope) {
+					this.refs.add(scope.id + '.' + name);
+				} else {
+					//TODO
+				}
+	}
 		}
 	}
 

@@ -130,35 +130,6 @@ export default class App {
 		return ret;
 	}
 	
-	// _loadNode(e:HtmlElement, props:Map<string,Prop>,
-	// 			nesting:number, prepro?:Preprocessor, parent?:AppNode): AppNode {
-	// 	var id = this.nodes.length;
-	// 	var aka = props.get(JS_AKA_VAR)?.val;
-	// 	var ret = new AppNode(this, e, id, props, aka, prepro, parent);
-	// 	this.nodes.push(e);
-
-	// 	var that = this;
-	// 	function f(e:HtmlElement) {
-	// 		for (var n of e.children) {
-	// 			if (n.nodeType === ELEMENT_NODE) {
-	// 				var p = that._loadProps(n as HtmlElement);
-	// 				if (p.size > 0) {
-	// 					that._loadNode(n as HtmlElement, p, nesting + 1, prepro, ret);
-	// 				} else {
-	// 					f(n as HtmlElement);
-	// 				}
-	// 			} else if (n.nodeType === TEXT_NODE) {
-	// 				if ((n as HtmlText).nodeValue.indexOf(DOM_EXP_MARKER1) >= 0) {
-	// 					ret.texts.push(n as HtmlText);
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// 	f(e);
-
-	// 	return ret;
-	// }
-
 	_loadScope(e:HtmlElement, props:Map<string,Prop>,
 				nesting:number, prepro?:Preprocessor, parent?:AppScope): AppScope {
 		var id = this.nodes.length;

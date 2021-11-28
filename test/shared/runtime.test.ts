@@ -47,6 +47,17 @@ describe("test runtime", () => {
 		expect(doc.toString()).toBe('<html></html>');
 	});
 
+	it("should call value handlers", () => {
+		var doc = HtmlParser.parse('<html :v0=[[0]] :v1=[[1]] :v2="" :on-v1=[[v2 = v0 + v1 * 2]]/>');
+		var root = run(doc);
+		expect(root.v2).toBe(2);
+		root.v1 = 3;
+		expect(root.v2).toBe(6);
+		root.v0 = 10;
+		// v0 shouldn't trigger on-v1 handler execution
+		expect(root.v2).toBe(6);
+	});
+
 });
 
 function run(doc:HtmlDocument): any {
