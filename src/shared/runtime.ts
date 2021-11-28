@@ -1,3 +1,5 @@
+import { JS_ATTR_VALUE_PREFIX, JS_CLASS_VALUE_PREFIX, JS_DATA_VAR, JS_STYLE_VALUE_PREFIX, nonValues } from "../compiler/app";
+import { makeHyphenName } from "../compiler/util";
 import { DomNode, DomElement, TEXT_NODE, DomTextNode, DomDocument } from "./dom";
 
 export interface RuntimeObj {
@@ -7,6 +9,7 @@ export interface RuntimeObj {
 	values: Array<ValueObj>,
 	links: Array<{o:ValueObj, v:()=>ValueObj}>,
 	evhandlers: Array<{e:DomElement, t:string, h:(v:any)=>void}>,
+	add: (o:any, k:string, v:ValueObj)=>ValueObj,
 	get: (o:ValueObj)=>any,
 	set: (o:ValueObj, v:any)=>any,
 	linkClass: (e:DomElement, n:string, o:ValueObj)=>ValueObj,
@@ -56,9 +59,10 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 		page: page,
 		cycle: 0,
 		pushLevel: 0,
-		values: [],
+		values: new Array(),
 		links: [],
 		evhandlers: [],
+		add: add,
 		get: get,
 		set: set,
 		linkClass: linkClass,
@@ -101,6 +105,20 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 		for (var i in runtime.values) {
 			get(runtime.values[i]);
 		}	
+	}
+
+	function add(o:any, k:string, v:ValueObj): ValueObj {
+		runtime.values.push(v);
+		if (k.startsWith(JS_CLASS_VALUE_PREFIX)) {
+			linkClass(o.__dom, makeHyphenName(k.substr(JS_CLASS_VALUE_PREFIX.length)), v);
+		} else if (k.startsWith(JS_STYLE_VALUE_PREFIX)) {
+			linkStyle(o.__dom, makeHyphenName(k.substr(JS_STYLE_VALUE_PREFIX.length)), v);
+		} else if (k.startsWith(JS_ATTR_VALUE_PREFIX)) {
+			linkAttr(o.__dom, makeHyphenName(k.substr(JS_ATTR_VALUE_PREFIX.length)), v);
+		} else if (k === JS_DATA_VAR) {
+			// linkData(o, v);
+		}
+		return v;
 	}
 
 	function get(value:ValueObj) {

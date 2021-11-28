@@ -60,8 +60,8 @@ export class AppScope {
 		} else {
 			sb.add(`function(__rt) {\n`
 				+ `var __f, __get_data = null, data = null;\n`
+				+ `var __add = __rt.add;\n`
 				+ `function __nn(v) {return v != null ? v : "";}\n`
-				+ `function __add(v) {__rt.values.push(v); return v;}\n`
 				+ `function __link(l) {__rt.links.push(l);}\n`
 				+ `function __ev(h) {__rt.evhandlers.push(h);}\n`
 				+ `function __domGetter(id) {return __rt.page.nodes[id];}\n`);

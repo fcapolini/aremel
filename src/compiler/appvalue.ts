@@ -39,18 +39,18 @@ export class AppValue {
 		var expr = this.expr;
 		if (expr) {
 			if (expr.code.startsWith('function(')) {
-				sb.add(`var ${key} = __this.${key} = __add({v:${expr.code}});\n`);
+				sb.add(`var ${key} = __this.${key} = __add(__this,"${key}",{v:${expr.code}});\n`);
 			} else {
-				sb.add(`var ${key} = __this.${key} = __add({fn:function() {${expr.code}}});\n`);
+				sb.add(`var ${key} = __this.${key} = __add(__this,"${key}",{fn:function() {${expr.code}}});\n`);
 			}
 		} else if (typeof val === 'string') {
 			val = val.replace('\n', '\\n');
 			val = val.replace('\r', '');
 			val = val.replace('\t', '\\t');
 			val = val.replace('"', '\\"');
-			sb.add(`var ${key} = __this.${key} = __add({v:"${val}"});\n`);
+			sb.add(`var ${key} = __this.${key} = __add(__this,"${key}",{v:"${val}"});\n`);
 		} else {
-			sb.add(`var ${key} = __this.${key} = __add({v:${val}});\n`);
+			sb.add(`var ${key} = __this.${key} = __add(__this,"${key}",{v:${val}});\n`);
 		}
 		if (addAccessors) {
 			// get/set value
