@@ -1,4 +1,4 @@
-import { JS_ATTR_VALUE_PREFIX, JS_CLASS_VALUE_PREFIX, JS_DATA_VAR, JS_STYLE_VALUE_PREFIX, JS_TEXT_VALUE_PREFIX, nonValues } from "../compiler/app";
+import { JS_ATTR_VALUE_PREFIX, JS_CLASS_VALUE_PREFIX, JS_DATA_VAR, JS_STYLE_VALUE_PREFIX, JS_TEXT_VALUE_PREFIX } from "../compiler/app";
 import { makeHyphenName } from "../compiler/util";
 import { DomNode, DomElement, TEXT_NODE, DomTextNode, DomDocument } from "./dom";
 
@@ -12,9 +12,6 @@ export interface RuntimeObj {
 	add: (o:any, k:string, v:ValueObj)=>ValueObj,
 	get: (o:ValueObj)=>any,
 	set: (o:ValueObj, v:any)=>any,
-	// linkClass: (e:DomElement, n:string, o:ValueObj)=>ValueObj,
-	// linkStyle: (e:DomElement, n:string, o:ValueObj)=>ValueObj,
-	// linkAttr: (e:DomElement, n:string, o:ValueObj)=>ValueObj,
 	tnode: (e:DomElement, n:string)=>any,
 	// linkData: (v:any, o:ValueObj)=>ValueObj,
 	// addRequest: (r:RequestObj)=>void,
@@ -297,8 +294,8 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 	}
 
 	function isTrue(v:any): boolean {
-		return (typeof v === 'string' && v != 'false')
-				|| !(v == null || v == false || v == 'false');
+		return (typeof v === 'string' && v !== 'false')
+				|| !(v === null || v === false || v === 'false');
 	}
 
 	function arrayRemove(a:Array<any>, e:any) {

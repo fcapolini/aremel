@@ -1,7 +1,7 @@
 import { BabelFileResult, PluginObj, PluginPass, transformSync } from '@babel/core';
 import { NodePath } from '@babel/traverse';
 import { ExpressionStatement, identifier, memberExpression, Program, returnStatement } from "@babel/types";
-import { JS_HANDLER_VALUE_PREFIX } from "./app";
+import { JS_DATA_VAR, JS_HANDLER_VALUE_PREFIX } from "./app";
 import { AppScope } from "./appscope";
 import { Expr, isDynamic, parseExpr } from "./expr";
 import { SourcePos } from "./preprocessor";
@@ -30,7 +30,11 @@ export class AppValue {
 
 	compile() {
 		if (this.expr) {
-			this._patchExpr(this.expr);
+			if (this.key === JS_DATA_VAR) {
+				this.expr.code = `return ${this.expr.src};`;
+			} else {
+				this._patchExpr(this.expr);
+			}
 			if (this.key.startsWith(JS_HANDLER_VALUE_PREFIX)) {
 				this.refs.clear();
 				var name = this.key.substr(JS_HANDLER_VALUE_PREFIX.length);
@@ -41,7 +45,7 @@ export class AppValue {
 				} else {
 					//TODO
 				}
-	}
+			}
 		}
 	}
 
@@ -83,6 +87,7 @@ export class AppValue {
 		return sb;
 	}
 
+	// https://lihautan.com/babel-ast-explorer/
 	_patchExpr(expr:Expr, rpatchData=false): string {
 		var locals = new Set(['null', 'true', 'false', 'console', 'document', 'window']);
 

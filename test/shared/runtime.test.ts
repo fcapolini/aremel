@@ -66,6 +66,38 @@ describe("test runtime", () => {
 		expect(doc.toString()).toBe('<html>Hello .</html>');
 	});
 
+	it("should support data-binding", () => {
+		var doc = HtmlParser.parse(`<html>
+			<body :data=[[{name:"Bob"}]]>
+				<span>Hello [[data.name]].</span>
+			</body>
+		</html>`);
+		var root = run(doc);
+		expect(doc.toString()).toBe(`<html>
+			<body>
+				<span>Hello Bob.</span>
+			</body>
+		</html>`);
+		root.body.data = {name:"Alice"};
+		expect(doc.toString()).toBe(`<html>
+			<body>
+				<span>Hello Alice.</span>
+			</body>
+		</html>`);
+		root.body.data = {x:""};
+		expect(doc.toString()).toBe(`<html>
+			<body>
+				<span>Hello .</span>
+			</body>
+		</html>`);
+		root.body.data = null;
+		expect(doc.toString()).toBe(`<html>
+			<body class="__cerere-autohide">
+				<span>Hello .</span>
+			</body>
+		</html>`);
+	});
+
 });
 
 function run(doc:HtmlDocument): any {

@@ -124,7 +124,8 @@ export default class App {
 		if (ret.has(JS_DATA_VAR)) {
 			ret.set(JS_AUTOHIDE_CLASS, {
 				key: JS_AUTOHIDE_CLASS,
-				val: `[[!${JS_DATA_VAR}]]`,
+				// https://stackoverflow.com/a/15992131
+				val: `[[(${JS_DATA_VAR}) == null]]`,
 				pos: e.pos,
 			});
 		}
