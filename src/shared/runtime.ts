@@ -40,6 +40,7 @@ export interface ValueObj {
 	fn?: ()=>any,
 	observers?: Array<ValueObj>,
 	callbacks?: Array<(v:any)=>any>,
+	// k?: string,
 }
 
 export interface RequestObj {
@@ -100,6 +101,7 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 	}
 
 	function add(o:any, k:string, v:ValueObj): ValueObj {
+		// v.k = k;
 		runtime.values.push(v);
 		if (k.startsWith(JS_CLASS_VALUE_PREFIX)) {
 			linkClass(o.__dom, makeHyphenName(k.substr(JS_CLASS_VALUE_PREFIX.length)), v);

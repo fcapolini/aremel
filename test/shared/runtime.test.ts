@@ -100,10 +100,13 @@ describe("test runtime", () => {
 
 });
 
-function run(doc:HtmlDocument): any {
+function run(doc:HtmlDocument, dump=false): any {
 	var app = new App(doc);
 	var page = app.output();
 	var rt = make(page);
+	if (dump) {
+		console.log(page.script);
+	}
 	var root = eval(`(${page.script})(rt)`);
 	rt.start();
 	return root;

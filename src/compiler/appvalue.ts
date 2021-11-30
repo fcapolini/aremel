@@ -1,6 +1,6 @@
 import { BabelFileResult, PluginObj, PluginPass, transformSync } from '@babel/core';
 import { NodePath } from '@babel/traverse';
-import { ExpressionStatement, identifier, memberExpression, Program, returnStatement } from "@babel/types";
+import { ExpressionStatement, identifier, MemberExpression, memberExpression, Program, returnStatement } from "@babel/types";
 import { JS_DATA_VAR, JS_HANDLER_VALUE_PREFIX } from "./app";
 import { AppScope } from "./appscope";
 import { Expr, isDynamic, parseExpr } from "./expr";
@@ -38,8 +38,7 @@ export class AppValue {
 			if (this.key.startsWith(JS_HANDLER_VALUE_PREFIX)) {
 				this.refs.clear();
 				var name = this.key.substr(JS_HANDLER_VALUE_PREFIX.length);
-				var scopeId = this._getScopeForIdentifier(name);
-				var scope = this._getScopeForIdentifier(name);
+				var scope = this._getScopeForIdentifier(this.scope, name);
 				if (scope) {
 					this.refs.add(scope.id + '.' + name);
 				} else {
@@ -80,7 +79,17 @@ export class AppValue {
 			this.refs.forEach((ref) => {
 				var p = ref.split('.');
 				var observer = `__this.__value_${key}`;
-				var observed = `__scope_${p[0]}.__value_${p[1]}`;
+
+				var scopeId:number|undefined = parseInt(p[0]);
+				var pp = new Array<string>();
+				do {
+					pp.unshift(`__scope_${scopeId}`);
+					var s:AppScope = this.scope.app.scopes[scopeId];
+					scopeId = s?.parent?.id;
+				} while (scopeId !== undefined);
+				pp.push(`__value_${p[1]}`);
+				var observed = pp.join('.');
+
 				sb.add(`__link({"o":${observer}, "v":function() {return ${observed};}});\n`);
 			});
 		}
@@ -190,7 +199,7 @@ export class AppValue {
 					if (path.key !== 'property') {
 						// not a dot access
 						var name = path.node.name;
-						var scope = this._getScopeForIdentifier(name);
+						var scope = this._getScopeForIdentifier(this.scope, name);
 						if (scope) {
 							this.refs.add(scope.id + '.' + name);
 							path.replaceWith(memberExpression(
@@ -200,21 +209,96 @@ export class AppValue {
 						} else {
 							//TODO
 						}
+					} else {
+						var parts = this._getPropertyPathname(path, []);
+						if (parts.length > 0 && parts.join('.').indexOf('#') < 0) {
+							// valid path
+							var name = parts.pop() as string;
+							// console.log(parts);
+							var scope = this._getScopeForPathname(parts);
+							if (scope) {
+								this.refs.add(scope.id + '.' + name);
+
+								var p:NodePath|null = path;
+								while (p.parentPath && p.parentPath.type === 'MemberExpression') {
+									p = p.parentPath;
+								}
+								
+								var scopes = new Array<AppScope>();
+								while (scope) {
+									scopes.push(scope);
+									scope = scope.parent;
+								}
+
+								var left:any = identifier('__scope_' + scopes.pop()?.id);
+								if (scopes.length > 0) {
+									left = memberExpression(
+										left,
+										identifier('__scope_' + scopes.pop()?.id)
+									);
+								}
+
+								p?.replaceWith(memberExpression(
+									left,
+									identifier(name)
+								));
+
+							} else {
+								//TODO
+							}
+						}
 					}
 				}
 			}
 		}
 	}
 	
-	_getScopeForIdentifier(name:string): AppScope | undefined {
-		var scope:AppScope|undefined = this.scope;
+	_getScopeForIdentifier(scope:AppScope|undefined,
+							name:string,
+							childScopes=false): AppScope|undefined {
 		while (scope) {
 			if (scope.values.has(name)) {
 				return scope;
 			}
+			if (childScopes) {
+				for (var child of scope.children) {
+					if (child.aka && child.aka === name) {
+						return child;
+					}
+				}
+			}
 			scope = scope.parent;
 		}
 		return undefined;
+	}
+
+	_getScopeForPathname(parts:Array<string>): AppScope | undefined {
+		var scope:AppScope|undefined = this.scope;
+		while (scope && parts.length > 0) {
+			var part = parts.shift() as string;
+			scope = this._getScopeForIdentifier(scope, part, true);
+		}
+		return scope;
+	}
+
+	_getPropertyPathname(path:NodePath, parts:Array<string>) {
+		function f(node:MemberExpression) {
+			if (node.object.type === 'MemberExpression') {
+				f(node.object);
+			} else if (node.object.type === 'Identifier') {
+				parts.push(node.object.name);
+			} else {
+				// invalid path
+				parts.push('#');
+			}
+			if (node.property.type === 'Identifier') {
+				parts.push(node.property.name);
+			}
+		}
+		if (path.parentPath?.isMemberExpression()) {
+			f(path.parentPath.node);
+		}
+		return parts;
 	}
 
 }

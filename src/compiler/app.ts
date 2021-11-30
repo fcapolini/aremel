@@ -43,12 +43,14 @@ attrAliases.set(DOM_HIDDEN_ATTR, DOM_DYNAMIC_ATTR_PREFIX + JS_AUTOHIDE_CLASS);
 export default class App {
 	doc: HtmlDocument;
 	nodes: Array<HtmlNode>;
+	scopes: Array<AppScope>;
 	errors: Array<any>;
 	root: AppScope;
 
 	constructor(doc:HtmlDocument, prepro?:Preprocessor) {
 		this.doc = doc;
 		this.nodes = [];
+		this.scopes = [];
 		this.errors = [];
 		var root = doc.getFirstElementChild() as HtmlElement;
 		this.root = this._loadScope(root, this._loadProps(root), 0, prepro);
@@ -136,8 +138,9 @@ export default class App {
 				nesting:number, prepro?:Preprocessor, parent?:AppScope): AppScope {
 		var id = this.nodes.length;
 		var aka = props.get(JS_AKA_VAR)?.val;
-		var ret = new AppScope(id, e, props, prepro, parent);
+		var ret = new AppScope(this, id, e, props, prepro, parent);
 		this.nodes.push(e);
+		this.scopes.push(ret);
 
 		var that = this;
 		function f(e:HtmlElement) {

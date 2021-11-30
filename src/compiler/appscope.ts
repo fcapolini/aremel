@@ -1,24 +1,27 @@
 import { DomElement, DomNode, DomTextNode } from "../shared/dom";
-import { JS_AKA_VAR, JS_TEXT_VALUE_PREFIX, nonValues, Prop } from "./app";
+import App, { JS_AKA_VAR, JS_TEXT_VALUE_PREFIX, nonValues, Prop } from "./app";
 import { AppValue } from "./appvalue";
 import { HtmlElement } from "./htmldom";
 import Preprocessor from "./preprocessor";
 import { StringBuf } from "./util";
 
 export class AppScope {
+	app: App;
 	id: number;
 	dom: HtmlElement;
-	aka: String | undefined;
+	aka: string | undefined;
 	parent: AppScope | undefined;
 	children: Array<AppScope>;
 	texts: Array<DomTextNode>;
 	values: Map<string,AppValue>;
 
-	constructor(id:number,
+	constructor(app:App,
+				id:number,
 				dom:HtmlElement,
 				props:Map<string,Prop>,
 				prepro?:Preprocessor,
 				parent?:AppScope) {
+		this.app = app;
 		this.id = id;
 		this.dom = dom;
 		this.aka = props.get(JS_AKA_VAR)?.val;
@@ -68,6 +71,7 @@ export class AppScope {
 			sb.add(`var __this, __scope_${this.id};\n`);
 			sb.add(`__this = __scope_${this.id} = {__outer:__outer,`
 				+ `__dom:__domGetter(${this.id}),__self:__self};\n`);
+			sb.add(`__scope_${this.parent.id}.__scope_${this.id} = __this;\n`);
 		} else {
 			sb.add(`function(__rt) {\n`
 				+ `var __f, __get_data = null, data = null;\n`
