@@ -1,3 +1,4 @@
 /TODO.md
 /out
 /node_modules
+*.tmp.js
