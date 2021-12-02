@@ -4,6 +4,7 @@ import { StringBuf } from "./util";
 export interface Expr {
 	src: string,
 	code: string,
+	fndecl?: boolean,
 	origin?: string,
 	lineNr?: number,
 }

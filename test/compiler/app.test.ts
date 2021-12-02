@@ -28,6 +28,7 @@ describe("test server app", () => {
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
 		expect(app.root.values.size).toBe(1);
 		expect(app.root.values.get('v1')?.val).toBe('a');
+		expect(app.root.values.get('v1')?.expr?.fndecl).toBeFalsy();
 		expect(app.root.children.length).toBe(0);
 	});
 
@@ -38,6 +39,7 @@ describe("test server app", () => {
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
 		expect(app.root.values.size).toBe(1);
 		expect(app.root.values.get('class_myPage')?.expr?.src).toBe('true');
+		expect(app.root.values.get('class_myPage')?.expr?.fndecl).toBeFalsy();
 		expect(app.root.children.length).toBe(0);
 	});
 
@@ -48,6 +50,7 @@ describe("test server app", () => {
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
 		expect(app.root.values.size).toBe(1);
 		expect(app.root.values.get('style_fontSize')?.val).toBe('1rm');
+		expect(app.root.values.get('style_fontSize')?.expr?.fndecl).toBeFalsy();
 		expect(app.root.children.length).toBe(0);
 	});
 
@@ -58,6 +61,7 @@ describe("test server app", () => {
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
 		expect(app.root.values.size).toBe(1);
 		expect(app.root.values.get('attr_dataName')?.val).toBe('jolly');
+		expect(app.root.values.get('attr_dataName')?.expr?.fndecl).toBeFalsy();
 		expect(app.root.children.length).toBe(0);
 	});
 
@@ -68,6 +72,7 @@ describe("test server app", () => {
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
 		expect(app.root.values.size).toBe(1);
 		expect(app.root.values.get('on_v1')?.expr?.src).toBe('console.log(v1)');
+		expect(app.root.values.get('on_v1')?.expr?.fndecl).toBeFalsy();
 		expect(app.root.children.length).toBe(0);
 	});
 
@@ -76,9 +81,27 @@ describe("test server app", () => {
 		var app = new App(doc);
 		expect(app.root).toBeDefined();
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
-		expect(app.root.values.size).toBe(1);
-		expect(app.root.values.get('event_click')?.expr?.src).toBe('(ev) => console.log(ev)');
 		expect(app.root.children.length).toBe(0);
+		expect(app.root.values.size).toBe(1);
+		var value = app.root.values.get('event_click');
+		expect(value).toBeDefined();
+		expect(value?.expr?.src).toBe('(ev) => console.log(ev)');
+		expect(value?.expr?.code).toBe('(ev) => console.log(ev);');
+		expect(value?.expr?.fndecl).toBeTruthy();
+	});
+	
+	it('should load <html :event-click=[[function(ev) {console.log(ev)}]]></html>', () => {
+		var doc = HtmlParser.parse('<html :event-click=[[function(ev) {console.log(ev)}]]></html>');
+		var app = new App(doc);
+		expect(app.root).toBeDefined();
+		expect(app.root.dom).toBe(doc.getFirstElementChild());
+		expect(app.root.children.length).toBe(0);
+		expect(app.root.values.size).toBe(1);
+		var value = app.root.values.get('event_click');
+		expect(value).toBeDefined();
+		expect(value?.expr?.src).toBe('(function(ev) {console.log(ev)})');
+		expect(value?.expr?.code).toBe('(function (ev) {console.log(ev);});');
+		expect(value?.expr?.fndecl).toBeTruthy();
 	});
 	
 	it('should load <html :hidden=[[true]]></html>', () => {
@@ -88,6 +111,7 @@ describe("test server app", () => {
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
 		expect(app.root.values.size).toBe(1);
 		expect(app.root.values.get(JS_AUTOHIDE_CLASS)?.expr?.src).toBe('true');
+		expect(app.root.values.get(JS_AUTOHIDE_CLASS)?.expr?.fndecl).toBeFalsy();
 		expect(app.root.children.length).toBe(0);
 	});
 	
@@ -101,6 +125,7 @@ describe("test server app", () => {
 		var body = app.root.children[0];
 		expect(body.aka).toBe('body');
 		expect(body.values.get('v1')?.val).toBe('a');
+		expect(body.values.get('v1')?.expr?.fndecl).toBeFalsy();
 	});
 
 	it('should load <html><body :v1="a" :v2=[[v1 + "!"]]/></html>', () => {

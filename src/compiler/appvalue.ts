@@ -108,11 +108,21 @@ export class AppValue {
 			expr.src = ';' + expr.src;
 		}
 
+		// workaround:
+		// in order to accept [[function() {console.log()}]] constructs
+		// in addition to [[() => console.log()]], we wrap it in parens
+		if (/^\s*function\s*\(/.test(expr.src)) {
+			expr.src = `(${expr.src})`;
+		}
+
 		this._collectLocalIds(expr, locals);
-		const output = this._patchCode(expr, locals);
+		var isFunctionDeclaration = new Array();
+		const output = this._patchCode(expr, locals, isFunctionDeclaration);
 		expr.code = output?.code ? output?.code : '';
+		expr.fndecl = (isFunctionDeclaration.length > 0);
 
 		// remove possible initial empty statement due to workaround above
+		// (imperfect but harmless implementation)
 		if (expr.code.startsWith(';')) {
 			expr.code = expr.code.substr(1);
 		}
@@ -120,6 +130,7 @@ export class AppValue {
 		return expr.code;
 	}
 	
+	//TODO: nested scopes (in nested function declarations)
 	_collectLocalIds(expr:Expr, locals:Set<string>) {
 		transformSync(expr.src, {
 			plugins: [
@@ -128,8 +139,9 @@ export class AppValue {
 						visitor: {
 							Identifier(path:NodePath) {
 								if (path.isIdentifier()) {
-									if (path.key === 'id' &&
-											path.parent.type === 'VariableDeclarator') {
+									if ((path.key === 'id' &&
+											path.parent.type === 'VariableDeclarator')
+											|| path.listKey === 'params') {
 										locals.add(path.node.name);
 									}
 								}
@@ -144,7 +156,8 @@ export class AppValue {
 	// turns accesses to non-local, non '__' identifiers into fields of the
 	// relevant `__scope_<id>` object
 	_patchCode(expr:Expr,
-			locals:Set<string>): BabelFileResult | null {
+			locals:Set<string>,
+			isFunctionDeclaration:Array<any>): BabelFileResult | null {
 		var that = this;
 		return transformSync(expr.src, {
 			parserOpts: {
@@ -167,6 +180,7 @@ export class AppValue {
 						},
 					};
 				},
+				//TODO: don't add return to function declarations
 				function addReturn(): PluginObj<PluginPass> {
 					return {
 						visitor: {
@@ -174,13 +188,18 @@ export class AppValue {
 								if (path.isExpressionStatement() &&
 										path.parentPath.isProgram()) {
 									var node:ExpressionStatement = path.node;
-									var program = path.parent as Program;
-									var i = program.body.indexOf(node);
-									if (i == (program.body.length - 1)) {
-										// console.log(node);
-										path.replaceWith(returnStatement(
-											node.expression
-										));
+									var type = node.expression.type;
+									if (type !== 'ArrowFunctionExpression' &&
+											type !== 'FunctionExpression') {
+										var program = path.parent as Program;
+										var i = program.body.indexOf(node);
+										if (i == (program.body.length - 1)) {
+											path.replaceWith(returnStatement(
+												node.expression
+											));
+										}
+									} else {
+										isFunctionDeclaration.push(true);
 									}
 								}
 							}
