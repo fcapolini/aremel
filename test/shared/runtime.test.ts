@@ -1,7 +1,7 @@
 import App from "../../src/compiler/app";
 import { HtmlDocument } from "../../src/compiler/htmldom";
 import HtmlParser from "../../src/compiler/htmlparser";
-import { make } from "../../src/shared/runtime";
+import { make, RuntimeObj } from "../../src/shared/runtime";
 
 describe("test runtime", () => {
 
@@ -66,6 +66,15 @@ describe("test runtime", () => {
 		expect(doc.toString()).toBe('<html>Hello .</html>');
 	});
 
+	it("should add event listeners", () => {
+		var doc = HtmlParser.parse('<html :event-click=[[(ev) => console.log(ev)]]/>');
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt, true);
+		expect(doc.toString()).toBe('<html></html>');
+		expect(rt[0].evhandlers.length).toBe(1);
+		expect(rt[0].evhandlers[0].t).toBe('click');
+	});
+
 	it("should support data-binding", () => {
 		var doc = HtmlParser.parse(`<html>
 			<body :data=[[{name:"Bob"}]]>
@@ -100,10 +109,11 @@ describe("test runtime", () => {
 
 });
 
-function run(doc:HtmlDocument, dump=false): any {
+function run(doc:HtmlDocument, rtret?:Array<RuntimeObj>, dump=false): any {
 	var app = new App(doc);
 	var page = app.output();
 	var rt = make(page);
+	rtret ? rtret.push(rt) : null;
 	if (dump) {
 		console.log(page.script);
 	}

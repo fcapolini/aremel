@@ -102,8 +102,36 @@ describe("test server app", () => {
 		expect(value?.expr?.src).toBe('(function(ev) {console.log(ev)})');
 		expect(value?.expr?.code).toBe('(function (ev) {console.log(ev);});');
 		expect(value?.expr?.fndecl).toBeTruthy();
+		expect(doc.toString()).toBe(`<html></html>`);
+		expect(app.output().script).toBe(normalizeText(`function(__rt) {
+			var __f, __get_data = null, data = null;
+			var __add = __rt.add;
+			function __nn(v) {return v != null ? v : \"\";}
+			function __link(l) {__rt.links.push(l);}
+			function __ev(h) {__rt.evhandlers.push(h);}
+			function __domGetter(id) {return __rt.page.nodes[id];}
+			var __this, __scope_0;
+			__this = __scope_0 = {__dom:__domGetter(0),__doc:__rt.page.doc};
+			__ev({e:__this.__dom,t:"click",h:(function (ev) {console.log(ev);})});
+			return __this;
+		}`));
 	});
 	
+	it(`should make function values independent of values they reference`, () => {
+		var doc = HtmlParser.parse('<html :v1=[[1]] :event-click=[[function(ev) {console.log(v1)}]]></html>');
+		var app = new App(doc);
+		expect(app.root).toBeDefined();
+		expect(app.root.dom).toBe(doc.getFirstElementChild());
+		expect(app.root.children.length).toBe(0);
+		expect(app.root.values.size).toBe(2);
+		var value = app.root.values.get('event_click');
+		expect(value).toBeDefined();
+		expect(value?.expr?.src).toBe('(function(ev) {console.log(v1)})');
+		expect(value?.expr?.code).toBe('(function (ev) {console.log(__scope_0.v1);});');
+		expect(value?.expr?.fndecl).toBeTruthy();
+		expect(value?.refs.size).toBe(0);
+	});
+
 	it('should load <html :hidden=[[true]]></html>', () => {
 		var doc = HtmlParser.parse('<html :hidden=[[true]]></html>');
 		var app = new App(doc);

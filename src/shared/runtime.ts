@@ -89,6 +89,7 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 		start: () => {
 			link(runtime.links);
 			runtime.links=[];
+			addEvHandlers(runtime.evhandlers);
 			refresh();
 		},
 	};

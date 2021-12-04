@@ -1,7 +1,7 @@
 import { BabelFileResult, PluginObj, PluginPass, transformSync } from '@babel/core';
 import { NodePath } from '@babel/traverse';
 import { ExpressionStatement, identifier, MemberExpression, memberExpression, Program, returnStatement } from "@babel/types";
-import { JS_DATA_VAR, JS_HANDLER_VALUE_PREFIX } from "./app";
+import { JS_DATA_VAR, JS_HANDLER_VALUE_PREFIX, JS_EVENT_VALUE_PREFIX } from "./app";
 import { AppScope } from "./appscope";
 import { Expr, isDynamic, parseExpr } from "./expr";
 import { SourcePos } from "./preprocessor";
@@ -34,6 +34,11 @@ export class AppValue {
 				this.expr.code = `return ${this.expr.src};`;
 			} else {
 				this._patchExpr(this.expr);
+				if (this.expr?.fndecl) {
+					// function values don't get refreshed by changes in
+					// values they reference
+					this.refs.clear();
+				}
 			}
 			if (this.key.startsWith(JS_HANDLER_VALUE_PREFIX)) {
 				this.refs.clear();
@@ -53,8 +58,21 @@ export class AppValue {
 		var val = this.val;
 		var expr = this.expr;
 		if (expr) {
-			if (expr.code.startsWith('function(')) {
-				sb.add(`var ${key} = __this.${key} = __add(__this,"${key}",{v:${expr.code}});\n`);
+			if (expr.fndecl) {
+				if (key.startsWith(JS_EVENT_VALUE_PREFIX)) {
+					key = key.substr(JS_EVENT_VALUE_PREFIX.length);
+					var p = key.split(':');
+					var dom = (p.length > 1 ? p[0] : '__this.__dom');
+					var evtype = p[p.length - 1];
+					if (expr.code.startsWith('(function(') && expr.code.endsWith(');')) {
+						expr.code = expr.code.substr(1, expr.code.length - 3);
+					} else if (expr.code.endsWith(';')) {
+						expr.code = expr.code.substr(0, expr.code.length - 1);
+					}
+					sb.add(`__ev({e:${dom},t:"${evtype}",h:${expr.code}});\n`);
+				} else {
+					sb.add(`var ${key} = __this.${key} = __add(__this,"${key}",{v:${expr.code}});\n`);
+				}
 			} else {
 				sb.add(`var ${key} = __this.${key} = __add(__this,"${key}",{fn:function() {${expr.code}}});\n`);
 			}
@@ -67,7 +85,7 @@ export class AppValue {
 		} else {
 			sb.add(`var ${key} = __this.${key} = __add(__this,"${key}",{v:${val}});\n`);
 		}
-		if (addAccessors) {
+		if (addAccessors && !expr?.fndecl) {
 			// get/set value
 			sb.add(`Object.defineProperty(__this,"${key}",{`
 				+ `get:function() {return __rt.get(${key})}, `
