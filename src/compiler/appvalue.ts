@@ -61,15 +61,7 @@ export class AppValue {
 			if (expr.fndecl) {
 				if (key.startsWith(JS_EVENT_VALUE_PREFIX)) {
 					key = key.substr(JS_EVENT_VALUE_PREFIX.length);
-					var p = key.split(':');
-					var dom = (p.length > 1 ? p[0] : '__this.__dom');
-					var evtype = p[p.length - 1];
-					if (expr.code.startsWith('(function(') && expr.code.endsWith(');')) {
-						expr.code = expr.code.substr(1, expr.code.length - 3);
-					} else if (expr.code.endsWith(';')) {
-						expr.code = expr.code.substr(0, expr.code.length - 1);
-					}
-					sb.add(`__ev({e:${dom},t:"${evtype}",h:${expr.code}});\n`);
+					this._outputEvHandler(key, expr, sb);
 				} else {
 					sb.add(`var ${key} = __this.${key} = __add(__this,"${key}",{v:${expr.code}});\n`);
 				}
@@ -112,6 +104,38 @@ export class AppValue {
 			});
 		}
 		return sb;
+	}
+
+	_outputEvHandler(key:string, expr:Expr, sb:StringBuf) {
+		var p = key.split(':');
+		var dom = '__this.__dom';
+		var scope;
+		if (p.length > 1) {
+			switch (p[0]) {
+				case 'document':
+					dom = '__scope_0.__doc';
+					break;
+				case 'window':
+					dom = '__scope_0.__win';
+					break;
+				default:
+					scope = this._getScopeForIdentifier(this.scope, p[0]);
+					if (scope) {
+						dom = `__scope_${scope.id}.${p[0]}`;
+					} else {
+						//TODO: throw error
+						return;
+					}
+			}
+		}
+		var evtype = p[p.length - 1];
+		if (expr.code.startsWith('(function(') && expr.code.endsWith(');')) {
+			expr.code = expr.code.substr(1, expr.code.length - 3);
+		} else if (expr.code.endsWith(';')) {
+			expr.code = expr.code.substr(0, expr.code.length - 1);
+		}
+		sb.add(`__ev({e:${dom},t:"${evtype}",h:${expr.code}});\n`);
+		// this._getScopeForIdentifier(this.scope, )
 	}
 
 	// https://lihautan.com/babel-ast-explorer/

@@ -257,16 +257,49 @@ describe("test runtime", () => {
 	// event handlers
 	// =========================================================================
 
-	// it("testEventHandler1", () => {
-	// 	var doc = HtmlParser.parse(`<html>
-	// 		<body :event-click=[[function(ev) {console.log(ev);}]]></body>
-	// 	</html>`);
-	// 	var rt = new Array<RuntimeObj>();
-	// 	var root = run(doc, rt);
-	// 	expect(rt[0].evhandlers.length).toBe(1);
-	// 	expect(rt[0].evhandlers[0].e).toBe(root.body.__dom);
-	// 	expect(rt[0].evhandlers[0].t).toBe('click');
-	// });
+	it("testEventHandler1", () => {
+		var doc = HtmlParser.parse(`<html>
+			<body :event-click=[[function(ev) {console.log(ev);}]]></body>
+		</html>`);
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt);
+		expect(rt[0].evhandlers.length).toBe(1);
+		expect(rt[0].evhandlers[0].e).toBe(root.body.__dom);
+		expect(rt[0].evhandlers[0].t).toBe('click');
+	});
+
+	it("testEventHandler1b", () => {
+		var doc = HtmlParser.parse(`<html>
+			<body :event-click=[[(ev) => console.log(ev)]]></body>
+		</html>`);
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt);
+		expect(rt[0].evhandlers.length).toBe(1);
+		expect(rt[0].evhandlers[0].e).toBe(root.body.__dom);
+		expect(rt[0].evhandlers[0].t).toBe('click');
+	});
+
+	it("testEventHandler2", () => {
+		var doc = HtmlParser.parse(`<html>
+			<body :event-document:click=[[function(ev) {console.log(ev);}]]></body>
+		</html>`);
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt);
+		expect(rt[0].evhandlers.length).toBe(1);
+		expect(rt[0].evhandlers[0].e).toBe(root.__doc);
+		expect(rt[0].evhandlers[0].t).toBe('click');
+	});
+
+	it("testEventHandler3", () => {
+		var doc = HtmlParser.parse(`<html>
+			<body :event-window:click=[[function(ev) {console.log(ev);}]]></body>
+		</html>`);
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt);
+		expect(rt[0].evhandlers.length).toBe(1);
+		expect(rt[0].evhandlers[0].e).toBe(rt[0].page.window);
+		expect(rt[0].evhandlers[0].t).toBe('click');
+	});
 
 });
 

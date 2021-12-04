@@ -1,6 +1,7 @@
 import { DomDocument, DomTextNode } from "../shared/dom";
-import { PageObj } from "../shared/runtime";
+import { PageObj, RuntimeEventSource } from "../shared/runtime";
 import { AppScope } from "./appscope";
+import { AppValue } from "./appvalue";
 import { ELEMENT_NODE, HtmlDocument, HtmlElement, HtmlNode, HtmlPos, HtmlText, TEXT_NODE } from "./htmldom";
 import Preprocessor from "./preprocessor";
 import { makeCamelName, StringBuf } from "./util";
@@ -53,16 +54,24 @@ export default class App {
 		this.scopes = [];
 		this.errors = [];
 		var root = doc.getFirstElementChild() as HtmlElement;
-		this.root = this._loadScope(root, this._loadProps(root), 0, prepro);
+		var props = this._loadProps(root);
+		this.root = this._loadScope(root, props, 0, prepro);
 		this.root.compile();
 		this._cleanupDom(root);
 	}
 
-	output(): PageObj {
+	output(window?:RuntimeEventSource): PageObj {
 		var sb = new StringBuf();
 		this.root.output(sb);
+		if (!window) {
+			window = {
+				addEventListener: (t:string, h:any) => {},
+				removeEventListener: (t:string, h:any) => {},
+			}
+		}
 		return {
 			doc: this.doc as DomDocument,
+			window: window,
 			nodes: this.nodes,
 			script: sb.toString()
 		};

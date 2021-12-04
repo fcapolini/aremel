@@ -111,7 +111,7 @@ describe("test server app", () => {
 			function __ev(h) {__rt.evhandlers.push(h);}
 			function __domGetter(id) {return __rt.page.nodes[id];}
 			var __this, __scope_0;
-			__this = __scope_0 = {__dom:__domGetter(0),__doc:__rt.page.doc};
+			__this = __scope_0 = {__dom:__domGetter(0),__win:__rt.page.window,__doc:__rt.page.doc};
 			__ev({e:__this.__dom,t:"click",h:(function (ev) {console.log(ev);})});
 			return __this;
 		}`));
@@ -188,7 +188,7 @@ describe("test server app", () => {
 			function __ev(h) {__rt.evhandlers.push(h);}
 			function __domGetter(id) {return __rt.page.nodes[id];}
 			var __this, __scope_0;
-			__this = __scope_0 = {__dom:__domGetter(0),__doc:__rt.page.doc};
+			__this = __scope_0 = {__dom:__domGetter(0),__win:__rt.page.window,__doc:__rt.page.doc};
 			__f = function(__outer,__outer_get_data,__outer_data,__add,__link,__ev,__domGetter,__self) {
 				var __this, __scope_1;
 				__this = __scope_1 = {__outer:__outer,__dom:__domGetter(1),__self:__self};
@@ -219,7 +219,7 @@ describe("test server app", () => {
 			function __ev(h) {__rt.evhandlers.push(h);}
 			function __domGetter(id) {return __rt.page.nodes[id];}
 			var __this, __scope_0;
-			__this = __scope_0 = {__dom:__domGetter(0),__doc:__rt.page.doc};
+			__this = __scope_0 = {__dom:__domGetter(0),__win:__rt.page.window,__doc:__rt.page.doc};
 			var v1 = __this.v1 = __add(__this,"v1",{fn:function() {return 1;}});
 			Object.defineProperty(__this,\"v1\",{get:function() {return __rt.get(v1)}, set:function(__v_) {return __rt.set(v1, __v_)}});
 			Object.defineProperty(__this,\"__value_v1\",{get:function() {return v1}});

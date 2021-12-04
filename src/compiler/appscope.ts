@@ -83,6 +83,7 @@ export class AppScope {
 			sb.add(`var __this, __scope_${this.id};\n`);
 			sb.add(`__this = __scope_${this.id} = `
 				+ `{__dom:__domGetter(${this.id}),`
+				+ `__win:__rt.page.window,`
 				+ `__doc:__rt.page.doc};\n`);
 		}
 

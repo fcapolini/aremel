@@ -69,7 +69,7 @@ describe("test runtime", () => {
 	it("should add event listeners", () => {
 		var doc = HtmlParser.parse('<html :event-click=[[(ev) => console.log(ev)]]/>');
 		var rt = new Array<RuntimeObj>();
-		var root = run(doc, rt, true);
+		var root = run(doc, rt);
 		expect(doc.toString()).toBe('<html></html>');
 		expect(rt[0].evhandlers.length).toBe(1);
 		expect(rt[0].evhandlers[0].t).toBe('click');

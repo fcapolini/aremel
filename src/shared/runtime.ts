@@ -2,6 +2,11 @@ import { JS_ATTR_VALUE_PREFIX, JS_CLASS_VALUE_PREFIX, JS_DATA_VAR, JS_STYLE_VALU
 import { makeHyphenName } from "../compiler/util";
 import { DomNode, DomElement, TEXT_NODE, DomTextNode, DomDocument } from "./dom";
 
+export interface RuntimeEventSource {
+	addEventListener: (t:string,h:any)=>void,
+	removeEventListener: (t:string,h:any)=>void,
+}
+
 export interface RuntimeObj {
 	page: PageObj,
 	cycle: number,
@@ -30,6 +35,7 @@ export interface RuntimeObj {
 
 export interface PageObj {
 	doc: DomDocument,
+	window: RuntimeEventSource,
 	nodes: Array<any>,
 	script?: string,
 }

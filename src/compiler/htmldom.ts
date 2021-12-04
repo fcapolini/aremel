@@ -277,7 +277,7 @@ export class HtmlElement extends HtmlNode {
 	}
 
 	addEventListener(t:string, l:(ev:any)=>void) {
-		console.log(`${this.tagName}.addEventListener("${t}")`);
+		// console.log(`${this.tagName}.addEventListener("${t}")`);
 	}
 	removeEventListener(t:string, l:(ev:any)=>void) {}
 
