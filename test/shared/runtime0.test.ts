@@ -479,6 +479,7 @@ describe("test runtime", () => {
 	/**
 	 * data context refinement: expressions inside a `:data` attribute have
 	 * references to `data` replaced with references to outer `data` value
+	 * (this is true for any value that refers to itself in its own expression)
 	 */
 	it("testDataBinding3", () => {
 		var doc = HtmlParser.parse(`<html :data=[[{"info":{"name":"Bob"}}]]>
@@ -488,6 +489,36 @@ describe("test runtime", () => {
 		var root = run(doc, rt);
 		expect(doc.toString()).toBe(`<html>
 			<body>Hello Bob</body>
+		</html>`);
+		root.data = {"info":{"name":"Jane"}};
+		expect(doc.toString()).toBe(`<html>
+			<body>Hello Jane</body>
+		</html>`);
+	});
+
+	it("testDataBinding4", () => {
+		var doc = HtmlParser.parse(`<html :data=[[{"info":{"name":"Bob"}}]]>
+			<body :data=[[data.info]]>Hello [[data.x]]</body>
+		</html>`);
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt);
+		expect(doc.toString()).toBe(`<html>
+			<body>Hello </body>
+		</html>`);
+		root.data = {"info":{"x":"Jane"}};
+		expect(doc.toString()).toBe(`<html>
+			<body>Hello Jane</body>
+		</html>`);
+	});
+
+	it("testDataBindingAutoHide", () => {
+		var doc = HtmlParser.parse(`<html :data=[[{"x":{"name":"Bob"}}]]>
+			<body :data=[[data.info]]>Hello [[data.name]]</body>
+		</html>`);
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt);
+		expect(doc.toString()).toBe(`<html>
+			<body class="__cerere-autohide"></body>
 		</html>`);
 		root.data = {"info":{"name":"Jane"}};
 		expect(doc.toString()).toBe(`<html>
