@@ -90,6 +90,14 @@ export class HtmlElement extends HtmlNode {
 		}
 	}
 
+	appendChild(n:any) {
+		this.addChild(n);
+	}
+
+	insertBefore(n:any, ref:any) {
+		this.addChild(n, ref);
+	}
+
 	addChild(child:HtmlNode, before?:HtmlNode) {
 		child.parentElement = this;
 		var i = before ? this.children.indexOf(before) : -1;
@@ -234,6 +242,12 @@ export class HtmlElement extends HtmlNode {
 		}
 	}
 
+	get outerHTML() {
+		var sb = new StringBuf();
+		this.output(sb);
+		return sb.toString();
+	}
+
 	override output(sb:StringBuf, sort=false): StringBuf {
 		var name = this.tagName.toLowerCase();
 		sb.add('<'); sb.add(name);
@@ -305,6 +319,12 @@ export class HtmlDocument extends HtmlElement {
 		super(undefined, undefined, "#document", 0, 0, origin);
 		this.ownerDocument = this;
 		this.selfclose = true;
+	}
+
+	createElement(tagName:string): any {
+		// constructor(doc:HtmlDocument | undefined, parent:HtmlElement|undefined, name:string, i1:number, i2:number, origin:number) {
+		var ret = new HtmlElement(this, undefined, tagName, 1, 1, 0);
+		return ret;
 	}
 
 	override output(sb:StringBuf, sort=false): StringBuf {

@@ -1,6 +1,6 @@
-import { JS_ATTR_VALUE_PREFIX, JS_CLASS_VALUE_PREFIX, JS_DATA_VAR, JS_STYLE_VALUE_PREFIX, JS_TEXT_VALUE_PREFIX } from "../compiler/app";
+import { DOM_CLONEINDEX_ATTR, DOM_ID_ATTR, JS_ATTR_VALUE_PREFIX, JS_CLASS_VALUE_PREFIX, JS_DATALENGTH_VAR, JS_DATAOFFSET_VAR, JS_DATA_VAR, JS_STYLE_VALUE_PREFIX, JS_TEXT_VALUE_PREFIX } from "../compiler/app";
 import { makeHyphenName } from "../compiler/util";
-import { DomNode, DomElement, TEXT_NODE, DomTextNode, DomDocument } from "./dom";
+import { DomDocument, DomElement, DomNode, DomTextNode, ELEMENT_NODE, TEXT_NODE } from "./dom";
 
 export interface RuntimeEventSource {
 	addEventListener: (t:string,h:any)=>void,
@@ -119,7 +119,7 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 		} else if (k.startsWith(JS_TEXT_VALUE_PREFIX)) {
 			linkText(o.__dom, k.substr(JS_ATTR_VALUE_PREFIX.length), v);
 		} else if (k === JS_DATA_VAR) {
-			// linkData(o, v);
+			linkData(o, v);
 		}
 		return v;
 	}
@@ -220,6 +220,116 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 		var node = tnode(dom, name);
 		addCallback(value, (v) => {
 			node ? node.nodeValue = (v ? '' + v : '') : null;
+		});
+		return value;
+	}
+
+	function linkData(that:any, value:ValueObj) {
+
+		function cloneSelf(i:number, data:any, dom?:DomElement): any {
+			var ret = null;
+			var values = new Array<ValueObj>();
+			var nodes = new Map<String, DomElement>();
+			var links = new Array<{o:ValueObj, v:()=>ValueObj}>();
+			var evs = new Array<{e:DomElement,t:string,h:(v:any)=>void}>();
+			function __add(v:ValueObj) {values.push(v); return v;}
+			function __link(l:any) {links.push(l);}
+			function __ev(h:{e:DomElement,t:string,h:(v:any)=>void}) {evs.push(h);}
+			function __node(id:String) {return nodes.get(id);}
+			if (that.__self) {
+				if (!dom) {
+					// clone DOM
+					var src:DomElement = that.__dom;
+					var html = src.outerHTML;
+					var wrapper = runtime.page.doc.createElement('div');
+					wrapper.innerHTML = html;
+					dom = wrapper.getFirstElementChild() as DomElement;
+					dom.setAttribute(DOM_CLONEINDEX_ATTR, `${i}`);
+					src.parentElement?.insertBefore(dom, src);
+				}
+				// collect nodes
+				function f(e:DomElement) {
+					var id = e.getAttribute(DOM_ID_ATTR);
+					id ? nodes.set(id, e) : null;
+					e.childNodes.forEach((n, i) => {
+						if (n.nodeType === ELEMENT_NODE) {
+							f(n as DomElement);
+						}
+					});
+				}
+				f(dom);
+				// clone scope
+				ret = that.__self(that.__outer, {v:data},
+						__add, __link, __ev, __node, undefined);
+				ret.__values = values;
+				ret.__links = links;
+				ret.__evs = evs;
+				link(links);
+				addEvHandlers(evs);
+			}
+		return ret;
+		}
+
+		function refresh(that:any) {
+			var vv:Array<ValueObj> = that.__values;
+			for (var v of vv) {
+				get(v);
+			}
+		}
+
+		function remove(that:any) {
+			var e:DomElement = that.__dom;
+			e.parentElement?.removeChild(e);
+			unlink(that.__links);
+			removeEvHandlers(that.__evs);
+		}
+
+		addCallback(value, (v) => {
+			var clone:any;
+			if (Array.isArray(v)) {
+
+				var offset = that[JS_DATAOFFSET_VAR];
+				var length = that[JS_DATALENGTH_VAR];
+				if (offset || length) {
+					!offset ? offset = 0 : null;
+					length && length < 0 ? length = undefined : null;
+					!length ? length = v.length : Math.max(0, v.length - offset);
+					v = v.slice(offset, offset + length);
+				}
+
+				if (!that.__clones) {
+					that.__clones = [];
+				}
+
+				var count = Math.max(v.length - 1, 0);
+				for (var i = 0; i < count; i++) {
+					if (i < that.__clones.length) {
+						// refresh existing clones
+						clone = that.__clones[i];
+						set(clone.__value_data, v[i]);
+					} else {
+						// create missing clones
+						clone = cloneSelf(i, v[i]);
+						that.__clones.push(clone);
+						refresh(clone);
+					}
+				}
+				// remove exeeding clones
+				while (that.__clones.length > count) {
+					clone = that.__clones.pop();
+					remove(clone);
+				}
+
+				// make original node display last data element
+				var ret = (v.length > 0 ? v[v.length - 1] : null);
+				return ret;
+
+			} else if (that.__clones) {
+				for (clone of that.__clones) {
+					remove(clone);
+				}
+			}
+			return v;
 		});
 		return value;
 	}

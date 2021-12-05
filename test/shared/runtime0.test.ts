@@ -526,6 +526,25 @@ describe("test runtime", () => {
 		</html>`);
 	});
 
+	// =========================================================================
+	// replication
+	// =========================================================================
+
+	// it("testReplication1", () => {
+	// 	var doc = HtmlParser.parse(`<html>
+	// 		<body>
+	// 			<div :data=[[ ["a", "b", "c"] ]]>[[data]]</div>
+	// 		</body>
+	// 	</html>`);
+	// 	var rt = new Array<RuntimeObj>();
+	// 	var root = run(doc, rt, true);
+	// 	expect(doc.toString()).toBe(`<html>
+	// 		<body>
+	// 			<div data-cerere-i="0">a</div><div data-cerere-i="1">b</div><div>c</div>
+	// 		</body>
+	// 	</html>`);
+	// });
+
 });
 
 function run(doc:HtmlDocument, ret?:Array<RuntimeObj>, dump=false): any {

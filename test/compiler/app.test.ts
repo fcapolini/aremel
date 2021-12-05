@@ -104,7 +104,7 @@ describe("test server app", () => {
 		expect(value?.expr?.fndecl).toBeTruthy();
 		expect(doc.toString()).toBe(`<html></html>`);
 		expect(app.output().script).toBe(normalizeText(`function(__rt) {
-			var __f, __get_data = null, data = null;
+			var __f, __data = null;
 			var __add = __rt.add;
 			function __nn(v) {return v != null ? v : \"\";}
 			function __link(l) {__rt.links.push(l);}
@@ -181,7 +181,7 @@ describe("test server app", () => {
 
 		expect (app.output().script).toBe(normalizeText(
 		`function(__rt) {
-			var __f, __get_data = null, data = null;
+			var __f, __data = null;
 			var __add = __rt.add;
 			function __nn(v) {return v != null ? v : "";}
 			function __link(l) {__rt.links.push(l);}
@@ -189,7 +189,7 @@ describe("test server app", () => {
 			function __domGetter(id) {return __rt.page.nodes[id];}
 			var __this, __scope_0;
 			__this = __scope_0 = {__dom:__domGetter(0),__win:__rt.page.window,__doc:__rt.page.doc};
-			__f = function(__outer,__outer_get_data,__outer_data,__add,__link,__ev,__domGetter,__self) {
+			__f = function(__outer,__data,__add,__link,__ev,__domGetter,__self) {
 				var __this, __scope_1;
 				__this = __scope_1 = {__outer:__outer,__dom:__domGetter(1),__self:__self};
 				__scope_0.__scope_1 = __this;
@@ -202,7 +202,7 @@ describe("test server app", () => {
 				__link({"o":__this.__value_v2, "v":function() {return __scope_0.__scope_1.__value_v1;}});
 				return __this;
 			}
-			__this.body = __f(__this,__get_data,data,__add,__link,__ev,__domGetter,__f);
+			__this.body = __f(__this,null,__add,__link,__ev,__domGetter,__f);
 			return __this;
 		}`));
 	});
@@ -212,7 +212,7 @@ describe("test server app", () => {
 		var app = new App(doc);
 		expect (app.output().script).toBe(normalizeText(
 		`function(__rt) {
-			var __f, __get_data = null, data = null;
+			var __f, __data = null;
 			var __add = __rt.add;
 			function __nn(v) {return v != null ? v : \"\";}
 			function __link(l) {__rt.links.push(l);}
@@ -223,7 +223,7 @@ describe("test server app", () => {
 			var v1 = __this.v1 = __add(__this,"v1",{fn:function() {return 1;}});
 			Object.defineProperty(__this,\"v1\",{get:function() {return __rt.get(v1)}, set:function(__v_) {return __rt.set(v1, __v_)}});
 			Object.defineProperty(__this,\"__value_v1\",{get:function() {return v1}});
-			__f = function(__outer,__outer_get_data,__outer_data,__add,__link,__ev,__domGetter,__self) {
+			__f = function(__outer,__data,__add,__link,__ev,__domGetter,__self) {
 				var __this, __scope_1;
 				__this = __scope_1 = {__outer:__outer,__dom:__domGetter(1),__self:__self};
 				__scope_0.__scope_1 = __this;
@@ -233,7 +233,7 @@ describe("test server app", () => {
 				__link({\"o\":__this.__value_v2, \"v\":function() {return __scope_0.__value_v1;}});
 				return __this;
 			}
-			__this.body = __f(__this,__get_data,data,__add,__link,__ev,__domGetter,__f);
+			__this.body = __f(__this,null,__add,__link,__ev,__domGetter,__f);
 			return __this;
 		}`));
 	});

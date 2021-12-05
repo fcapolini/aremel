@@ -75,6 +75,8 @@ export class AppValue {
 					this._cleanupFunctionCode(expr);
 					sb.add(`__this.${key} = ${expr.code};\n`);
 				}
+			} else if (key === JS_DATA_VAR) {
+				sb.add(`var ${key} = __this.${key} = __add(__this,"${key}",__data ? __data : {fn:function() {${expr.code}}});\n`);
 			} else {
 				sb.add(`var ${key} = __this.${key} = __add(__this,"${key}",{fn:function() {${expr.code}}});\n`);
 			}

@@ -43,12 +43,16 @@ export interface DomElement extends DomNode {
 		setProperty: (key:string, val:string)=>void;
 		removeProperty: (key:string)=>void;
 	};
-	getAttribute: (key:string)=>void;
+	getAttribute: (key:string)=>string|undefined;
 	setAttribute: (key:string, val:string)=>void;
 	removeAttribute: (key:string)=>void;
 	addEventListener: (t:string, l:(ev:any)=>void)=>void;
 	removeEventListener: (t:string, l:(ev:any)=>void)=>void;
+	outerHTML: string;
+	innerHTML: string;
 }
 
+// https://developer.mozilla.org/en-US/docs/Web/API/Document
 export interface DomDocument extends DomNode {
+	createElement: (tagName:string)=>DomElement;
 }

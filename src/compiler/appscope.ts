@@ -66,7 +66,7 @@ export class AppScope {
 
 		// enter scope
 		if (this.parent) {
-			sb.add(`__f = function(__outer,__outer_get_data,__outer_data,__add,`
+			sb.add(`__f = function(__outer,__data,__add,`
 				+ `__link,__ev,__domGetter,__self) {\n`);
 			sb.add(`var __this, __scope_${this.id};\n`);
 			sb.add(`__this = __scope_${this.id} = {__outer:__outer,`
@@ -74,7 +74,7 @@ export class AppScope {
 			sb.add(`__scope_${this.parent.id}.__scope_${this.id} = __this;\n`);
 		} else {
 			sb.add(`function(__rt) {\n`
-				+ `var __f, __get_data = null, data = null;\n`
+				+ `var __f, __data = null;\n`
 				+ `var __add = __rt.add;\n`
 				+ `function __nn(v) {return v != null ? v : "";}\n`
 				+ `function __link(l) {__rt.links.push(l);}\n`
@@ -99,7 +99,7 @@ export class AppScope {
 			if (child.aka) {
 				sb.add(`__this.${child.aka} = `);
 			}
-			sb.add(`__f(__this,__get_data,data,__add,__link,__ev,__domGetter,__f);\n`);
+			sb.add(`__f(__this,null,__add,__link,__ev,__domGetter,__f);\n`);
 		});
 
 		// exit scope
