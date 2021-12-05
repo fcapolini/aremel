@@ -31,10 +31,10 @@ export const JS_NOTNULL_FN = '__nn';
 export const JS_DATA_VAR = 'data';
 export const JS_DATAOFFSET_VAR = 'dataOffset';
 export const JS_DATALENGTH_VAR = 'dataLength';
-export const JS_AUTOHIDE_CLASS = JS_CLASS_VALUE_PREFIX + '__cerereAutohide';
-export const CSS_AUTOHIDE_CLASS = '__cerere-autohide';
-export const DOM_ID_ATTR = 'data-cerere';
-export const DOM_CLONEINDEX_ATTR = 'data-cerere-i';
+export const JS_AUTOHIDE_CLASS = JS_CLASS_VALUE_PREFIX + '__aremelAutohide';
+export const CSS_AUTOHIDE_CLASS = '__aremel-autohide';
+export const DOM_ID_ATTR = 'data-aremel';
+export const DOM_CLONEINDEX_ATTR = 'data-aremel-i';
 
 export const nonValues = new Set([JS_AKA_VAR]);
 

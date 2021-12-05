@@ -4,7 +4,7 @@ import HtmlParser from "../../src/compiler/htmlparser";
 import { make, RuntimeObj } from "../../src/shared/runtime";
 
 /*
-	original tests from previous version "cerere"
+	original tests from previous version "aremel"
 */
 describe("test runtime", () => {
 
@@ -215,8 +215,8 @@ describe("test runtime", () => {
 		var doc = HtmlParser.parse(`<html :hidden=[[false]]></html>`);
 		var root = run(doc);
 		expect(doc.toString()).toBe(`<html></html>`);
-		root.class___cerereAutohide = true;
-		expect(doc.toString()).toBe(`<html class="__cerere-autohide"></html>`);
+		root.class___aremelAutohide = true;
+		expect(doc.toString()).toBe(`<html class="__aremel-autohide"></html>`);
 	});
 
 	// =========================================================================
@@ -518,7 +518,7 @@ describe("test runtime", () => {
 		var rt = new Array<RuntimeObj>();
 		var root = run(doc, rt);
 		expect(doc.toString()).toBe(`<html>
-			<body class="__cerere-autohide"></body>
+			<body class="__aremel-autohide"></body>
 		</html>`);
 		root.data = {"info":{"name":"Jane"}};
 		expect(doc.toString()).toBe(`<html>
@@ -540,7 +540,7 @@ describe("test runtime", () => {
 	// 	var root = run(doc, rt, true);
 	// 	expect(doc.toString()).toBe(`<html>
 	// 		<body>
-	// 			<div data-cerere-i="0">a</div><div data-cerere-i="1">b</div><div>c</div>
+	// 			<div data-aremel-i="0">a</div><div data-aremel-i="1">b</div><div>c</div>
 	// 		</body>
 	// 	</html>`);
 	// });
