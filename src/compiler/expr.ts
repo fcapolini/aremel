@@ -52,5 +52,7 @@ export function prepareExpr(s:string): string {
 function escape(s:string): string {
 	s = s.replace("'", "\\'");
 	s = s.replace('"', '\\"');
+	s = s.replace('\n', '\\n');
+	s = s.replace('\r', '\\r');
 	return s;
 }

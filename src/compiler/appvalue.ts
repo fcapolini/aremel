@@ -31,7 +31,16 @@ export class AppValue {
 	compile() {
 		if (this.expr) {
 			if (this.key === JS_DATA_VAR) {
-				this.expr.code = `return ${this.expr.src};`;
+				if (/^\s*[\[|\{]/.test(this.expr.src)) {
+					// JSON
+					this.expr.code = `return ${this.expr.src};`;
+				} else {
+					// JS
+					this._patchExpr(this.expr);
+					if (this.expr?.fndecl) {
+						//TODO throw error
+					}
+				}
 			} else {
 				this._patchExpr(this.expr);
 				if (this.expr?.fndecl) {
@@ -63,7 +72,8 @@ export class AppValue {
 					key = key.substr(JS_EVENT_VALUE_PREFIX.length);
 					this._outputEvHandler(key, expr, sb);
 				} else {
-					sb.add(`var ${key} = __this.${key} = __add(__this,"${key}",{v:${expr.code}});\n`);
+					this._cleanupFunctionCode(expr);
+					sb.add(`__this.${key} = ${expr.code};\n`);
 				}
 			} else {
 				sb.add(`var ${key} = __this.${key} = __add(__this,"${key}",{fn:function() {${expr.code}}});\n`);
@@ -129,13 +139,17 @@ export class AppValue {
 			}
 		}
 		var evtype = p[p.length - 1];
+		this._cleanupFunctionCode(expr);
+		sb.add(`__ev({e:${dom},t:"${evtype}",h:${expr.code}});\n`);
+		// this._getScopeForIdentifier(this.scope, )
+	}
+
+	_cleanupFunctionCode(expr:Expr) {
 		if (expr.code.startsWith('(function(') && expr.code.endsWith(');')) {
 			expr.code = expr.code.substr(1, expr.code.length - 3);
 		} else if (expr.code.endsWith(';')) {
 			expr.code = expr.code.substr(0, expr.code.length - 1);
 		}
-		sb.add(`__ev({e:${dom},t:"${evtype}",h:${expr.code}});\n`);
-		// this._getScopeForIdentifier(this.scope, )
 	}
 
 	// https://lihautan.com/babel-ast-explorer/
@@ -260,7 +274,13 @@ export class AppValue {
 					if (path.key !== 'property') {
 						// not a dot access
 						var name = path.node.name;
-						var scope = this._getScopeForIdentifier(this.scope, name);
+						var scope:AppScope|undefined = this.scope;
+
+						if (name === this.key) {
+							scope = scope.parent;
+						}
+
+						scope = this._getScopeForIdentifier(scope, name);
 						if (scope) {
 							this.refs.add(scope.id + '.' + name);
 							path.replaceWith(memberExpression(
@@ -275,8 +295,13 @@ export class AppValue {
 						if (parts.length > 0 && parts.join('.').indexOf('#') < 0) {
 							// valid path
 							var name = parts.pop() as string;
-							// console.log(parts);
-							var scope = this._getScopeForPathname(parts);
+							var scope:AppScope|undefined = this.scope;
+
+							if (name === this.key) {
+								scope = scope.parent;
+							}	
+
+							scope = this._getScopeForPathname(scope, parts);
 							if (scope) {
 								this.refs.add(scope.id + '.' + name);
 
@@ -333,8 +358,9 @@ export class AppValue {
 		return undefined;
 	}
 
-	_getScopeForPathname(parts:Array<string>): AppScope | undefined {
-		var scope:AppScope|undefined = this.scope;
+	_getScopeForPathname(scope:AppScope|undefined,
+						parts:Array<string>): AppScope | undefined {
+		// var scope:AppScope|undefined = this.scope;
 		while (scope && parts.length > 0) {
 			var part = parts.shift() as string;
 			scope = this._getScopeForIdentifier(scope, part, true);

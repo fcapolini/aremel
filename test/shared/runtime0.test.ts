@@ -301,6 +301,200 @@ describe("test runtime", () => {
 		expect(rt[0].evhandlers[0].t).toBe('click');
 	});
 
+	// =========================================================================
+	// text values
+	// =========================================================================
+
+	it("testText1", () => {
+		var doc = HtmlParser.parse(`<html :name="Bob">[[name]]</html>`);
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt);
+		expect(doc.toString()).toBe('<html>Bob</html>');
+		root.name = 'Alice';
+		expect(doc.toString()).toBe('<html>Alice</html>');
+	});
+
+	it("testText2", () => {
+		var doc = HtmlParser.parse(`<html :name="Bob"><body>[[name]]</body></html>`);
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt);
+		expect(doc.toString()).toBe('<html><body>Bob</body></html>');
+		root.name = 'Alice';
+		expect(doc.toString()).toBe('<html><body>Alice</body></html>');
+	});
+
+	it("testText3", () => {
+		var doc = HtmlParser.parse(`<html :name="Bob"><body>
+			<h1>Message</h1>
+			<div>
+				<span>Hi</span>
+				[[name]]
+			</div>
+		</body></html>`);
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt);
+		expect(doc.toString()).toBe(`<html><body>
+			<h1>Message</h1>
+			<div>
+				<span>Hi</span>
+				Bob
+			</div>
+		</body></html>`);
+		root.name = 'Alice';
+		expect(doc.toString()).toBe(`<html><body>
+			<h1>Message</h1>
+			<div>
+				<span>Hi</span>
+				Alice
+			</div>
+		</body></html>`);
+	});
+
+	// =========================================================================
+	// method values
+	// =========================================================================
+
+	it("testMethod1", () => {
+		var doc = HtmlParser.parse(`<html :add=[[function(a, b) {return a + b;}]]>
+			<body>[[add(1, 2)]]</body>
+		</html>`);
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt);
+		expect(doc.toString()).toBe(`<html>
+			<body>3</body>
+		</html>`);
+	});
+
+	it("testMethod2", () => {
+		var doc = HtmlParser.parse(`<html :add=[[ function (a, b) { return a + b; } ]]>
+			<body>[[add(1, 2)]]</body>
+		</html>`);
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt);
+		expect(doc.toString()).toBe(`<html>
+			<body>3</body>
+		</html>`);
+	});
+
+	it("testMethod2b", () => {
+		var doc = HtmlParser.parse(`<html :add=[[ function (a, b) { return a + b } ]]>
+			<body>[[add(1, 2)]]</body>
+		</html>`);
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt);
+		expect(doc.toString()).toBe(`<html>
+			<body>3</body>
+		</html>`);
+	});
+
+	it("testMethod2c", () => {
+		var doc = HtmlParser.parse(`<html :add=[[ (a, b) => { return a + b; } ]]>
+			<body>[[add(1, 2)]]</body>
+		</html>`);
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt);
+		expect(doc.toString()).toBe(`<html>
+			<body>3</body>
+		</html>`);
+	});
+
+	it("testMethod2d", () => {
+		var doc = HtmlParser.parse(`<html :add=[[ (a, b) => a + b ]]>
+			<body>[[add(1, 2)]]</body>
+		</html>`);
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt);
+		expect(doc.toString()).toBe(`<html>
+			<body>3</body>
+		</html>`);
+	});
+
+	it("testMethod3", () => {
+		var doc = HtmlParser.parse(`<html>
+			<body :add=[[function(a, b) {return a + b;}]]>[[add(1, 2)]]</body>
+		</html>`);
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt);
+		expect(doc.toString()).toBe(`<html>
+			<body>3</body>
+		</html>`);
+	});
+
+	it("testMethod4", () => {
+		var doc = HtmlParser.parse(`<html :a=[[1]]>
+			<head></head><body :a=[[2]] :add=[[function(b) {return a + b;}]]>[[add(2)]]</body>
+		</html>`);
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt);
+		expect(doc.toString()).toBe(`<html>
+			<head></head><body>4</body>
+		</html>`);
+	});
+
+	it("testMethod5", () => {
+		var doc = HtmlParser.parse(`<html :a=[[1]] :add=[[function(b) {return a + b;}]]>
+			<body :a=[[2]]>[[add(2)]]</body>
+		</html>`);
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt);
+		expect(doc.toString()).toBe(`<html>
+			<body>3</body>
+		</html>`);
+	});
+
+	// =========================================================================
+	// data binding
+	// =========================================================================
+
+	it("testDataBinding1", () => {
+		var doc = HtmlParser.parse(`<html :data=[[{"name":"Bob"}]]>
+			<body>Hello [[ data["name"] ]]</body>
+		</html>`);
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt);
+		expect(doc.toString()).toBe(`<html>
+			<body>Hello Bob</body>
+		</html>`);
+		root.data = {"name": "Jane"};
+		expect(doc.toString()).toBe(`<html>
+			<body>Hello Jane</body>
+		</html>`);
+	});
+
+	it("testDataBinding2", () => {
+		var doc = HtmlParser.parse(`<html :data=[[{"name":"Bob"}]]>
+			<body>Hello [[data.name]]</body>
+		</html>`);
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt);
+		expect(doc.toString()).toBe(`<html>
+			<body>Hello Bob</body>
+		</html>`);
+		root.data = {"name": "Jane"};
+		expect(doc.toString()).toBe(`<html>
+			<body>Hello Jane</body>
+		</html>`);
+	});
+
+	/**
+	 * data context refinement: expressions inside a `:data` attribute have
+	 * references to `data` replaced with references to outer `data` value
+	 */
+	it("testDataBinding3", () => {
+		var doc = HtmlParser.parse(`<html :data=[[{"info":{"name":"Bob"}}]]>
+			<body :data=[[data.info]]>Hello [[data.name]]</body>
+		</html>`);
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt);
+		expect(doc.toString()).toBe(`<html>
+			<body>Hello Bob</body>
+		</html>`);
+		root.data = {"info":{"name":"Jane"}};
+		expect(doc.toString()).toBe(`<html>
+			<body>Hello Jane</body>
+		</html>`);
+	});
+
 });
 
 function run(doc:HtmlDocument, ret?:Array<RuntimeObj>, dump=false): any {
