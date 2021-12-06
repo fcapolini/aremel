@@ -545,6 +545,80 @@ describe("test runtime", () => {
 		</html>`);
 	});
 
+	it("testReplication2", () => {
+		var doc = HtmlParser.parse(`<html>
+			<body :label="data">
+				<div :aka="theDiv" :data=[[ ["a", "b", "c"] ]]>[[label]]: [[data]]</div>
+			</body>
+		</html>`);
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt);
+		expect(doc.toString(true)).toBe(`<html data-aremel="0">
+			<body data-aremel="1">
+				<div data-aremel="2" data-aremel-i="0">data: a</div><div data-aremel="2" data-aremel-i="1">data: b</div><div data-aremel="2">data: c</div>
+			</body>
+		</html>`);
+		expect(root.body.__value_label.observers.length).toBe(3);
+		root.body.label = 'letter';
+		expect(doc.toString(true)).toBe(`<html data-aremel="0">
+			<body data-aremel="1">
+				<div data-aremel="2" data-aremel-i="0">letter: a</div><div data-aremel="2" data-aremel-i="1">letter: b</div><div data-aremel="2">letter: c</div>
+			</body>
+		</html>`);
+		root.body.theDiv.data = ["l", "m", "n"];
+		expect(doc.toString(true)).toBe(`<html data-aremel="0">
+			<body data-aremel="1">
+				<div data-aremel="2" data-aremel-i="0">letter: l</div><div data-aremel="2" data-aremel-i="1">letter: m</div><div data-aremel="2">letter: n</div>
+			</body>
+		</html>`);
+	});
+
+	it("testReplication3", () => {
+		var doc = HtmlParser.parse(`<html>
+			<body :label="data" :data=[[ {list:["a", "b", "c"]} ]]>
+				<div :aka="theDiv" :data=[[data.list]]>[[label]]: [[data]]</div>
+			</body>
+		</html>`);
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt);
+		expect(doc.toString(true)).toBe(`<html data-aremel="0">
+			<body data-aremel="1">
+				<div data-aremel="2" data-aremel-i="0">data: a</div><div data-aremel="2" data-aremel-i="1">data: b</div><div data-aremel="2">data: c</div>
+			</body>
+		</html>`);
+		expect(root.body.__value_label.observers.length).toBe(3);
+		root.body.label = 'letter';
+		expect(doc.toString(true)).toBe(`<html data-aremel="0">
+			<body data-aremel="1">
+				<div data-aremel="2" data-aremel-i="0">letter: a</div><div data-aremel="2" data-aremel-i="1">letter: b</div><div data-aremel="2">letter: c</div>
+			</body>
+		</html>`);
+		root.body.data = {list:["l", "m", "n"]};
+		expect(doc.toString(true)).toBe(`<html data-aremel="0">
+			<body data-aremel="1">
+				<div data-aremel="2" data-aremel-i="0">letter: l</div><div data-aremel="2" data-aremel-i="1">letter: m</div><div data-aremel="2">letter: n</div>
+			</body>
+		</html>`);
+	});
+
+	it("testReplication4", () => {
+		var doc = HtmlParser.parse(`<html>
+			<body :label="data" :data=[[ {list:["a", "b", "c"]} ]]>
+				<div :aka="theDiv" :data=[[data.list]]>[[label]]: [[data]]</div>
+			</body>
+		</html>`);
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt);
+		expect(root.body.__value_label.observers.length).toBe(3);
+		root.body.data = {list:["l", "m"]};
+		expect(root.body.__value_label.observers.length).toBe(2);
+		expect(doc.toString(true)).toBe(`<html data-aremel="0">
+			<body data-aremel="1">
+				<div data-aremel="2" data-aremel-i="0">data: l</div><div data-aremel="2">data: m</div>
+			</body>
+		</html>`);
+	});
+
 });
 
 function run(doc:HtmlDocument, ret?:Array<RuntimeObj>, dump=false): any {
