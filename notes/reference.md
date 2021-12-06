@@ -9,7 +9,8 @@
   * [estexplorer](https://astexplorer.net)
 * [Compiler API (TypeScript)](https://learning-notes.mistermicheels.com/javascript/typescript/compiler-api) very interesting [but not yet stable](https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API); we'll stick to ~~Acorn~~ Babel for the time being
 * [Express](http://expressjs.com)
-* [Using TypeScript with Node.js and Express](https://blog.logrocket.com/typescript-with-node-js-and-express/)
+  * [Using TypeScript with Node.js and Express](https://blog.logrocket.com/typescript-with-node-js-and-express/)
+  * [Node.js - Express Framework](https://www.tutorialspoint.com/nodejs/nodejs_express_framework.htm)
 * HTML parsing
   * [Fast HTML Parser](https://www.npmjs.com/package/node-html-parser)
   * [jsdom](https://www.npmjs.com/package/jsdom) (uses parse5)
