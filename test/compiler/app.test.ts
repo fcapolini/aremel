@@ -102,7 +102,7 @@ describe("test server app", () => {
 		expect(value?.expr?.src).toBe('(function(ev) {console.log(ev)})');
 		expect(value?.expr?.code).toBe('(function (ev) {console.log(ev);});');
 		expect(value?.expr?.fndecl).toBeTruthy();
-		expect(doc.toString()).toBe(`<html></html>`);
+		expect(doc.toString()).toBe(`<html data-aremel="0"></html>`);
 		expect(app.output().script).toBe(normalizeText(`function(__rt) {
 			var __f, __data = null;
 			var __add = __rt.add;

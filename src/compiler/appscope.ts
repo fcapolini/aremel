@@ -1,5 +1,5 @@
 import { DomElement, DomNode, DomTextNode } from "../shared/dom";
-import App, { JS_AKA_VAR, JS_TEXT_VALUE_PREFIX, nonValues, Prop } from "./app";
+import App, { DOM_ID_ATTR, JS_AKA_VAR, JS_TEXT_VALUE_PREFIX, nonValues, Prop } from "./app";
 import { AppValue } from "./appvalue";
 import { HtmlElement } from "./htmldom";
 import Preprocessor from "./preprocessor";
@@ -31,6 +31,7 @@ export class AppScope {
 		this.children = [];
 		this.texts = [];
 		this.values = new Map();
+		dom.setAttribute(DOM_ID_ATTR, `${id}`);
 		for (var key of props.keys()) {
 			if (!nonValues.has(key)) {
 				var prop = props.get(key) as Prop;

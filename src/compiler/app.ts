@@ -146,7 +146,6 @@ export default class App {
 	_loadScope(e:HtmlElement, props:Map<string,Prop>,
 				nesting:number, prepro?:Preprocessor, parent?:AppScope): AppScope {
 		var id = this.nodes.length;
-		var aka = props.get(JS_AKA_VAR)?.val;
 		var ret = new AppScope(this, id, e, props, prepro, parent);
 		this.nodes.push(e);
 		this.scopes.push(ret);

@@ -252,32 +252,35 @@ export class HtmlElement extends HtmlNode {
 		var name = this.tagName.toLowerCase();
 		sb.add('<'); sb.add(name);
 
-		var keys = this.getAttributeNames();
+		// var keys = this.getAttributeNames();
 
-		if (this.classList.classes && this.classList.classes.size > 0) {
-			var sep = '';
-			sb.add(' class="');
-			this.classList.classes.forEach((v) => {sb.add(sep + v); sep = '';});
-			sb.add('"');
-		}
+		// if (this.classList.classes && this.classList.classes.size > 0) {
+		// 	var sep = '';
+		// 	sb.add(' class="');
+		// 	this.classList.classes.forEach((v) => {sb.add(sep + v); sep = '';});
+		// 	sb.add('"');
+		// }
 
-		if (this.style.styles && this.style.styles.size > 0) {
-			sb.add(' style="');
-			this.style.styles.forEach((v, k) => sb.add(k + ':' + v + ';'));
-			sb.add('"');
-		}
+		// if (this.style.styles && this.style.styles.size > 0) {
+		// 	sb.add(' style="');
+		// 	this.style.styles.forEach((v, k) => sb.add(k + ':' + v + ';'));
+		// 	sb.add('"');
+		// }
 
-		this.attributes.forEach((a) => {
-			if (a) {
-				sb.add(' '); sb.add(a.name);
-				if (a.value !== '' || a.quote) {
-					var q = a.quote === "'" ? "'" : '"';
-					sb.add('='); sb.add(q);
-					sb.add(this.escape(a.value, "\r\n" + q));
-					sb.add(q);
-				}
-			}
-		});
+		// this.attributes.forEach((a) => {
+		// 	if (a) {
+		// 		sb.add(' '); sb.add(a.name);
+		// 		if (a.value !== '' || a.quote) {
+		// 			var q = a.quote === "'" ? "'" : '"';
+		// 			sb.add('='); sb.add(q);
+		// 			sb.add(this.escape(a.value, "\r\n" + q));
+		// 			sb.add(q);
+		// 		}
+		// 	}
+		// });
+
+		this.outputAttributes(sb, sort);
+
 		if (this.isVoid()) {
 			sb.add(' />');
 		} else {
@@ -288,6 +291,44 @@ export class HtmlElement extends HtmlNode {
 			sb.add('</'); sb.add(name); sb.add('>');
 		}
 		return sb;
+	}
+
+	//TODO: handle both `:class-*` and `class` at the same time
+	//TODO: handle both `:style-*` and `style` at the same time
+	outputAttributes(sb:StringBuf, sort=false) {
+		var keys = this.getAttributeNames();
+		if (this.classList.classes && this.classList.classes.size > 0) {
+			keys.indexOf('class') < 0 ? keys.push('class') : null;
+		}
+		if (this.style.styles && this.style.styles.size > 0) {
+			keys.indexOf('style') < 0 ? keys.push('style') : null;
+		}
+		if (sort) {
+			keys = keys.sort((a, b) => (a > b ? 1 : (a < b ? -1 : 0)));
+		}
+		for (var key of keys) {
+			if (key === 'class' && this.classList.classes && this.classList.classes.size > 0) {
+				var sep = '';
+				sb.add(' class="');
+				this.classList.classes.forEach((v) => {sb.add(sep + v); sep = '';});
+				sb.add('"');
+			} else if (key === 'style' && this.style.styles && this.style.styles.size > 0) {
+				sb.add(' style="');
+				this.style.styles.forEach((v, k) => sb.add(k + ':' + v + ';'));
+				sb.add('"');
+			} else {
+				var a = this.attributes.get(key);
+				if (a) {
+					sb.add(' '); sb.add(a.name);
+					if (a.value !== '' || a.quote) {
+						var q = a.quote === "'" ? "'" : '"';
+						sb.add('='); sb.add(q);
+						sb.add(this.escape(a.value, "\r\n" + q));
+						sb.add(q);
+					}
+				}
+			}
+		}
 	}
 
 	addEventListener(t:string, l:(ev:any)=>void) {

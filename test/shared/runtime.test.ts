@@ -26,25 +26,25 @@ describe("test runtime", () => {
 	it("should reflect `:class-` attributes", () => {
 		var doc = HtmlParser.parse('<html :class-page=[[true]]/>');
 		var root = run(doc);
-		expect(doc.toString()).toBe('<html class="page"></html>');
+		expect(doc.toString(true)).toBe('<html class="page" data-aremel="0"></html>');
 		root.class_page = false;
-		expect(doc.toString()).toBe('<html></html>');
+		expect(doc.toString(true)).toBe('<html data-aremel="0"></html>');
 	});
 
 	it("should reflect `:style-` attributes", () => {
 		var doc = HtmlParser.parse('<html :style-display="block"/>');
 		var root = run(doc);
-		expect(doc.toString()).toBe('<html style="display:block;"></html>');
+		expect(doc.toString(true)).toBe('<html data-aremel="0" style="display:block;"></html>');
 		root.style_display = null;
-		expect(doc.toString()).toBe('<html></html>');
+		expect(doc.toString(true)).toBe('<html data-aremel="0"></html>');
 	});
 
 	it("should reflect DOM attributes", () => {
 		var doc = HtmlParser.parse('<html id=[["page"]]/>');
 		var root = run(doc);
-		expect(doc.toString()).toBe('<html id="page"></html>');
+		expect(doc.toString(true)).toBe('<html data-aremel="0" id="page"></html>');
 		root.attr_id = null;
-		expect(doc.toString()).toBe('<html></html>');
+		expect(doc.toString(true)).toBe('<html data-aremel="0"></html>');
 	});
 
 	it("should call value handlers", () => {
@@ -61,16 +61,16 @@ describe("test runtime", () => {
 	it("should reflect texts", () => {
 		var doc = HtmlParser.parse('<html :v=[["Bob"]]>Hello [[v]].</html>');
 		var root = run(doc);
-		expect(doc.toString()).toBe('<html>Hello Bob.</html>');
+		expect(doc.toString(true)).toBe('<html data-aremel="0">Hello Bob.</html>');
 		root.v = null;
-		expect(doc.toString()).toBe('<html>Hello .</html>');
+		expect(doc.toString(true)).toBe('<html data-aremel="0">Hello .</html>');
 	});
 
 	it("should add event listeners", () => {
 		var doc = HtmlParser.parse('<html :event-click=[[(ev) => console.log(ev)]]/>');
 		var rt = new Array<RuntimeObj>();
 		var root = run(doc, rt);
-		expect(doc.toString()).toBe('<html></html>');
+		expect(doc.toString(true)).toBe('<html data-aremel="0"></html>');
 		expect(rt[0].evhandlers.length).toBe(1);
 		expect(rt[0].evhandlers[0].t).toBe('click');
 	});
@@ -82,26 +82,26 @@ describe("test runtime", () => {
 			</body>
 		</html>`);
 		var root = run(doc);
-		expect(doc.toString()).toBe(`<html>
-			<body>
+		expect(doc.toString(true)).toBe(`<html data-aremel="0">
+			<body data-aremel="1">
 				<span>Hello Bob.</span>
 			</body>
 		</html>`);
 		root.body.data = {name:"Alice"};
-		expect(doc.toString()).toBe(`<html>
-			<body>
+		expect(doc.toString(true)).toBe(`<html data-aremel="0">
+			<body data-aremel="1">
 				<span>Hello Alice.</span>
 			</body>
 		</html>`);
 		root.body.data = {x:""};
-		expect(doc.toString()).toBe(`<html>
-			<body>
+		expect(doc.toString(true)).toBe(`<html data-aremel="0">
+			<body data-aremel="1">
 				<span>Hello .</span>
 			</body>
 		</html>`);
 		root.body.data = null;
-		expect(doc.toString()).toBe(`<html>
-			<body class="__aremel-autohide">
+		expect(doc.toString(true)).toBe(`<html data-aremel="0">
+			<body class="__aremel-autohide" data-aremel="1">
 				<span>Hello .</span>
 			</body>
 		</html>`);
