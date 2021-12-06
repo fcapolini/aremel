@@ -420,19 +420,19 @@ export class HtmlText extends HtmlNode {
 // https://www.w3docs.com/snippets/javascript/how-to-html-encode-a-string.html
 function htmlEscape(str:string): string {
 	return str
-		.replace(/&/g, '&')
-		.replace(/'/g, "'")
-		.replace(/"/g, '"')
-		.replace(/>/g, '>')
-		.replace(/</g, '<');
+		.replace(/&/g, '&amp;')
+		.replace(/'/g, "&apos;")
+		.replace(/"/g, '&quot;')
+		.replace(/>/g, '&gt;')
+		.replace(/</g, '&lt;');
 }
 function htmlUnescape(str: string): string {
 	return str
-		.replace(/"/g, '"')
-		.replace(/'/g, "'")
-		.replace(/&/g, '&')
-		.replace(/</g, '<')
-		.replace(/>/g, '>');
+		.replace(/&quot;/g, '"')
+		.replace(/&apos;/g, "'")
+		.replace(/&amp;/g, '&')
+		.replace(/&lt;/g, '<')
+		.replace(/&gt;/g, '>');
 }
 
 export class HtmlComment extends HtmlNode {

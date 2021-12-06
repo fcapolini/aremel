@@ -132,7 +132,7 @@ describe("test preprocessor", () => {
 			var doc = preprocessor.read('testTextualInclude.html');
 			expect(adjacentTextNodes(doc)).toBeFalsy();
 			expect(doc?.toString())
-				.toBe('<html><body>This is a "text"</body></html>');
+				.toBe('<html><body>This is a &quot;text&quot;</body></html>');
 		} catch (ex:any) {
 			msg = `${ex}`;
 		}
