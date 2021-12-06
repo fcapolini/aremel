@@ -1,7 +1,7 @@
 import { BabelFileResult, PluginObj, PluginPass, transformSync } from '@babel/core';
 import { NodePath } from '@babel/traverse';
 import { ExpressionStatement, identifier, MemberExpression, memberExpression, Program, returnStatement } from "@babel/types";
-import { JS_DATA_VAR, JS_HANDLER_VALUE_PREFIX, JS_EVENT_VALUE_PREFIX } from "./app";
+import { JS_DATALENGTH_VAR, JS_DATAOFFSET_VAR, JS_DATA_VAR, JS_EVENT_VALUE_PREFIX, JS_HANDLER_VALUE_PREFIX } from "./app";
 import { AppScope } from "./appscope";
 import { Expr, isDynamic, parseExpr } from "./expr";
 import { SourcePos } from "./preprocessor";
@@ -114,6 +114,10 @@ export class AppValue {
 
 				sb.add(`__link({"o":${observer}, "v":function() {return ${observed};}});\n`);
 			});
+			if (key === JS_DATA_VAR) {
+				sb.add(`__link({"o":__this.__value_${key}, "v":function() {return __this.__value_${JS_DATAOFFSET_VAR};}});\n`);
+				sb.add(`__link({"o":__this.__value_${key}, "v":function() {return __this.__value_${JS_DATALENGTH_VAR};}});\n`);
+			}
 		}
 		return sb;
 	}

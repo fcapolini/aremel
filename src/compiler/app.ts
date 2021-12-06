@@ -139,6 +139,12 @@ export default class App {
 				val: `[[(${JS_DATA_VAR}) == null]]`,
 				pos: e.pos,
 			});
+			if (!ret.has(JS_DATAOFFSET_VAR)) {
+				ret.set(JS_DATAOFFSET_VAR, {key:JS_DATAOFFSET_VAR, val:'[[0]]', pos:e.pos});
+			}
+			if (!ret.has(JS_DATALENGTH_VAR)) {
+				ret.set(JS_DATALENGTH_VAR, {key:JS_DATALENGTH_VAR, val:'[[-1]]', pos:e.pos});
+			}
 		}
 		return ret;
 	}

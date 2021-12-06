@@ -277,13 +277,6 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 		return ret;
 		}
 
-		// function refresh(that:any) {
-		// 	var vv:Array<ValueObj> = that.__values;
-		// 	for (var v of vv) {
-		// 		get(v);
-		// 	}
-		// }
-
 		function remove(that:any) {
 			var e:DomElement = that.__dom;
 			e.parentElement?.removeChild(e);
