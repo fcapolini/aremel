@@ -81,6 +81,7 @@ export class AppValue {
 				sb.add(`var ${key} = __this.${key} = __add(__this,"${key}",{fn:function() {${expr.code}}});\n`);
 			}
 		} else if (typeof val === 'string') {
+			val = val.replace(/\\/g, '\\\\');
 			val = val.replace(/\n/g, '\\n');
 			val = val.replace(/\r/g, '');
 			val = val.replace(/\t/g, '\\t');
