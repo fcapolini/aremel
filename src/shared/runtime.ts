@@ -228,14 +228,13 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 
 		function cloneSelf(i:number, data:any, dom?:DomElement): any {
 			var ret = null;
-			var values = new Array<ValueObj>();
 			var nodes = new Map<String, DomElement>();
 			var links = new Array<{o:ValueObj, v:()=>ValueObj}>();
 			var evs = new Array<{e:DomElement,t:string,h:(v:any)=>void}>();
-			function __add(v:ValueObj) {values.push(v); return v;}
+			function __add(o:any, k:string, v:ValueObj) {return runtime.add(o, k, v);}
 			function __link(l:any) {links.push(l);}
 			function __ev(h:{e:DomElement,t:string,h:(v:any)=>void}) {evs.push(h);}
-			function __node(id:String) {return nodes.get(id);}
+			function __node(id:number) {return nodes.get(`${id}`);}
 			if (that.__self) {
 				if (!dom) {
 					// clone DOM
@@ -259,23 +258,31 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 				}
 				f(dom);
 				// clone scope
+				var vv = runtime.values;
+				runtime.values = [];
 				ret = that.__self(that.__outer, {v:data},
 						__add, __link, __ev, __node, undefined);
-				ret.__values = values;
+				ret.__values = runtime.values;
 				ret.__links = links;
 				ret.__evs = evs;
+				ret.__isClone = true;
+				runtime.values = vv;
 				link(links);
 				addEvHandlers(evs);
+				// refresh clone
+				for (var v of ret.__values) {
+					get(v);
+				}	
 			}
 		return ret;
 		}
 
-		function refresh(that:any) {
-			var vv:Array<ValueObj> = that.__values;
-			for (var v of vv) {
-				get(v);
-			}
-		}
+		// function refresh(that:any) {
+		// 	var vv:Array<ValueObj> = that.__values;
+		// 	for (var v of vv) {
+		// 		get(v);
+		// 	}
+		// }
 
 		function remove(that:any) {
 			var e:DomElement = that.__dom;
@@ -285,6 +292,11 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 		}
 
 		addCallback(value, (v) => {
+			if (that.__isClone) {
+				// a clone cannot directly handle further replication
+				return v;
+			}
+
 			var clone:any;
 			if (Array.isArray(v)) {
 
@@ -304,14 +316,13 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 				var count = Math.max(v.length - 1, 0);
 				for (var i = 0; i < count; i++) {
 					if (i < that.__clones.length) {
-						// refresh existing clones
+						// update existing clones
 						clone = that.__clones[i];
 						set(clone.__value_data, v[i]);
 					} else {
 						// create missing clones
 						clone = cloneSelf(i, v[i]);
 						that.__clones.push(clone);
-						refresh(clone);
 					}
 				}
 				// remove exeeding clones

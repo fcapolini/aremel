@@ -530,20 +530,20 @@ describe("test runtime", () => {
 	// replication
 	// =========================================================================
 
-	// it("testReplication1", () => {
-	// 	var doc = HtmlParser.parse(`<html>
-	// 		<body>
-	// 			<div :data=[[ ["a", "b", "c"] ]]>[[data]]</div>
-	// 		</body>
-	// 	</html>`);
-	// 	var rt = new Array<RuntimeObj>();
-	// 	var root = run(doc, rt, true);
-	// 	expect(doc.toString(true)).toBe(`<html>
-	// 		<body>
-	// 			<div data-aremel-i="0">a</div><div data-aremel-i="1">b</div><div>c</div>
-	// 		</body>
-	// 	</html>`);
-	// });
+	it("testReplication1", () => {
+		var doc = HtmlParser.parse(`<html>
+			<body>
+				<div :data=[[ ["a", "b", "c"] ]]>[[data]]</div>
+			</body>
+		</html>`);
+		var rt = new Array<RuntimeObj>();
+		var root = run(doc, rt);
+		expect(doc.toString(true)).toBe(`<html data-aremel="0">
+			<body data-aremel="1">
+				<div data-aremel="2" data-aremel-i="0">a</div><div data-aremel="2" data-aremel-i="1">b</div><div data-aremel="2">c</div>
+			</body>
+		</html>`);
+	});
 
 });
 
