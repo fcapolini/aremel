@@ -50,6 +50,7 @@ export function prepareExpr(s:string): string {
 }
 
 function escape(s:string): string {
+	s = s.replace(/\\/g, "\\");
 	s = s.replace(/'/g, "\\'");
 	s = s.replace(/"/g, '\\"');
 	s = s.replace(/\n/g, '\\n');
