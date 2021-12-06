@@ -430,9 +430,9 @@ function htmlUnescape(str: string): string {
 	return str
 		.replace(/&quot;/g, '"')
 		.replace(/&apos;/g, "'")
-		.replace(/&amp;/g, '&')
 		.replace(/&lt;/g, '<')
-		.replace(/&gt;/g, '>');
+		.replace(/&gt;/g, '>')
+		.replace(/&amp;/g, '&');
 }
 
 export class HtmlComment extends HtmlNode {
