@@ -50,9 +50,9 @@ export function prepareExpr(s:string): string {
 }
 
 function escape(s:string): string {
-	s = s.replace("'", "\\'");
-	s = s.replace('"', '\\"');
-	s = s.replace('\n', '\\n');
-	s = s.replace('\r', '\\r');
+	s = s.replace(/'/g, "\\'");
+	s = s.replace(/"/g, '\\"');
+	s = s.replace(/\n/g, '\\n');
+	s = s.replace(/\r/g, '\\r');
 	return s;
 }
