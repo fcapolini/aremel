@@ -81,10 +81,10 @@ export class AppValue {
 				sb.add(`var ${key} = __this.${key} = __add(__this,"${key}",{fn:function() {${expr.code}}});\n`);
 			}
 		} else if (typeof val === 'string') {
-			val = val.replace('\n', '\\n');
-			val = val.replace('\r', '');
-			val = val.replace('\t', '\\t');
-			val = val.replace('"', '\\"');
+			val = val.replace(/\n/g, '\\n');
+			val = val.replace(/\r/g, '');
+			val = val.replace(/\t/g, '\\t');
+			val = val.replace(/"/g, '\\"');
 			sb.add(`var ${key} = __this.${key} = __add(__this,"${key}",{v:"${val}"});\n`);
 		} else {
 			sb.add(`var ${key} = __this.${key} = __add(__this,"${key}",{v:${val}});\n`);
