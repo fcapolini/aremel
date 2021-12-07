@@ -102,8 +102,25 @@ export class HtmlElement extends HtmlNode {
 		(n as HtmlNode).remove();
 	}
 
+	get firstChild(): any {
+		return this.children.length > 0 ? this.children[0] : undefined;
+	}
+
 	get firstElementChild(): any {
 		return this.getFirstElementChild();
+	}
+
+	get previousElementSibling(): any {
+		if (this.parentElement) {
+			var i = this.parentElement.children.indexOf(this);
+			while (--i >= 0) {
+				var sibling = this.parentElement.children[i];
+				if (sibling.nodeType === ELEMENT_NODE) {
+					return sibling;
+				}
+			}
+		}
+		return undefined;
 	}
 
 	addChild(child:HtmlNode, before?:HtmlNode) {

@@ -31,7 +31,9 @@ export interface DomElement extends DomNode {
 	tagName: string; 
 	childNodes: DomNodeList;
 	childElementCount: number;
-	getFirstElementChild: ()=>DomElement|undefined;
+	firstChild: DomNode|undefined;
+	firstElementChild: DomElement|undefined;
+	previousElementSibling: DomElement|undefined;
 	appendChild: (n:DomNode)=>void;
 	insertBefore: (n:DomNode,ref:DomNode)=>void;
 	removeChild: (n:DomNode)=>void;

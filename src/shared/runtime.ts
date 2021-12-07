@@ -242,7 +242,7 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 					var html = src.outerHTML;
 					var wrapper = runtime.page.doc.createElement('div');
 					wrapper.innerHTML = html;
-					dom = wrapper.getFirstElementChild() as DomElement;
+					dom = wrapper.firstElementChild as DomElement;
 					dom.setAttribute(DOM_CLONEINDEX_ATTR, `${i}`);
 					src.parentElement?.insertBefore(dom, src);
 				}
@@ -290,7 +290,23 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 				return v;
 			}
 
+			var ret = v;
 			var clone:any;
+			var siblings; // possible pre-existing server-side clones
+			var sibling;
+			var count = 0;
+
+			if (!that.__clones) {
+				that.__clones = [];
+				siblings = new Map<number,DomElement>();
+				var cloneId;
+				sibling = that.__dom?.previousElementSibling;
+				while (sibling && (cloneId = sibling.getAttribute(DOM_CLONEINDEX_ATTR))) {
+					siblings.set(parseInt(cloneId), sibling);
+					sibling = sibling.previousElementSibling;
+				}
+			}
+
 			if (Array.isArray(v)) {
 
 				var offset = that[JS_DATAOFFSET_VAR];
@@ -302,11 +318,7 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 					v = v.slice(offset, offset + length);
 				}
 
-				if (!that.__clones) {
-					that.__clones = [];
-				}
-
-				var count = Math.max(v.length - 1, 0);
+				count = Math.max(v.length - 1, 0);
 				for (var i = 0; i < count; i++) {
 					if (i < that.__clones.length) {
 						// update existing clones
@@ -314,10 +326,12 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 						set(clone.__value_data, v[i]);
 					} else {
 						// create missing clones
-						clone = cloneSelf(i, v[i]);
+						var e = 
+						clone = cloneSelf(i, v[i], siblings?.get(i));
 						that.__clones.push(clone);
 					}
 				}
+
 				// remove exeeding clones
 				while (that.__clones.length > count) {
 					clone = that.__clones.pop();
@@ -325,15 +339,23 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 				}
 
 				// make original node display last data element
-				var ret = (v.length > 0 ? v[v.length - 1] : null);
-				return ret;
+				ret = (v.length > 0 ? v[v.length - 1] : null);
 
 			} else if (that.__clones) {
 				for (clone of that.__clones) {
 					remove(clone);
 				}
 			}
-			return v;
+
+			if (siblings) {
+				siblings.forEach((e, i) => {
+					if (i >= count) {
+						e.parentElement?.removeChild(e);
+					}
+				});
+			}
+
+			return ret;
 		});
 		return value;
 	}
