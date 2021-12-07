@@ -55,4 +55,5 @@ export interface DomElement extends DomNode {
 // https://developer.mozilla.org/en-US/docs/Web/API/Document
 export interface DomDocument extends DomNode {
 	createElement: (tagName:string)=>DomElement;
+	firstElementChild: DomElement|undefined;
 }

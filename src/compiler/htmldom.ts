@@ -102,6 +102,10 @@ export class HtmlElement extends HtmlNode {
 		(n as HtmlNode).remove();
 	}
 
+	get firstElementChild(): any {
+		return this.getFirstElementChild();
+	}
+
 	addChild(child:HtmlNode, before?:HtmlNode) {
 		child.parentElement = this;
 		var i = before ? this.children.indexOf(before) : -1;

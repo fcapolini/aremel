@@ -19,3 +19,4 @@
     * for locations it assumes a single source file; Aremel's preprocessor will add a `data-*` attribute to root elements of included/expanded markup to trace what source files elements come from
 * [html5-test-page](https://github.com/cbracco/html5-test-page/blob/master/index.html)
 * [TypeScript mixins](https://www.typescriptlang.org/docs/handbook/mixins.html)
+* [Browserify](https://browserify.org)

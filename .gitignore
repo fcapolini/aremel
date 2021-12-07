@@ -1,4 +1,4 @@
 /TODO.md
-/out
 /node_modules
+/docroot/.aremel/bin
 *.tmp.js

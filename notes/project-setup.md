@@ -134,3 +134,10 @@ node express.js
 mkdir docroot
 ```
 
+### Browserify
+
+```bash
+npm install -g browserify
+npm install -g watchify
+```
+
