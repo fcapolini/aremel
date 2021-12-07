@@ -1,16 +1,26 @@
 import { DOM_ID_ATTR } from "../compiler/app";
 import { DomDocument, DomElement, ELEMENT_NODE } from "../shared/dom";
+import { make, PageObj, RuntimeEventSource, RuntimeObj } from "../shared/runtime";
 
 export default class AremelClient {
-	nodes: Map<string,DomElement>;
+	pageObj: PageObj;
+	runtime: RuntimeObj;
 
-	constructor(doc:DomDocument) {
-		var that = this;
-		this.nodes = new Map<string,DomElement>();
+	constructor(doc:DomDocument, window:RuntimeEventSource) {
+		this.pageObj = {
+			doc: doc,
+			nodes: this.collectNodes(doc),
+			window: window
+		};
+		this.runtime = make(this.pageObj);
+	}
+
+	collectNodes(doc:DomDocument): Array<DomElement> {
+		var ret = new Array<DomElement>();
 		function f(e:DomElement) {
 			var id = e.getAttribute(DOM_ID_ATTR);
 			if (id != null) {
-				that.nodes.set(id, e);
+				ret[parseInt(id)] = e;
 			}
 			e.childNodes.forEach((n, i) => {
 				if (n.nodeType === ELEMENT_NODE) {
@@ -19,6 +29,7 @@ export default class AremelClient {
 			});
 		}
 		f(doc.firstElementChild as DomElement);
+		return ret;
 	}
 
 }
