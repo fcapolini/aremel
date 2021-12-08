@@ -1,20 +1,24 @@
+import e from 'express';
 import express from 'express';
+import { Server } from 'http';
 import App, { CSS_AUTOHIDE_CLASS } from '../compiler/app';
 import { HtmlDocument, HtmlElement, HtmlText } from '../compiler/htmldom';
 import Preprocessor from '../compiler/preprocessor';
 import { make } from '../shared/runtime';
 
 export default class AremelServer {
+	server: Server;
 
-	constructor(port:number, rootpath:string) {
+	constructor(port:number, rootpath:string, cb?:()=>void) {
 		const prepro = new Preprocessor(rootpath);
 		const app = express();
 		app.get('*.html', (req, res) => {
 			res.header("Content-Type",'text/html');
 			var url = new URL(req.url, `http://${req.headers.host}`);
 			try {
-				var doc = AremelServer.getPage(prepro, url);
-				res.send(doc.toString());
+				AremelServer.getPage(prepro, url, (doc) => {
+					res.send(doc.toString());
+				});
 			} catch (ex:any) {
 				console.log(`[server]: error for ${url.toString()}: ${ex}`);
 				res.send(`${ex}`);
@@ -22,12 +26,24 @@ export default class AremelServer {
 		});
 		app.get('/', (req, res) => res.redirect('/index.html'));
 		app.use(express.static(rootpath));
-		app.listen(port, () => {
-			console.log(`[server]: http://localhost:${port} [${rootpath}]`);
+		this.server = app.listen(port, () => {
+			if (cb) {
+				cb();
+			} else {
+				console.log(`[server]: http://localhost:${port} [${rootpath}]`);
+			}
 		});
 	}
 
-	static getPage(prepro:Preprocessor, url:URL): HtmlDocument {
+	close(cb?:()=>void) {
+		try {
+			this.server.close(cb);
+		} catch (ex:any) {
+			cb ? cb() : null;
+		}
+	}
+
+	static getPage(prepro:Preprocessor, url:URL, cb:(doc:HtmlDocument)=>void) {
 		var doc = prepro.read(url.pathname, `<lib>
 			<style data-name="aremel">
 				${CSS_AUTOHIDE_CLASS} {
@@ -51,7 +67,7 @@ export default class AremelServer {
 		</lib>`) as HtmlDocument;
 		var app = new App(doc);
 		var page = app.output();
-		var rt = make(page);
+		var rt = make(page, () => cb(doc));
 		var root = eval(`(${page.script})(rt)`);
 		rt.start();
 		var code = new HtmlElement(doc, root.body.__dom, 'script', 0, 0, 0);
@@ -59,7 +75,6 @@ export default class AremelServer {
 		var script = new HtmlElement(doc, root.body.__dom, 'script', 0, 0, 0);
 		script.setAttribute('src', '/.aremel/bin/bundle.js');
 		script.setAttribute('defer', '');
-		return doc;
 	}
 
 }

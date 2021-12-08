@@ -89,6 +89,10 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 			runtime.links=[];
 			addEvHandlers(runtime.evhandlers);
 			refresh();
+			if (runtime.requests.length < 1 && cb) {
+				// cb();
+				setTimeout(cb, 0);
+			}
 		},
 	};
 
@@ -375,6 +379,14 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 						}
 					} else {
 						//TODO: error
+					}
+					
+					var i = runtime.requests.indexOf(req);
+					if (i >= 0) {
+						runtime.requests.splice(i, 1);
+					}
+					if (runtime.requests.length < 1 && runtime.cb) {
+						setTimeout(runtime.cb, 0);
 					}
 				}
 			}

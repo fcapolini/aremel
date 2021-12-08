@@ -230,7 +230,7 @@ export class HtmlElement extends HtmlNode {
 			},
 			forEach: (cb) => {
 				var i = 0;
-				for (var child of this.children) {
+				for (var child of this.children.slice()) {
 					cb(child as DomNode, i++);
 				}
 			},
