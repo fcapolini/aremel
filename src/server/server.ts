@@ -1,5 +1,5 @@
 import express from 'express';
-import App from '../compiler/app';
+import App, { CSS_AUTOHIDE_CLASS } from '../compiler/app';
 import { HtmlDocument, HtmlElement, HtmlText } from '../compiler/htmldom';
 import Preprocessor from '../compiler/preprocessor';
 import { make } from '../shared/runtime';
@@ -28,7 +28,27 @@ export default class AremelServer {
 	}
 
 	static getPage(prepro:Preprocessor, url:URL): HtmlDocument {
-		var doc = prepro.read(url.pathname) as HtmlDocument;
+		var doc = prepro.read(url.pathname, `<lib>
+			<style data-name="aremel">
+				${CSS_AUTOHIDE_CLASS} {
+					display: none;
+				}
+			</style>
+			<:define tag=":data-source:script"
+				:url=""
+				:type="text/json"
+				:post=[[false]]
+
+				type=[[type]]
+				:on-url="[[
+					__rt.addRequest({
+						url:url, type:type, target:__this.__value_data,
+						post:post, scriptElement:__this.__dom
+					})
+				]]"
+				:data=[[undefined]]
+			/>
+		</lib>`) as HtmlDocument;
 		var app = new App(doc);
 		var page = app.output();
 		var rt = make(page);

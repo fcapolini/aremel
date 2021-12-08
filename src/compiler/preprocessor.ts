@@ -54,7 +54,7 @@ export default class Preprocessor {
 				var head = ret ? domGetTop(ret, 'HEAD') : undefined;
 				if (head) {
 					var inc = this.parser.parseDoc(embeddedInclude, 'embedded');
-					this.include(inc, head as HtmlElement, undefined);
+					this.include(inc.firstElementChild, head as HtmlElement, undefined);
 					this.joinAdjacentTexts(head);
 				}
 			}

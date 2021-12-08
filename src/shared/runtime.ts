@@ -18,11 +18,10 @@ export interface RuntimeObj {
 	get: (o:ValueObj)=>any,
 	set: (o:ValueObj, v:any)=>any,
 	tnode: (e:DomElement, n:string)=>any,
-	// linkData: (v:any, o:ValueObj)=>ValueObj,
-	// addRequest: (r:RequestObj)=>void,
-	// requests: Array<RequestObj>,
-	// JSON: {parse:(s:string)=>any, stringify:(o:any)=>string},
-	// XML: {parse:(s:string)=>any, stringify:(o:any)=>string},
+
+	addRequest: (r:RequestObj)=>void,
+	requests: Array<RequestObj>,
+
 	// rgb: (c:string)=>string,
 	// mixColors: (c1:string,c2:string,ratio:number)=>string,
 	// elementIndex: (e:DomElement)=>number,
@@ -69,17 +68,10 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 		get: get,
 		set: set,
 		tnode: tnode,
-		// linkData: linkData,
-		// addRequest: addRequest,
-		// requests: [],
-		// JSON: {
-		// 	parse: JSON.parse,
-		// 	stringify: JSON.stringify,
-		// },
-		// XML: {
-		// 	parse: (s) => Xml.parse(s),
-		// 	stringify: (o) => o.toString(),
-		// },
+
+		addRequest: addRequest,
+		requests: new Array<RequestObj>(),
+
 		// rgb: (color:string) => {
 		// 	var rgba = ColorTools.color2Components(color);
 		// 	return '${rgba.r}, ${rgba.g}, ${rgba.b}';
@@ -347,6 +339,7 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 				}
 			}
 
+			// remove possible unused server-side clones from the DOM
 			if (siblings) {
 				siblings.forEach((e, i) => {
 					if (i >= count) {
@@ -358,6 +351,36 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 			return ret;
 		});
 		return value;
+	}
+
+	function addRequest(req:RequestObj) {
+		if (req.url) {
+			runtime.requests.push(req);
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function() {
+				if (this.readyState === 4) {
+					if (this.status === 200) {
+						try {
+							var v = undefined;
+							if (req.type === 'text/json') {
+								v = JSON.parse(this.responseText);
+							} else if (req.type === 'text/xml') {
+								v = this.responseXML;
+							} else {
+								v = this.responseText;
+							}
+							set(req.target, v);
+						} catch (ex:any) {
+							//TODO: error
+						}
+					} else {
+						//TODO: error
+					}
+				}
+			}
+			xhttp.open(req.post ? 'POST' : 'GET', req.url, true);
+			xhttp.send();
+		}
 	}
 
 	function tnode(e:DomElement, path:string): DomTextNode | undefined {
