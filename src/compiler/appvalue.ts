@@ -295,6 +295,8 @@ export class AppValue {
 								identifier(name)
 							));
 						} else {
+							// var ppp = path.parentPath;
+							// console.log('A: ' + name);
 							//TODO
 						}
 					} else {
@@ -324,7 +326,7 @@ export class AppValue {
 								}
 
 								var left:any = identifier('__scope_' + scopes.pop()?.id);
-								if (scopes.length > 0) {
+								while (scopes.length > 0) {
 									left = memberExpression(
 										left,
 										identifier('__scope_' + scopes.pop()?.id)
@@ -337,6 +339,7 @@ export class AppValue {
 								));
 
 							} else {
+								// console.log('B: ' + name);
 								//TODO
 							}
 						}
@@ -367,10 +370,16 @@ export class AppValue {
 
 	_getScopeForPathname(scope:AppScope|undefined,
 						parts:Array<string>): AppScope | undefined {
-		// var scope:AppScope|undefined = this.scope;
+		var next;
 		while (scope && parts.length > 0) {
 			var part = parts.shift() as string;
 			scope = this._getScopeForIdentifier(scope, part, true);
+
+			// if (!(next = this._getScopeForIdentifier(scope, parts[0], true))) {
+			// 	break;
+			// }
+			// parts.shift();
+			// scope = next;
 		}
 		return scope;
 	}

@@ -5,50 +5,93 @@ import { normalizeText } from "../../src/compiler/util";
 import AremelServer from "../../src/server/server";
 import { DomElement, ELEMENT_NODE } from "../../src/shared/dom";
 
+const port = 8080;
 let server: AremelServer;
 
 describe("test client", () => {
 	jest.setTimeout(10000);
 
 	beforeAll((done) => {
-		server = new AremelServer(8080, process.cwd() + '/test/server/pages', done);
+		server = new AremelServer(port, process.cwd() + '/test/server/pages', done);
 	});
 
-	afterAll((done) => {
-		server.close(done);
+	afterAll((done) => server.close(done));
+
+	it("should serve data.json", (done) => {
+		doGet('http://localhost:8080/data.json', (s) => {
+			expect(s).toBe(`{"msg": "Hello", "list":[1, 2, 3]}`);
+			done();
+		});
 	});
 
 	it("should serve page1.html", (done) => {
-		setTimeout(() => {
-			doGet('http://localhost:8080/page1.html', (s) => {
-				server.close();
-				expect(cleanup(s)).toBe(normalizeText(`<html>
-					<head>
-					</head>
-					<body>
-						Hi there
-					</body>
-				</html>`));
-				done();
-			}, (e) => {
-				expect(e).toBeUndefined();
-				done();
-			});
-		}, 2000);
+		doGet(`http://localhost:${port}/page1.html`, (s) => {
+			expect(cleanup(s)).toBe(normalizeText(`<html>
+				<head>
+				</head>
+				<body>
+					Hi there.
+				</body>
+			</html>`));
+			done();
+		});
 	});
+
+	it("should serve page2.html", (done) => {
+		doGet(`http://localhost:${port}/page2.html`, (s) => {
+			expect(cleanup(s)).toBe(normalizeText(`<html>
+				<head>
+				</head>
+				<body>
+					Hi there.
+				</body>
+			</html>`));
+			done();
+		});
+	});
+
+	it("should serve page3.html", (done) => {
+		doGet(`http://localhost:${port}/page3.html`, (s) => {
+			expect(cleanup(s)).toBe(normalizeText(`<html>
+				<head>
+				</head>
+				<body>
+					<ul>
+						<li>item 1</li><li>item 2</li><li>item 3</li>
+					</ul>
+				</body>
+			</html>`));
+			done();
+		});
+	});
+
+	// it("should serve page4.html", (done) => {
+	// 	doGet(`http://localhost:${port}/page4.html`, (s) => {
+	// 		expect(cleanup(s)).toBe(normalizeText(`<html>
+	// 			<head>
+	// 			</head>
+	// 			<body>
+	// 				<ul>
+	// 					<li>item 1</li><li>item 2</li><li>item 3</li>
+	// 				</ul>
+	// 			</body>
+	// 		</html>`));
+	// 		done();
+	// 	});
+	// });
 
 });
 
 // https://nodejs.dev/learn/making-http-requests-with-nodejs
 // https://stackoverflow.com/a/9577651
-function doGet(url:string, res:(s:string)=>void, err?:(e:string)=>void) {
+function doGet(url:string, res:(s:string)=>void) {
 	var output = '';
 	const req = request(url, r => {
 		r.setEncoding('utf8');
 		r.on('data', (chunk) => output += chunk);
 		r.on('end', () => res(output));
 	});
-	err ? req.on('error', err) : null;
+	req.on('error', e => res(`ERROR ${e}`));
 	req.end();
 }
 
@@ -71,6 +114,10 @@ function cleanup(s:string): string {
 			}
 		});
 	}
-	f(doc.firstElementChild);
-	return normalizeText(doc.toString(true));
+	if (doc.firstElementChild) {
+		f(doc.firstElementChild);
+		return normalizeText(doc.toString(true));
+	} else {
+		return `ERROR: ${s}`;
+	}
 }

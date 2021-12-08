@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	</head>
+	<body>
+		<script :aka="mydata"
+			:v="[[
+				__rt.addRequest({
+					url:'http://localhost:8080/data.json',
+					type:'text/json',
+					target:__this.__value_content,
+					post:false,
+					scriptElement:__this.__dom
+				})
+			]]"
+			:content=[[{}]]
+		></script>
+		<span :data=[[mydata.content.msg]]>[[data]]</span>
+	</body>
+</html>

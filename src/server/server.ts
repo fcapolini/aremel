@@ -58,11 +58,11 @@ export default class AremelServer {
 				type=[[type]]
 				:on-url="[[
 					__rt.addRequest({
-						url:url, type:type, target:__this.__value_data,
+						url:url, type:type, target:__this.__value_content,
 						post:post, scriptElement:__this.__dom
 					})
 				]]"
-				:data=[[undefined]]
+				:content=[[undefined]]
 			/>
 		</lib>`) as HtmlDocument;
 		var app = new App(doc);

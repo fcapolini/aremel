@@ -107,6 +107,65 @@ describe("test runtime", () => {
 		</html>`);
 	});
 
+	it("should support scope referencing (1)", () => {
+		var doc = HtmlParser.parse(`<html>
+			<head :v1="10"/>
+			<body :v2=[[head.v1]]>[[v2]] == [[head.v1]]</body>
+		</html>`);
+		var root = run(doc);
+		expect(doc.toString(true)).toBe(`<html data-aremel="0">
+			<head data-aremel="1"></head>
+			<body data-aremel="2">10 == 10</body>
+		</html>`);
+	});
+
+	it("should support scope referencing (2)", () => {
+		var doc = HtmlParser.parse(`<html>
+			<body>
+				<div :aka="foo" :v1=[[11]]/>
+				<div :v2=[[foo.v1]]>[[v2]] == [[foo.v1]]</div>
+			</body>
+		</html>`);
+		var root = run(doc);
+		expect(doc.toString(true)).toBe(`<html data-aremel="0">
+			<body data-aremel="1">
+				<div data-aremel="2"></div>
+				<div data-aremel="3">11 == 11</div>
+			</body>
+		</html>`);
+	});
+
+	// it("should support partial scope referencing", () => {
+	// 	var doc = HtmlParser.parse(`<html>
+	// 		<body>
+	// 			<div :aka="foo" :v1=[[null]]
+	// 				:dummy=[[v1={x:{y:11}}]]
+	// 			/>
+	// 			<div :v2=[[foo.v1.x.y.z]]>[[v2]] == [[foo.v1.x.y]]</div>
+	// 		</body>
+	// 	</html>`);
+	// 	var root = run(doc);
+	// 	expect(doc.toString(true)).toBe(`<html data-aremel="0">
+	// 		<body data-aremel="1">
+	// 			<div data-aremel="2"></div>
+	// 			<div data-aremel="3">11 == 11</div>
+	// 		</body>
+	// 	</html>`);
+	// });
+
+	// it("should support data sources", () => {
+	// 	var doc = HtmlParser.parse(`<html>
+	// 		<body>
+	// 			<script :
+	// 		</body>
+	// 	</html>`);
+	// 	var root = run(doc);
+	// 	expect(doc.toString(true)).toBe(`<html data-aremel="0">
+	// 		<body data-aremel="1">
+	// 		</body>
+	// 	</html>`);
+	// });
+
 });
 
 function run(doc:HtmlDocument, rtret?:Array<RuntimeObj>, dump=false): any {

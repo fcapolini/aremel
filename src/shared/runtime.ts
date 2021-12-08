@@ -1,6 +1,7 @@
 import { DOM_CLONEINDEX_ATTR, DOM_ID_ATTR, JS_ATTR_VALUE_PREFIX, JS_CLASS_VALUE_PREFIX, JS_DATALENGTH_VAR, JS_DATAOFFSET_VAR, JS_DATA_VAR, JS_STYLE_VALUE_PREFIX, JS_TEXT_VALUE_PREFIX } from "../compiler/app";
 import { makeHyphenName } from "../compiler/util";
 import { DomDocument, DomElement, DomNode, DomTextNode, ELEMENT_NODE, TEXT_NODE } from "./dom";
+import { request } from 'http';
 
 export interface RuntimeEventSource {
 	addEventListener: (t:string,h:any)=>void,
@@ -357,7 +358,7 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 		return value;
 	}
 
-	function addRequest(req:RequestObj) {
+	function _addRequest(req:RequestObj) {
 		if (req.url) {
 			runtime.requests.push(req);
 			var xhttp = new XMLHttpRequest();
@@ -392,6 +393,40 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 			}
 			xhttp.open(req.post ? 'POST' : 'GET', req.url, true);
 			xhttp.send();
+		}
+	}
+
+	function addRequest(r:RequestObj) {
+		function res(s:string) {
+			try {
+				if (r.type === 'text/json') {
+					set(r.target, JSON.parse(s));
+				} else {
+					set(r.target, s);
+				}
+			} catch (ex:any) {
+				//TODO
+			}
+
+			var i = runtime.requests.indexOf(r);
+			if (i >= 0) {
+				runtime.requests.splice(i, 1);
+			}
+			if (runtime.requests.length < 1 && runtime.cb) {
+				setTimeout(runtime.cb, 0);
+			}
+		}
+		if (r.url) {
+			runtime.requests.push(r);
+
+			var output = '';
+			const req = request(r.url, r => {
+				r.setEncoding('utf8');
+				r.on('data', (chunk) => output += chunk);
+				r.on('end', () => res(output));
+			});
+			req.on('error', e => res(`ERROR ${e}`));
+			req.end();
 		}
 	}
 
