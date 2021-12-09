@@ -40,7 +40,7 @@ describe("test client", () => {
 			expect(normalizeText(doc.toString(true))).toBe(normalizeText(`<html data-aremel="0">
 				<head data-aremel="1">
 					<style data-name="aremel">
-						${CSS_AUTOHIDE_CLASS} {
+						.${CSS_AUTOHIDE_CLASS} {
 							display: none;
 						}
 					</style>

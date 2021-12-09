@@ -178,7 +178,7 @@ describe("test runtime", () => {
 				></script>
 			</body>
 		</html>`);
-		var root = run(doc, [], true);
+		var root = run(doc);
 		expect(doc.toString(true)).toBe(`<html data-aremel="0">
 			<body data-aremel="1">
 				<script data-aremel="2" type="text/json"></script>
