@@ -5,6 +5,7 @@ import { AppValue } from "./appvalue";
 import { ELEMENT_NODE, HtmlDocument, HtmlElement, HtmlNode, HtmlPos, HtmlText, TEXT_NODE } from "./htmldom";
 import Preprocessor from "./preprocessor";
 import { makeCamelName, StringBuf } from "./util";
+import { request } from 'http';
 
 export const DOM_DYNAMIC_ATTR_PREFIX = ':';
 export const DOM_CLASS_ATTR_PREFIX = ':class-';
@@ -73,9 +74,21 @@ export default class App {
 			doc: this.doc as DomDocument,
 			window: window,
 			nodes: this.nodes,
+			requester: App.httpRequest,
 			script: sb.toString()
 		};
 	}
+
+	static httpRequest(url:string, post:boolean, cb:(s:string)=>void) {
+		var output = '';
+		const req = request(url, r => {
+			r.setEncoding('utf8');
+			r.on('data', (chunk) => output += chunk);
+			r.on('end', () => cb(output));
+		});
+		req.on('error', e => cb(`{"httpError":"${e}"}`));
+		req.end();
+}
 
 	//TODO: forbid reserved props (__*)
 	//TODO check aka, value names sanity

@@ -139,5 +139,6 @@ mkdir docroot
 ```bash
 npm install -g browserify
 npm install -g watchify
+# npm install --save-dev tinyify
 ```
 

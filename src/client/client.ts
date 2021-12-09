@@ -7,14 +7,18 @@ export default class AremelClient {
 	runtime: RuntimeObj;
 	root: any;
 
-	constructor(doc:DomDocument, window:RuntimeEventSource, getAndCleanScript=false) {
+	constructor(doc:DomDocument, window:any, getAndCleanScript=false) {
 		this.pageObj = {
 			doc: doc,
 			nodes: this.collectNodes(doc),
 			window: window,
+			requester: AremelClient.httpRequest,
 			script: getAndCleanScript ? this.getScript(doc) : undefined,
 		};
 		this.runtime = make(this.pageObj);
+		this.root = window.__aremel(this.runtime);
+		this.runtime.start();
+		window.aremel = this.root;
 	}
 
 	collectNodes(doc:DomDocument): Array<DomElement> {
@@ -55,7 +59,24 @@ export default class AremelClient {
 		for (var e of bodyScripts) {
 			e.parentElement?.removeChild(e);
 		}
+		console.log('getScript(): ' + code);
 		return code;
+	}
+
+	static httpRequest(url:string, post:boolean, cb:(s:string)=>void) {
+		console.log(`httpRequest(${url})`);//tempdebug
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (this.readyState === 4) {
+				if (this.status === 200) {
+					cb(this.responseText);
+				} else {
+					cb(`{"httpError":"${this.status}"}`);
+				}
+			}
+		}
+		xhttp.open(post ? 'POST' : 'GET', url, true);
+		xhttp.send();
 	}
 
 }
