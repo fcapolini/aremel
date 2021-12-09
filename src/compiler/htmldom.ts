@@ -62,7 +62,7 @@ export class HtmlElement extends HtmlNode {
 	selfclose: boolean;
 
 	classList: {add:(name:string)=>void, remove:(name:string)=>void};
-	style: {setProperty:(k:string,v:string)=>void, removeProperty:(k:string)=>void, styles?:Map<string,string>};
+	style: {setProperty:(k:string,v:string)=>void, removeProperty:(k:string)=>void};
 
 	constructor(doc:HtmlDocument | undefined, parent:HtmlElement|undefined,
 				name:string, i1:number, i2:number, origin:number) {
@@ -74,7 +74,7 @@ export class HtmlElement extends HtmlNode {
 		var that = this;
 		this.classList = {
 			add: function(name:string) {
-				var a:HtmlClassAttribute = that.attributes.get('class') as HtmlClassAttribute;
+				var a = that.attributes.get('class') as HtmlClassAttribute;
 				if (a) {
 					a.add(name);
 				} else {
@@ -82,7 +82,7 @@ export class HtmlElement extends HtmlNode {
 				}
 			},
 			remove: function(name:string) {
-				var a:HtmlClassAttribute = that.attributes.get('class') as HtmlClassAttribute;
+				var a = that.attributes.get('class') as HtmlClassAttribute;
 				if (a) {
 					a.remove(name);
 				}
@@ -90,11 +90,18 @@ export class HtmlElement extends HtmlNode {
 		};
 		this.style = {
 			setProperty: function(k:string, v:string) {
-				!this.styles ? this.styles = new Map() : null;
-				this.styles.set(k, v);
+				var a = that.attributes.get('class') as HtmlStyleAttribute;
+				if (a) {
+					a.setProperty(k, v);
+				} else {
+					that.setAttribute('style', `${k}:${v}`);
+				}
 			},
 			removeProperty: function(k:string) {
-				this.styles ? this.styles.delete(k) : null;
+				var a = that.attributes.get('style') as HtmlStyleAttribute;
+				if (a) {
+					a.removeProperty(k);
+				}
 			},
 		}
 	}
@@ -149,6 +156,9 @@ export class HtmlElement extends HtmlNode {
 			if (value != undefined) {
 				if (name === 'class') {
 					a = new HtmlClassAttribute(name, value, quote ? quote : '"',
+							i1, i2, origin);
+				} else if (name === 'style') {
+					a = new HtmlStyleAttribute(name, value, quote ? quote : '"',
 							i1, i2, origin);
 				} else {
 					a = new HtmlAttribute(name, value, quote ? quote : '"',
@@ -280,21 +290,12 @@ export class HtmlElement extends HtmlNode {
 	//TODO: handle both `:style-*` and `style` at the same time
 	outputAttributes(sb:StringBuf, sort=false) {
 		var keys = this.getAttributeNames();
-		if (this.style.styles && this.style.styles.size > 0) {
-			keys.indexOf('style') < 0 ? keys.push('style') : null;
-		}
 		if (sort) {
 			keys = keys.sort((a, b) => (a > b ? 1 : (a < b ? -1 : 0)));
 		}
 		for (var key of keys) {
-			if (key === 'style' && this.style.styles && this.style.styles.size > 0) {
-				sb.add(' style="');
-				this.style.styles.forEach((v, k) => sb.add(k + ':' + v + ';'));
-				sb.add('"');
-			} else {
-				var a = this.attributes.get(key);
-				a?.output(sb, sort);
-			}
+			var a = this.attributes.get(key);
+			a?.output(sb, sort);
 		}
 	}
 
@@ -331,8 +332,7 @@ export class HtmlDocument extends HtmlElement {
 	}
 
 	createElement(tagName:string): any {
-		// constructor(doc:HtmlDocument | undefined, parent:HtmlElement|undefined, name:string, i1:number, i2:number, origin:number) {
-		var ret = new HtmlElement(this, undefined, tagName, 1, 1, 0);
+		var ret = new HtmlElement(this, undefined, tagName, 0, 0, 0);
 		return ret;
 	}
 
@@ -434,6 +434,73 @@ class HtmlClassAttribute extends HtmlAttribute {
 
 	output(sb:StringBuf, sort=false) {
 		if (this.classes && this.classes.size > 0) {
+			super.output(sb, sort);
+		}
+	}
+
+}
+
+class HtmlStyleAttribute extends HtmlAttribute {
+	styles?: Map<string,string>;
+
+	constructor(name:string, value:string, quote?:string,
+				i1?:number, i2?:number, origin?:number) {
+		super(name, value, quote, i1, i2, origin);
+		this._value = '';
+		this.value = value;
+	}
+
+	set value(v:string) {
+		v ? v = v.trim() : '';
+		var oldStyles = this._getStyleMap(this._value);
+		var newStyles = this._getStyleMap(v);
+		oldStyles.forEach((v,k) => {
+			if (!newStyles.has(k)) {
+				this.removeProperty(k);
+			}
+		});
+		newStyles.forEach((v,k) => {
+			this.setProperty(k, v);
+		});
+		this._value = v;
+	}
+
+	_getStyleMap(s:string): Map<string,string> {
+		var ret = new Map<string,string>();
+		var styles = s.split(';');
+		for (var style of styles) {
+			var parts = style.split(':');
+			var key = parts.length > 0 ? parts[0].trim() : '';
+			var val = parts.length > 1 ? parts[1].trim() : '';
+			if (key.length > 0) {
+				ret.set(key, val);
+			}
+		}
+		return ret;
+	}
+
+	get value(): string {
+		var sb = new StringBuf();
+		if (this.styles) {
+			this.styles.forEach((v,k) => {
+				sb.add(k); sb.add(':');
+				sb.add(v); sb.add(';');
+			});
+		}
+		return sb.toString().trim();
+	}
+
+	setProperty(k:string, v:string) {
+		!this.styles ? this.styles = new Map() : null;
+		v ? this.styles.set(k, v) : this.styles.delete(k);
+	}
+
+	removeProperty(k:string) {
+		this.styles ? this.styles.delete(k.trim()) : null;
+	}
+
+	output(sb:StringBuf, sort=false) {
+		if (this.styles && this.styles.size > 0) {
 			super.output(sb, sort);
 		}
 	}

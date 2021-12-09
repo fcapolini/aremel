@@ -310,11 +310,19 @@ describe("test preprocessor", () => {
 		expect(msg).toBe('');
 	});
 
-	it("should handle both the `class` and `classList`", () => {
+	it("should handle both the `class` attribute and the `classList` object", () => {
 		var doc = HtmlParser.parse('<html class="aaa bbb"></html>');
 		var root = doc.firstElementChild;
 		root.classList.remove('aaa');
 		expect(doc.toString()).toBe('<html class="bbb"></html>');
+	});
+
+	it("should handle both the `style` attribute and `style` object", () => {
+		var doc = HtmlParser.parse('<html style="display:block;color:red"></html>');
+		expect(doc.toString()).toBe('<html style="display:block;color:red;"></html>');
+		var root = doc.firstElementChild;
+		root.style.removeProperty('display');
+		expect(doc.toString()).toBe('<html style="color:red;"></html>');
 	});
 
 	//TODO test innertHTML getter & setter
