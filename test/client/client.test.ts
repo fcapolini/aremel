@@ -58,20 +58,14 @@ describe("test client", () => {
 function load(fname:string, cb:(client:AremelClient)=>void) {
 	var url = new URL('http://localhost/' + fname);
 	AramelServer.getPage(prepro, url, (doc) => {
-		var win = {
+		var win:any = {
 			addEventListener: (t:string,h:any)=>{},
 			removeEventListener: (t:string,h:any)=>{},
 		};
 		var client = new AremelClient(doc as unknown as DomDocument, win, true);
 		expect(client.runtime).toBeDefined();
-		var code = client.pageObj.script;
-		expect(code).toBeDefined();
-		var window:any = {};
-		eval(code as unknown as string);
-		expect(window.__aremel).toBeDefined();
-		client.root = window.__aremel(client.runtime);
+		expect(win.__aremel).toBeDefined();
 		expect(client.root).toBeDefined();
-		client.runtime.start();
 		cb(client);
 	});
 }

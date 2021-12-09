@@ -16,6 +16,9 @@ export default class AremelClient {
 			script: getAndCleanScript ? this.getScript(doc) : undefined,
 		};
 		this.runtime = make(this.pageObj);
+		if (getAndCleanScript) {
+			eval(this.pageObj.script as string);
+		}
 		this.root = window.__aremel(this.runtime);
 		this.runtime.start();
 		window.aremel = this.root;
@@ -59,7 +62,6 @@ export default class AremelClient {
 		for (var e of bodyScripts) {
 			e.parentElement?.removeChild(e);
 		}
-		console.log('getScript(): ' + code);
 		return code;
 	}
 
