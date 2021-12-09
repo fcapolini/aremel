@@ -1,0 +1,17 @@
+- name: github-action-jest
+  # You may pin to the exact commit or the version.
+  # uses: jlndk/github-action-jest@143c2a32fef8ca5583cd0ed8049c2c34b547b023
+  uses: jlndk/github-action-jest@1.0.3
+  with:
+    # The test command that should be executed
+    test-command: # optional, default is npm test
+    # 
+    working-directory: # optional
+    # 
+    coverage-comment: # optional, default is true
+    # 
+    changes-only: # optional, default is false
+    # 
+    dry-run: # optional, default is false
+    # 
+    fail-action-if-jest-fails: # optional, default is true
