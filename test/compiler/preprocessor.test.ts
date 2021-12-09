@@ -1,6 +1,6 @@
 import { ELEMENT_NODE, HtmlDocument, HtmlElement, TEXT_NODE } from "../../src/compiler/htmldom";
 import Preprocessor, { domGetTop, PreprocessorError } from "../../src/compiler/preprocessor";
-import { EReg, normalizeText } from "../../src/compiler/util";
+import { EReg, normalizeText } from "../../src/shared/util";
 
 let preprocessor:Preprocessor;
 

@@ -1,15 +1,15 @@
 import { request } from 'http';
-import { DOM_CLONEINDEX_ATTR, DOM_ID_ATTR } from "../../src/compiler/app";
+import { DOM_CLONEINDEX_ATTR, DOM_ID_ATTR } from "../../src/shared/runtime";
 import HtmlParser from "../../src/compiler/htmlparser";
-import { normalizeText } from "../../src/compiler/util";
+import { normalizeText } from "../../src/shared/util";
 import AremelServer from "../../src/server/server";
 import { DomElement, ELEMENT_NODE } from "../../src/shared/dom";
 
-const port = 8080;
+const port = 8081;
 let server: AremelServer;
 
 describe("test client", () => {
-	jest.setTimeout(10000);
+	jest.setTimeout(30000);
 
 	beforeAll((done) => {
 		server = new AremelServer(port, process.cwd() + '/test/server/pages', done);
@@ -18,7 +18,7 @@ describe("test client", () => {
 	afterAll((done) => server.close(done));
 
 	it("should serve data.json", (done) => {
-		doGet('http://localhost:8080/data.json', (s) => {
+		doGet(`http://localhost:${port}/data.json`, (s) => {
 			expect(s).toBe(`{"msg": "Hello", "list":[1, 2, 3]}`);
 			done();
 		});

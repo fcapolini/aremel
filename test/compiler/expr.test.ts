@@ -1,4 +1,4 @@
-import { JS_NOTNULL_FN } from "../../src/compiler/app";
+import { JS_NOTNULL_FN } from "../../src/shared/runtime";
 import { prepareExpr } from "../../src/compiler/expr";
 
 describe("test expressions", () => {

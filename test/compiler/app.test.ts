@@ -1,7 +1,8 @@
-import App, { JS_AKA_VAR, JS_AUTOHIDE_CLASS } from "../../src/compiler/app";
+import App from "../../src/compiler/app";
 import { AppValue } from "../../src/compiler/appvalue";
 import HtmlParser from "../../src/compiler/htmlparser";
-import { normalizeText, StringBuf } from "../../src/compiler/util";
+import { JS_AUTOHIDE_CLASS } from "../../src/shared/runtime";
+import { normalizeText, StringBuf } from "../../src/shared/util";
 
 let rootPath:string;
 

@@ -1,8 +1,8 @@
 import AremelClient from "../../src/client/client";
-import { CSS_AUTOHIDE_CLASS } from "../../src/compiler/app";
+import { CSS_AUTOHIDE_CLASS } from "../../src/shared/runtime";
 import { HtmlDocument } from "../../src/compiler/htmldom";
 import Preprocessor from "../../src/compiler/preprocessor";
-import { normalizeText } from "../../src/compiler/util";
+import { normalizeText } from "../../src/shared/util";
 import AramelServer from "../../src/server/server";
 import { DomDocument } from "../../src/shared/dom";
 
