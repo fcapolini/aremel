@@ -8,6 +8,10 @@ export interface RuntimeEventSource {
 	removeEventListener: (t:string,h:any)=>void,
 }
 
+// export interface RuntimeHttpRequester {
+// 	request: (url:string, type:string, post:boolean, cb:(s:string)=>void)=>void
+// }
+
 export interface RuntimeObj {
 	page: PageObj,
 	cycle: number,
@@ -357,40 +361,70 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 		return value;
 	}
 
-	function _addRequest(req:RequestObj) {
-		if (req.url) {
-			runtime.requests.push(req);
+	function _addRequest(r:RequestObj) {
+		function res(s:string) {
+			try {
+				if (r.scriptElement) {
+					var t = r.scriptElement.firstChild;
+					if (t) {
+						(t as DomTextNode).nodeValue = s;
+					} else {
+						t = r.scriptElement.ownerDocument?.createTextNode(s);
+						r.scriptElement.appendChild(t as DomNode);
+					}
+				}
+				if (r.type === 'text/json') {
+					set(r.target, JSON.parse(s));
+				} else {
+					set(r.target, s);
+				}
+			} catch (ex:any) {
+				//TODO
+			}
+
+			var i = runtime.requests.indexOf(r);
+			if (i >= 0) {
+				runtime.requests.splice(i, 1);
+			}
+			if (runtime.requests.length < 1 && runtime.cb) {
+				setTimeout(runtime.cb, 0);
+			}
+		}
+
+		if (r.url) {
+			runtime.requests.push(r);
 			var xhttp = new XMLHttpRequest();
 			xhttp.onreadystatechange = function() {
 				if (this.readyState === 4) {
 					if (this.status === 200) {
-						try {
-							var v = undefined;
-							if (req.type === 'text/json') {
-								v = JSON.parse(this.responseText);
-							} else if (req.type === 'text/xml') {
-								v = this.responseXML;
-							} else {
-								v = this.responseText;
-							}
-							set(req.target, v);
-						} catch (ex:any) {
-							//TODO: error
-						}
+						// try {
+						// 	var v = undefined;
+						// 	if (r.type === 'text/json') {
+						// 		v = JSON.parse(this.responseText);
+						// 	} else if (r.type === 'text/xml') {
+						// 		v = this.responseXML;
+						// 	} else {
+						// 		v = this.responseText;
+						// 	}
+						// 	set(r.target, v);
+						// } catch (ex:any) {
+						// 	//TODO: error
+						// }
+						res(this.responseText);
 					} else {
-						//TODO: error
+						res(`ERROR ${this.status}`);
 					}
 					
-					var i = runtime.requests.indexOf(req);
-					if (i >= 0) {
-						runtime.requests.splice(i, 1);
-					}
-					if (runtime.requests.length < 1 && runtime.cb) {
-						setTimeout(runtime.cb, 0);
-					}
+					// var i = runtime.requests.indexOf(r);
+					// if (i >= 0) {
+					// 	runtime.requests.splice(i, 1);
+					// }
+					// if (runtime.requests.length < 1 && runtime.cb) {
+					// 	setTimeout(runtime.cb, 0);
+					// }
 				}
 			}
-			xhttp.open(req.post ? 'POST' : 'GET', req.url, true);
+			xhttp.open(r.post ? 'POST' : 'GET', r.url, true);
 			xhttp.send();
 		}
 	}
@@ -424,6 +458,7 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 				setTimeout(runtime.cb, 0);
 			}
 		}
+
 		if (r.url) {
 			runtime.requests.push(r);
 
