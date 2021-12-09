@@ -135,6 +135,7 @@ describe("test runtime", () => {
 		</html>`);
 	});
 
+	//TODO: OK dover mettere le tonde intorno all'object literal in v1?
 	it("should support partial scope referencing", () => {
 		var doc = HtmlParser.parse(`<html>
 			<body>
@@ -158,18 +159,32 @@ describe("test runtime", () => {
 		</html>`);
 	});
 
-	// it("should support data sources", () => {
-	// 	var doc = HtmlParser.parse(`<html>
-	// 		<body>
-	// 			<script :
-	// 		</body>
-	// 	</html>`);
-	// 	var root = run(doc);
-	// 	expect(doc.toString(true)).toBe(`<html data-aremel="0">
-	// 		<body data-aremel="1">
-	// 		</body>
-	// 	</html>`);
-	// });
+	it("should support data sources", () => {
+		var doc = HtmlParser.parse(`<html>
+			<body>
+				<script
+					:url=""
+					:type="text/json"
+					:post=[[false]]
+
+					type=[[type]]
+					:on-url="[[
+						__rt.addRequest({
+							url:url, type:type, target:__this.__value_content,
+							post:post, scriptElement:__this.__dom
+						})
+					]]"
+					:content=[[undefined]]
+				></script>
+			</body>
+		</html>`);
+		var root = run(doc, [], true);
+		expect(doc.toString(true)).toBe(`<html data-aremel="0">
+			<body data-aremel="1">
+				<script data-aremel="2" type="text/json"></script>
+			</body>
+		</html>`);
+	});
 
 });
 

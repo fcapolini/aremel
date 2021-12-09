@@ -18,7 +18,8 @@ export class HtmlNode {
 	nodeType: number;
 	pos: HtmlPos;
 
-	constructor(doc:HtmlDocument|undefined, parent:HtmlElement|undefined, type:number, i1:number, i2:number, origin:number) {
+	constructor(doc:HtmlDocument|undefined, parent:HtmlElement|undefined,
+				type:number, i1:number, i2:number, origin:number) {
 		this.ownerDocument = doc;
 		parent ? parent.addChild(this) : null;
 		this.nodeType = type;
@@ -64,7 +65,8 @@ export class HtmlElement extends HtmlNode {
 	// classAttr: Array<string> | undefined;
 	style: {setProperty:(k:string,v:string)=>void, removeProperty:(k:string)=>void, styles?:Map<string,string>};
 
-	constructor(doc:HtmlDocument | undefined, parent:HtmlElement|undefined, name:string, i1:number, i2:number, origin:number) {
+	constructor(doc:HtmlDocument | undefined, parent:HtmlElement|undefined,
+				name:string, i1:number, i2:number, origin:number) {
 		super(doc, parent, ELEMENT_NODE, i1, i2, origin);
 		this.tagName = name.toUpperCase();
 		this.attributes = new Map();
@@ -134,7 +136,7 @@ export class HtmlElement extends HtmlNode {
 	}
 
 	setAttribute(name:string, value?:string, quote?:string,
-				i1?:number, i2?:number, origin?:number): HtmlAttribute | undefined {
+				i1?:number, i2?:number, origin?:number): HtmlAttribute|undefined {
 		// if (name === 'class') {
 		// 	this.setClassAttribute(value);
 		// 	return undefined;

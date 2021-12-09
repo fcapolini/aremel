@@ -279,8 +279,9 @@ export class AppValue {
 	// - right
 	// - argument or listKey 'arguments'
 	// - callee
+	// - value
 	static _patchIdKeys = new Set<string>(['object',
-		'expression', 'left', 'right', 'argument', 'callee']);
+		'expression', 'left', 'right', 'argument', 'callee', 'value']);
 	static _patchIdListKeys = new Set<string>(['arguments']);
 	// we don't depend on IDs with keys:
 	// - callee

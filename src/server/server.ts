@@ -46,7 +46,7 @@ export default class AremelServer {
 	static getPage(prepro:Preprocessor, url:URL, cb:(doc:HtmlDocument)=>void) {
 		var doc = prepro.read(url.pathname, `<lib>
 			<style data-name="aremel">
-				${CSS_AUTOHIDE_CLASS} {
+				.${CSS_AUTOHIDE_CLASS} {
 					display: none;
 				}
 			</style>

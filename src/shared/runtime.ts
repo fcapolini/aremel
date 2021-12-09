@@ -323,7 +323,6 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 						set(clone.__value_data, v[i]);
 					} else {
 						// create missing clones
-						var e = 
 						clone = cloneSelf(i, v[i], siblings?.get(i));
 						that.__clones.push(clone);
 					}
