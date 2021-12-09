@@ -243,7 +243,6 @@ export class AppValue {
 						},
 					};
 				},
-				//TODO: don't add return to function declarations
 				function addReturn(): PluginObj<PluginPass> {
 					return {
 						visitor: {
@@ -272,86 +271,88 @@ export class AppValue {
 			],
 		});
 	}
-	
+
+	// we only patch IDs whith keys:
+	// - object
+	// - expression
+	// - left
+	// - right
+	// - argument or listKey 'arguments'
+	// - callee
+	static _patchIdKeys = new Set<string>(['object',
+		'expression', 'left', 'right', 'argument', 'callee']);
+	static _patchIdListKeys = new Set<string>(['arguments']);
+	// we don't depend on IDs with keys:
+	// - callee
+	static _noRefKeys = new Set<string>(['callee']);
+
 	_patchId(path:NodePath) {
 		if (path.isIdentifier()) {
-			if (!path.node.name.startsWith('__')) {
-				if (path.key !== 'id' || path.parent.type !== 'VariableDeclarator') {
-					// not a var declaration
-					if (path.key !== 'property') {
-						// not a dot access
-						var name = path.node.name;
-						var scope:AppScope|undefined = this.scope;
-
+			var name = path.node.name;
+			if (!name.startsWith('__')) {
+				//
+				// collect reference
+				//
+				if (!AppValue._noRefKeys.has(path.key as string)) {
+					var parts = this._getPropertyPathname(path, []);
+					if (parts.length > 0) {
+						var scope = this?.scope;
 						if (name === this.key) {
-							scope = scope.parent;
+							scope = scope?.parent;
 						}
-
-						scope = this._getScopeForIdentifier(scope, name);
-						if (scope) {
-							this.refs.add(scope.id + '.' + name);
-							path.replaceWith(memberExpression(
-								identifier('__scope_' + scope.id),
-								identifier(name)
-							));
+						if (parts[0] === '__scope_0') {
+							parts.shift();
+							scope = this.scope.app.root;
 						} else {
-							// var ppp = path.parentPath;
-							// console.log('A: ' + name);
-							//TODO
+							scope = this._getScopeForIdentifier(scope, parts[0], true);
 						}
-					} else {
-						var parts = this._getPropertyPathname(path, []);
-						if (parts.length > 0 && parts.join('.').indexOf('#') < 0) {
-							// valid path
-							var name = parts.pop() as string;
-							var scope:AppScope|undefined = this.scope;
-
-							if (name === this.key) {
-								scope = scope.parent;
-							}	
-
-							scope = this._getScopeForPathname(scope, parts);
-							if (scope) {
-								this.refs.add(scope.id + '.' + name);
-
-								var p:NodePath|null = path;
-								while (p.parentPath && p.parentPath.type === 'MemberExpression') {
-									p = p.parentPath;
-								}
-								
-								var scopes = new Array<AppScope>();
-								while (scope) {
-									scopes.push(scope);
-									scope = scope.parent;
-								}
-
-								var left:any = identifier('__scope_' + scopes.pop()?.id);
-								while (scopes.length > 0) {
-									left = memberExpression(
-										left,
-										identifier('__scope_' + scopes.pop()?.id)
-									);
-								}
-
-								p?.replaceWith(memberExpression(
-									left,
-									identifier(name)
-								));
-
+						while (scope && parts.length > 0) {
+							var part = parts.shift() as string;
+							if (scope.values.has(part)) {
+								this.refs.add(scope.id + '.' + part);
+								break;
 							} else {
-								// console.log('B: ' + name);
-								//TODO
+								scope = this._getNamedSubscope(scope, part);
 							}
 						}
+					}
+				}
+				//
+				// patch id
+				//
+				if (AppValue._patchIdKeys.has(path.key as string)
+						|| AppValue._patchIdListKeys.has(path.listKey as string)) {
+					var scope = this?.scope;
+					if (name === this.key) {
+						scope = scope?.parent;
+					}	
+					scope = this._getScopeForIdentifier(scope, name, true);
+					if (scope) {
+						// this.refs.add(scope.id + '.' + name);
+						path.replaceWith(memberExpression(
+							identifier('__scope_' + scope.id),
+							identifier(name)
+						));
+					} else {
+						//TODO
 					}
 				}
 			}
 		}
 	}
-	
-	_getScopeForIdentifier(scope:AppScope|undefined,
-							name:string,
-							childScopes=false): AppScope|undefined {
+
+	_getNamedSubscope(scope:AppScope, name:string): AppScope | undefined {
+		for (var child of scope.children) {
+			if (child.aka === name) {
+				return child;
+			}
+		}
+		return undefined;
+	}
+
+	_getScopeForIdentifier(scope: AppScope | undefined,
+							name: string,
+							childScopes=false): AppScope | undefined {
 		while (scope) {
 			if (scope.values.has(name)) {
 				return scope;
@@ -359,29 +360,13 @@ export class AppValue {
 			if (childScopes) {
 				for (var child of scope.children) {
 					if (child.aka && child.aka === name) {
-						return child;
+						return scope;
 					}
 				}
 			}
 			scope = scope.parent;
 		}
 		return undefined;
-	}
-
-	_getScopeForPathname(scope:AppScope|undefined,
-						parts:Array<string>): AppScope | undefined {
-		var next;
-		while (scope && parts.length > 0) {
-			var part = parts.shift() as string;
-			scope = this._getScopeForIdentifier(scope, part, true);
-
-			// if (!(next = this._getScopeForIdentifier(scope, parts[0], true))) {
-			// 	break;
-			// }
-			// parts.shift();
-			// scope = next;
-		}
-		return scope;
 	}
 
 	_getPropertyPathname(path:NodePath, parts:Array<string>) {
@@ -400,6 +385,8 @@ export class AppValue {
 		}
 		if (path.parentPath?.isMemberExpression()) {
 			f(path.parentPath.node);
+		} else if (path.isIdentifier() && path.parentPath?.isExpressionStatement) {
+			parts.push(path.node.name);
 		}
 		return parts;
 	}
