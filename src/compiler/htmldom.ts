@@ -336,6 +336,11 @@ export class HtmlDocument extends HtmlElement {
 		return ret;
 	}
 
+	createTextNode(text:string): any {
+		var ret = new HtmlText(this, undefined, text, 0, 0, 0, false);
+		return ret;
+	}
+
 	override output(sb:StringBuf, sort=false): StringBuf {
 		for (var i in this.children) {
 			this.children[i].output(sb, sort);

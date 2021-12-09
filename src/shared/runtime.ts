@@ -54,7 +54,7 @@ export interface RequestObj {
 	type: string,
 	target: ValueObj,
 	post?: boolean,
-	scriptElement?: any,
+	scriptElement?: DomElement,
 }
 
 export function make(page:PageObj, cb?:()=>void): RuntimeObj {
@@ -398,6 +398,15 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 	function addRequest(r:RequestObj) {
 		function res(s:string) {
 			try {
+				if (r.scriptElement) {
+					var t = r.scriptElement.firstChild;
+					if (t) {
+						(t as DomTextNode).nodeValue = s;
+					} else {
+						t = r.scriptElement.ownerDocument?.createTextNode(s);
+						r.scriptElement.appendChild(t as DomNode);
+					}
+				}
 				if (r.type === 'text/json') {
 					set(r.target, JSON.parse(s));
 				} else {
