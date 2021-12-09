@@ -1,10 +1,10 @@
 import e from 'express';
 import express from 'express';
 import { Server } from 'http';
-import App, { CSS_AUTOHIDE_CLASS } from '../compiler/app';
+import App from '../compiler/app';
 import { HtmlDocument, HtmlElement, HtmlText } from '../compiler/htmldom';
 import Preprocessor from '../compiler/preprocessor';
-import { make } from '../shared/runtime';
+import { CSS_AUTOHIDE_CLASS, make } from '../shared/runtime';
 
 export default class AremelServer {
 	server: Server;
@@ -73,7 +73,7 @@ export default class AremelServer {
 		var code = new HtmlElement(doc, root.body.__dom, 'script', 0, 0, 0);
 		new HtmlText(doc, code, `window.__aremel = ${page.script}`, 0, 0, 0, false);
 		var script = new HtmlElement(doc, root.body.__dom, 'script', 0, 0, 0);
-		script.setAttribute('src', '/.aremel/bin/bundle.js');
+		script.setAttribute('src', '/.aremel/bin/aremel.js');
 		script.setAttribute('defer', '');
 	}
 

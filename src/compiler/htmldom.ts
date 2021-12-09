@@ -1,6 +1,6 @@
 import { DomNode, DomNodeList } from "../shared/dom";
 import HtmlParser from "./htmlparser";
-import { normalizeSpace, StringBuf } from "./util";
+import { normalizeSpace, StringBuf } from "../shared/util";
 
 export const ELEMENT_NODE = 1;
 export const TEXT_NODE = 3;

@@ -1,41 +1,10 @@
-import { DomDocument, DomTextNode } from "../shared/dom";
-import { PageObj, RuntimeEventSource } from "../shared/runtime";
+import { request } from 'http';
+import { DomDocument } from "../shared/dom";
+import { DOM_AKA_ATTR, DOM_ATTR_ATTR_PREFIX, DOM_CLASS_ATTR_PREFIX, DOM_DYNAMIC_ATTR_PREFIX, DOM_EVENT_ATTR_PREFIX, DOM_EXP_MARKER1, DOM_EXP_MARKER2, DOM_HANDLER_ATTR_PREFIX, DOM_HIDDEN_ATTR, DOM_STYLE_ATTR_PREFIX, JS_AKA_VAR, JS_ATTR_VALUE_PREFIX, JS_AUTOHIDE_CLASS, JS_CLASS_VALUE_PREFIX, JS_DATALENGTH_VAR, JS_DATAOFFSET_VAR, JS_DATA_VAR, JS_EVENT_VALUE_PREFIX, JS_HANDLER_VALUE_PREFIX, JS_STYLE_VALUE_PREFIX, PageObj, RuntimeEventSource } from "../shared/runtime";
 import { AppScope } from "./appscope";
-import { AppValue } from "./appvalue";
 import { ELEMENT_NODE, HtmlDocument, HtmlElement, HtmlNode, HtmlPos, HtmlText, TEXT_NODE } from "./htmldom";
 import Preprocessor from "./preprocessor";
-import { makeCamelName, StringBuf } from "./util";
-import { request } from 'http';
-
-export const DOM_DYNAMIC_ATTR_PREFIX = ':';
-export const DOM_CLASS_ATTR_PREFIX = ':class-';
-export const DOM_STYLE_ATTR_PREFIX = ':style-';
-export const DOM_ATTR_ATTR_PREFIX = ':attr-';
-export const DOM_HANDLER_ATTR_PREFIX = ':on-';
-export const DOM_EVENT_ATTR_PREFIX = ':event-';
-export const DOM_AKA_ATTR = /*:*/'aka';
-export const DOM_HIDDEN_ATTR = ':hidden';
-export const DOM_EXP_MARKER1 = '[[';
-export const DOM_EXP_MARKER2 = ']]';
-
-export const JS_AKA_VAR = '__aka';
-export const JS_DOM_VAR = '__dom';
-export const JS_DOC_VAR = '__doc';
-export const JS_ID_VAR = '__id';
-export const JS_CLASS_VALUE_PREFIX = 'class_';
-export const JS_STYLE_VALUE_PREFIX = 'style_';
-export const JS_ATTR_VALUE_PREFIX = 'attr_';
-export const JS_HANDLER_VALUE_PREFIX = 'on_';
-export const JS_TEXT_VALUE_PREFIX = 'text_';
-export const JS_EVENT_VALUE_PREFIX = 'event_';
-export const JS_NOTNULL_FN = '__nn';
-export const JS_DATA_VAR = 'data';
-export const JS_DATAOFFSET_VAR = 'dataOffset';
-export const JS_DATALENGTH_VAR = 'dataLength';
-export const JS_AUTOHIDE_CLASS = JS_CLASS_VALUE_PREFIX + '__aremelAutohide';
-export const CSS_AUTOHIDE_CLASS = '__aremel-autohide';
-export const DOM_ID_ATTR = 'data-aremel';
-export const DOM_CLONEINDEX_ATTR = 'data-aremel-i';
+import { makeCamelName, StringBuf } from "../shared/util";
 
 export const nonValues = new Set([JS_AKA_VAR]);
 

@@ -1,6 +1,5 @@
-import { DOM_ID_ATTR } from "../compiler/app";
 import { DomDocument, DomElement, DomTextNode, ELEMENT_NODE } from "../shared/dom";
-import { make, PageObj, RuntimeEventSource, RuntimeObj } from "../shared/runtime";
+import { DOM_ID_ATTR, make, PageObj, RuntimeEventSource, RuntimeObj } from "../shared/runtime";
 
 export default class AremelClient {
 	pageObj: PageObj;
@@ -66,7 +65,6 @@ export default class AremelClient {
 	}
 
 	static httpRequest(url:string, post:boolean, cb:(s:string)=>void) {
-		console.log(`httpRequest(${url})`);//tempdebug
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState === 4) {

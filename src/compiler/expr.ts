@@ -1,5 +1,5 @@
-import { DOM_EXP_MARKER1, DOM_EXP_MARKER2, JS_NOTNULL_FN } from "./app";
-import { StringBuf } from "./util";
+import { DOM_EXP_MARKER1, DOM_EXP_MARKER2, JS_NOTNULL_FN } from "../shared/runtime";
+import { StringBuf } from "../shared/util";
 
 export interface Expr {
 	src: string,

@@ -1,9 +1,10 @@
 import { DomElement, DomNode, DomTextNode } from "../shared/dom";
-import App, { DOM_ID_ATTR, JS_AKA_VAR, JS_TEXT_VALUE_PREFIX, nonValues, Prop } from "./app";
+import { DOM_ID_ATTR, JS_AKA_VAR, JS_TEXT_VALUE_PREFIX } from "../shared/runtime";
+import App, { nonValues, Prop } from "./app";
 import { AppValue } from "./appvalue";
 import { HtmlElement } from "./htmldom";
 import Preprocessor from "./preprocessor";
-import { StringBuf } from "./util";
+import { StringBuf } from "../shared/util";
 
 export class AppScope {
 	app: App;

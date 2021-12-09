@@ -134,11 +134,11 @@ node express.js
 mkdir docroot
 ```
 
-### Browserify
+### Browserify - no: now in companion project `aremel-client`
 
 ```bash
-npm install -g browserify
-npm install -g watchify
-# npm install --save-dev tinyify
+# npm install -g browserify
+# npm install -g watchify
+# # npm install --save-dev tinyify
 ```
 
