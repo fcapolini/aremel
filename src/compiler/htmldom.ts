@@ -1,6 +1,6 @@
 import { DomNode, DomNodeList } from "../shared/dom";
 import HtmlParser from "./htmlparser";
-import { StringBuf } from "./util";
+import { normalizeSpace, StringBuf } from "./util";
 
 export const ELEMENT_NODE = 1;
 export const TEXT_NODE = 3;
@@ -61,8 +61,7 @@ export class HtmlElement extends HtmlNode {
 	children: Array<HtmlNode>;
 	selfclose: boolean;
 
-	classList: {add:(name:string)=>void, remove:(name:string)=>void, classes?:Set<string>};
-	// classAttr: Array<string> | undefined;
+	classList: {add:(name:string)=>void, remove:(name:string)=>void};
 	style: {setProperty:(k:string,v:string)=>void, removeProperty:(k:string)=>void, styles?:Map<string,string>};
 
 	constructor(doc:HtmlDocument | undefined, parent:HtmlElement|undefined,
@@ -72,13 +71,21 @@ export class HtmlElement extends HtmlNode {
 		this.attributes = new Map();
 		this.children = [];
 		this.selfclose = false;
+		var that = this;
 		this.classList = {
 			add: function(name:string) {
-				!this.classes ? this.classes = new Set() : null;
-				this.classes.add(name.trim());
+				var a:HtmlClassAttribute = that.attributes.get('class') as HtmlClassAttribute;
+				if (a) {
+					a.add(name);
+				} else {
+					that.setAttribute('class', name);
+				}
 			},
 			remove: function(name:string) {
-				this.classes ? this.classes.delete(name.trim()) : null;
+				var a:HtmlClassAttribute = that.attributes.get('class') as HtmlClassAttribute;
+				if (a) {
+					a.remove(name);
+				}
 			}
 		};
 		this.style = {
@@ -137,58 +144,35 @@ export class HtmlElement extends HtmlNode {
 
 	setAttribute(name:string, value?:string, quote?:string,
 				i1?:number, i2?:number, origin?:number): HtmlAttribute|undefined {
-		// if (name === 'class') {
-		// 	this.setClassAttribute(value);
-		// 	return undefined;
-		// } else if (name === 'style') {
-		// 	//TODO
-		// 	return undefined;
-		// } else {
-			var a = this.attributes.get(name);
-			if (!a) {
-				if (value != undefined) {
-					this.attributes.set(
-						name,
-						(a = new HtmlAttribute(name, value, quote ? quote : '"',
-							i1, i2, origin))
-					);
-				}
-			} else {
-				if (value == undefined) {
-					this.attributes.delete(name);
+		var a = this.attributes.get(name);
+		if (!a) {
+			if (value != undefined) {
+				if (name === 'class') {
+					a = new HtmlClassAttribute(name, value, quote ? quote : '"',
+							i1, i2, origin);
 				} else {
-					a.value = value;
-					a.quote = quote ? quote : a.quote;
-					if (i1 && i2 && origin) {
-						a.pos1 = {origin:origin, i1:i1, i2:i2};
-					}
+					a = new HtmlAttribute(name, value, quote ? quote : '"',
+							i1, i2, origin);
+				}
+				this.attributes.set(name, a);
+			}
+		} else {
+			if (value == undefined) {
+				this.attributes.delete(name);
+			} else {
+				a.value = value;
+				a.quote = quote ? quote : a.quote;
+				if (i1 && i2 && origin) {
+					a.pos1 = {origin:origin, i1:i1, i2:i2};
 				}
 			}
-			return a;
-		// }
+		}
+		return a;
 	}
 
 	removeAttribute(name:string) {
 		this.attributes.delete(name);
 	}
-
-	// setClassAttribute(value?:string) {
-	// 	var cc = (value ? normalizeText(value).trim().split(' ') : []);
-	// 	if (this.classAttr) {
-	// 		for (var c of this.classAttr) {
-	// 			if (cc.indexOf(c) < 0) {
-	// 				this.classList.remove(c);
-	// 			}
-	// 		}
-	// 	}
-	// 	for (var c of cc) {
-	// 		if (!this.classAttr || this.classAttr.indexOf(c) < 0) {
-	// 			this.classList.add(c);
-	// 		}
-	// 	}
-	// 	this.classAttr = cc;
-	// 	return undefined;
-	// }
 
 	getAttribute(name:string): string | undefined {
 		var a = this.attributes.get(name);
@@ -279,33 +263,6 @@ export class HtmlElement extends HtmlNode {
 		var name = this.tagName.toLowerCase();
 		sb.add('<'); sb.add(name);
 
-		// var keys = this.getAttributeNames();
-
-		// if (this.classList.classes && this.classList.classes.size > 0) {
-		// 	var sep = '';
-		// 	sb.add(' class="');
-		// 	this.classList.classes.forEach((v) => {sb.add(sep + v); sep = '';});
-		// 	sb.add('"');
-		// }
-
-		// if (this.style.styles && this.style.styles.size > 0) {
-		// 	sb.add(' style="');
-		// 	this.style.styles.forEach((v, k) => sb.add(k + ':' + v + ';'));
-		// 	sb.add('"');
-		// }
-
-		// this.attributes.forEach((a) => {
-		// 	if (a) {
-		// 		sb.add(' '); sb.add(a.name);
-		// 		if (a.value !== '' || a.quote) {
-		// 			var q = a.quote === "'" ? "'" : '"';
-		// 			sb.add('='); sb.add(q);
-		// 			sb.add(this.escape(a.value, "\r\n" + q));
-		// 			sb.add(q);
-		// 		}
-		// 	}
-		// });
-
 		this.outputAttributes(sb, sort);
 
 		if (this.isVoid()) {
@@ -320,13 +277,9 @@ export class HtmlElement extends HtmlNode {
 		return sb;
 	}
 
-	//TODO: handle both `:class-*` and `class` at the same time
 	//TODO: handle both `:style-*` and `style` at the same time
 	outputAttributes(sb:StringBuf, sort=false) {
 		var keys = this.getAttributeNames();
-		if (this.classList.classes && this.classList.classes.size > 0) {
-			keys.indexOf('class') < 0 ? keys.push('class') : null;
-		}
 		if (this.style.styles && this.style.styles.size > 0) {
 			keys.indexOf('style') < 0 ? keys.push('style') : null;
 		}
@@ -334,26 +287,13 @@ export class HtmlElement extends HtmlNode {
 			keys = keys.sort((a, b) => (a > b ? 1 : (a < b ? -1 : 0)));
 		}
 		for (var key of keys) {
-			if (key === 'class' && this.classList.classes && this.classList.classes.size > 0) {
-				var sep = '';
-				sb.add(' class="');
-				this.classList.classes.forEach((v) => {sb.add(sep + v); sep = '';});
-				sb.add('"');
-			} else if (key === 'style' && this.style.styles && this.style.styles.size > 0) {
+			if (key === 'style' && this.style.styles && this.style.styles.size > 0) {
 				sb.add(' style="');
 				this.style.styles.forEach((v, k) => sb.add(k + ':' + v + ';'));
 				sb.add('"');
 			} else {
 				var a = this.attributes.get(key);
-				if (a) {
-					sb.add(' '); sb.add(a.name);
-					if (a.value !== '' || a.quote) {
-						var q = a.quote === "'" ? "'" : '"';
-						sb.add('='); sb.add(q);
-						sb.add(this.escape(a.value, "\r\n" + q));
-						sb.add(q);
-					}
-				}
+				a?.output(sb, sort);
 			}
 		}
 	}
@@ -368,7 +308,7 @@ export class HtmlElement extends HtmlNode {
 	// ===================================================================================
 
 	// from haxe-htmlparser: htmlparser.HtmlTools.hx
-	escape(text:string, chars=""): string {
+	static escape(text:string, chars=""): string {
 		var r = text;
 		r = r.split("<").join("&lt;");
 		r = r.split(">").join("&gt;");
@@ -379,6 +319,7 @@ export class HtmlElement extends HtmlNode {
 		if (chars.indexOf("\r") >= 0) r = r.split("\r").join("&#xD;");
 		return r;
 	}
+
 }
 
 export class HtmlDocument extends HtmlElement {
@@ -405,7 +346,7 @@ export class HtmlDocument extends HtmlElement {
 
 export class HtmlAttribute {
 	name: string;
-	value: string;
+	_value: string;
 	quote?: string;
 	pos1?: HtmlPos;
 	pos2?: HtmlPos;
@@ -413,12 +354,85 @@ export class HtmlAttribute {
 	constructor(name:string, value:string, quote?:string,
 				i1?:number, i2?:number, origin?:number) {
 		this.name = name;
-		this.value = value;
+		this._value = value;
 		this.quote = quote;
 		if (origin && i1 && i2) {
 			this.pos1 = {origin:origin, i1:i1, i2:i2};
 		}
-	}	
+	}
+
+	set value(v:string) {
+		this._value = v;
+	}
+
+	get value(): string {
+		return this._value;
+	}
+
+	output(sb:StringBuf, sort=false) {
+		sb.add(' '); sb.add(this.name);
+		if (this.value !== '' || this.quote) {
+			var q = this.quote === "'" ? "'" : '"';
+			sb.add('='); sb.add(q);
+			sb.add(HtmlElement.escape(this.value, "\r\n" + q));
+			sb.add(q);
+		}
+	}
+}
+
+class HtmlClassAttribute extends HtmlAttribute {
+	classes?: Set<string>;
+
+	constructor(name:string, value:string, quote?:string,
+				i1?:number, i2?:number, origin?:number) {
+		super(name, value, quote, i1, i2, origin);
+		this._value = '';
+		this.value = value;
+	}
+
+	set value(v:string) {
+		v ? v = normalizeSpace(v.trim()) : null;
+		var oldClasses = new Set(this._value.length > 0 ? this._value.split(' ') : []);
+		var newClasses = new Set(v.length > 0 ? v.split(' ') : []);
+		for (var c of newClasses) {
+			if (!oldClasses.has(c)) {
+				this.add(c);
+			}
+		}
+		for (var c of oldClasses) {
+			if (!newClasses.has(c)) {
+				this.remove(c);
+			}
+		}
+		this._value = v;
+	}
+
+	get value(): string {
+		var sb = new StringBuf();
+		if (this.classes) {
+			for (var c of this.classes) {
+				sb.add(c);
+				sb.add(' ');
+			}
+		}
+		return sb.toString().trim();
+	}
+
+	add(name:string) {
+		!this.classes ? this.classes = new Set() : null;
+		this.classes.add(name.trim());
+	}
+
+	remove(name:string) {
+		this.classes ? this.classes.delete(name.trim()) : null;
+	}
+
+	output(sb:StringBuf, sort=false) {
+		if (this.classes && this.classes.size > 0) {
+			super.output(sb, sort);
+		}
+	}
+
 }
 
 export class HtmlText extends HtmlNode {

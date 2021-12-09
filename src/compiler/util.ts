@@ -41,6 +41,17 @@ export function normalizeText(s?:string): string {
 	return undefined;
 }
 
+export function normalizeSpace(s?:string): string {
+	if (s) {
+		// @ts-ignore
+		return new EReg('([\\s]+)', 'gm').map(s, (ereg) => {
+			return ' ';
+		});
+	}
+	// @ts-ignore
+	return undefined;
+}
+
 // -----------------------------------------------------------------------------
 // stolen from Haxe implementation
 // -----------------------------------------------------------------------------

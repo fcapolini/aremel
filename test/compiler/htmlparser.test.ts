@@ -310,12 +310,12 @@ describe("test preprocessor", () => {
 		expect(msg).toBe('');
 	});
 
-	// it("should handle both the `class` and `classList`", () => {
-	// 	var doc = HtmlParser.parse('<html class="aaa bbb"></html>');
-	// 	var root = doc.firstElementChild;
-	// 	root.classList.remove('aaa');
-	// 	expect(doc.toString()).toBe('<html class="bbb"></html>');
-	// });
+	it("should handle both the `class` and `classList`", () => {
+		var doc = HtmlParser.parse('<html class="aaa bbb"></html>');
+		var root = doc.firstElementChild;
+		root.classList.remove('aaa');
+		expect(doc.toString()).toBe('<html class="bbb"></html>');
+	});
 
 	//TODO test innertHTML getter & setter
 	//TODO test innerText setter
