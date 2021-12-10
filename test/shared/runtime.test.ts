@@ -189,7 +189,7 @@ describe("test runtime", () => {
 });
 
 function run(doc:HtmlDocument, rtret?:Array<RuntimeObj>, dump=false): any {
-	var app = new App(doc);
+	var app = new App(new URL('http://localhost/'), doc);
 	var page = app.output();
 	var rt = make(page);
 	rtret ? rtret.push(rt) : null;

@@ -1,6 +1,6 @@
 import { request } from 'http';
 import { DomDocument } from "../shared/dom";
-import { DOM_AKA_ATTR, DOM_ATTR_ATTR_PREFIX, DOM_CLASS_ATTR_PREFIX, DOM_DYNAMIC_ATTR_PREFIX, DOM_EVENT_ATTR_PREFIX, DOM_EXP_MARKER1, DOM_EXP_MARKER2, DOM_HANDLER_ATTR_PREFIX, DOM_HIDDEN_ATTR, DOM_STYLE_ATTR_PREFIX, JS_AKA_VAR, JS_ATTR_VALUE_PREFIX, JS_AUTOHIDE_CLASS, JS_CLASS_VALUE_PREFIX, JS_DATALENGTH_VAR, JS_DATAOFFSET_VAR, JS_DATA_VAR, JS_EVENT_VALUE_PREFIX, JS_HANDLER_VALUE_PREFIX, JS_STYLE_VALUE_PREFIX, PageObj, RuntimeEventSource } from "../shared/runtime";
+import { DOM_AKA_ATTR, DOM_ATTR_ATTR_PREFIX, DOM_CLASS_ATTR_PREFIX, DOM_DYNAMIC_ATTR_PREFIX, DOM_EVENT_ATTR_PREFIX, DOM_EXP_MARKER1, DOM_EXP_MARKER2, DOM_HANDLER_ATTR_PREFIX, DOM_HIDDEN_ATTR, DOM_STYLE_ATTR_PREFIX, JS_AKA_VAR, JS_ATTR_VALUE_PREFIX, JS_AUTOHIDE_CLASS, JS_CLASS_VALUE_PREFIX, JS_DATALENGTH_VAR, JS_DATAOFFSET_VAR, JS_DATA_VAR, JS_EVENT_VALUE_PREFIX, JS_HANDLER_VALUE_PREFIX, JS_STYLE_VALUE_PREFIX, PageObj, RequestObj, RuntimeEventSource } from "../shared/runtime";
 import { AppScope } from "./appscope";
 import { ELEMENT_NODE, HtmlDocument, HtmlElement, HtmlNode, HtmlPos, HtmlText, TEXT_NODE } from "./htmldom";
 import Preprocessor from "./preprocessor";
@@ -12,13 +12,15 @@ const attrAliases = new Map<string,string>();
 attrAliases.set(DOM_HIDDEN_ATTR, DOM_DYNAMIC_ATTR_PREFIX + JS_AUTOHIDE_CLASS);
 
 export default class App {
+	url: URL;
 	doc: HtmlDocument;
 	nodes: Array<HtmlNode>;
 	scopes: Array<AppScope>;
 	errors: Array<any>;
 	root: AppScope;
 
-	constructor(doc:HtmlDocument, prepro?:Preprocessor) {
+	constructor(url:URL, doc:HtmlDocument, prepro?:Preprocessor) {
+		this.url = url;
 		this.doc = doc;
 		this.nodes = [];
 		this.scopes = [];
@@ -39,25 +41,27 @@ export default class App {
 				removeEventListener: (t:string, h:any) => {},
 			}
 		}
+		var base = `http://${this.url.hostname}:${this.url.port}`;
+		function requester(req:RequestObj, cb:(s:string)=>void) {
+			//TODO: req.post
+			var output = '';
+			var url = new URL(req.url, base);
+			const r = request(url, r => {
+				r.setEncoding('utf8');
+				r.on('data', (chunk) => output += chunk);
+				r.on('end', () => cb(output));
+			});
+			r.on('error', e => cb(`{"httpError":"${e}"}`));
+			r.end();
+		}
 		return {
 			doc: this.doc as DomDocument,
 			window: window,
 			nodes: this.nodes,
-			requester: App.httpRequest,
+			requester: requester,
 			script: sb.toString()
 		};
 	}
-
-	static httpRequest(url:string, post:boolean, cb:(s:string)=>void) {
-		var output = '';
-		const req = request(url, r => {
-			r.setEncoding('utf8');
-			r.on('data', (chunk) => output += chunk);
-			r.on('end', () => cb(output));
-		});
-		req.on('error', e => cb(`{"httpError":"${e}"}`));
-		req.end();
-}
 
 	//TODO: forbid reserved props (__*)
 	//TODO check aka, value names sanity

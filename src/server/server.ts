@@ -14,7 +14,8 @@ export default class AremelServer {
 		const app = express();
 		app.get('*.html', (req, res) => {
 			res.header("Content-Type",'text/html');
-			var url = new URL(req.url, `http://${req.headers.host}`);
+			var base = `http://${req.headers.host}`;
+			var url = new URL(req.url, base);
 			try {
 				AremelServer.getPage(prepro, url, (doc) => {
 					res.send(doc.toString());
@@ -65,7 +66,7 @@ export default class AremelServer {
 				:content=[[undefined]]
 			/>
 		</lib>`) as HtmlDocument;
-		var app = new App(doc);
+		var app = new App(url, doc);
 		var page = app.output();
 		var rt = make(page, () => cb(doc));
 		var root = eval(`(${page.script})(rt)`);

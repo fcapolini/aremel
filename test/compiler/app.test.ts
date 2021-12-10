@@ -14,7 +14,7 @@ describe("test server app", () => {
 
 	it('should load <html></html>', () => {
 		var doc = HtmlParser.parse('<html></html>');
-		var app = new App(doc);
+		var app = new App(new URL('http://localhost/'), doc);
 		expect(app.root).toBeDefined();
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
 		expect(app.root.values.size).toBe(0);
@@ -24,7 +24,7 @@ describe("test server app", () => {
 
 	it('should load <html :v1="a"></html>', () => {
 		var doc = HtmlParser.parse('<html :v1="a"></html>');
-		var app = new App(doc);
+		var app = new App(new URL('http://localhost/'), doc);
 		expect(app.root).toBeDefined();
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
 		expect(app.root.values.size).toBe(1);
@@ -35,7 +35,7 @@ describe("test server app", () => {
 
 	it('should load <html :class-my-page=[[true]]></html>', () => {
 		var doc = HtmlParser.parse('<html :class-my-page=[[true]]></html>');
-		var app = new App(doc);
+		var app = new App(new URL('http://localhost/'), doc);
 		expect(app.root).toBeDefined();
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
 		expect(app.root.values.size).toBe(1);
@@ -46,7 +46,7 @@ describe("test server app", () => {
 
 	it('should load <html :style-font-size="1rm"></html>', () => {
 		var doc = HtmlParser.parse('<html :style-font-size="1rm"></html>');
-		var app = new App(doc);
+		var app = new App(new URL('http://localhost/'), doc);
 		expect(app.root).toBeDefined();
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
 		expect(app.root.values.size).toBe(1);
@@ -57,7 +57,7 @@ describe("test server app", () => {
 
 	it('should load <html :attr-data-name="jolly"></html>', () => {
 		var doc = HtmlParser.parse('<html :attr-data-name="jolly"></html>');
-		var app = new App(doc);
+		var app = new App(new URL('http://localhost/'), doc);
 		expect(app.root).toBeDefined();
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
 		expect(app.root.values.size).toBe(1);
@@ -68,7 +68,7 @@ describe("test server app", () => {
 
 	it('should load <html :on-v1=[[console.log(v1)]]></html>', () => {
 		var doc = HtmlParser.parse('<html :on-v1=[[console.log(v1)]]></html>');
-		var app = new App(doc);
+		var app = new App(new URL('http://localhost/'), doc);
 		expect(app.root).toBeDefined();
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
 		expect(app.root.values.size).toBe(1);
@@ -79,7 +79,7 @@ describe("test server app", () => {
 
 	it('should load <html :event-click=[[(ev) => console.log(ev)]]></html>', () => {
 		var doc = HtmlParser.parse('<html :event-click=[[(ev) => console.log(ev)]]></html>');
-		var app = new App(doc);
+		var app = new App(new URL('http://localhost/'), doc);
 		expect(app.root).toBeDefined();
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
 		expect(app.root.children.length).toBe(0);
@@ -93,7 +93,7 @@ describe("test server app", () => {
 	
 	it('should load <html :event-click=[[function(ev) {console.log(ev)}]]></html>', () => {
 		var doc = HtmlParser.parse('<html :event-click=[[function(ev) {console.log(ev)}]]></html>');
-		var app = new App(doc);
+		var app = new App(new URL('http://localhost/'), doc);
 		expect(app.root).toBeDefined();
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
 		expect(app.root.children.length).toBe(0);
@@ -120,7 +120,7 @@ describe("test server app", () => {
 	
 	it(`should make function values independent of values they reference`, () => {
 		var doc = HtmlParser.parse('<html :v1=[[1]] :event-click=[[function(ev) {console.log(v1)}]]></html>');
-		var app = new App(doc);
+		var app = new App(new URL('http://localhost/'), doc);
 		expect(app.root).toBeDefined();
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
 		expect(app.root.children.length).toBe(0);
@@ -135,7 +135,7 @@ describe("test server app", () => {
 
 	it('should load <html :hidden=[[true]]></html>', () => {
 		var doc = HtmlParser.parse('<html :hidden=[[true]]></html>');
-		var app = new App(doc);
+		var app = new App(new URL('http://localhost/'), doc);
 		expect(app.root).toBeDefined();
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
 		expect(app.root.values.size).toBe(1);
@@ -146,7 +146,7 @@ describe("test server app", () => {
 	
 	it('should load <html><body :v1="a"/></html>', () => {
 		var doc = HtmlParser.parse('<html><body :v1="a"/></html>');
-		var app = new App(doc);
+		var app = new App(new URL('http://localhost/'), doc);
 		expect(app.root).toBeDefined();
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
 		expect(app.root.values.size).toBe(0);
@@ -159,7 +159,7 @@ describe("test server app", () => {
 
 	it('should load <html><body :v1="a" :v2=[[v1 + "!"]]/></html>', () => {
 		var doc = HtmlParser.parse('<html><body :v1="a" :v2=[[v1 + "!"]]/></html>');
-		var app = new App(doc);
+		var app = new App(new URL('http://localhost/'), doc);
 		expect(app.root).toBeDefined();
 		expect(app.root.dom).toBe(doc.getFirstElementChild());
 		expect(app.root.values.size).toBe(0);
@@ -210,7 +210,7 @@ describe("test server app", () => {
 
 	it('should load <html :v1=[[1]]><body :v2=[[v1 * 2]]/></html>', () => {
 		var doc = HtmlParser.parse('<html :v1=[[1]]><body :v2=[[v1 * 2]]/></html>');
-		var app = new App(doc);
+		var app = new App(new URL('http://localhost/'), doc);
 		expect (app.output().script).toBe(normalizeText(
 		`function(__rt) {
 			var __f, __data = null;

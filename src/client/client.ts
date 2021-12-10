@@ -1,5 +1,5 @@
 import { DomDocument, DomElement, DomTextNode, ELEMENT_NODE } from "../shared/dom";
-import { DOM_ID_ATTR, make, PageObj, RuntimeEventSource, RuntimeObj } from "../shared/runtime";
+import { DOM_ID_ATTR, make, PageObj, RequestObj, RuntimeEventSource, RuntimeObj } from "../shared/runtime";
 
 export default class AremelClient {
 	pageObj: PageObj;
@@ -64,7 +64,7 @@ export default class AremelClient {
 		return code;
 	}
 
-	static httpRequest(url:string, post:boolean, cb:(s:string)=>void) {
+	static httpRequest(req:RequestObj, cb:(s:string)=>void) {
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState === 4) {
@@ -75,7 +75,7 @@ export default class AremelClient {
 				}
 			}
 		}
-		xhttp.open(post ? 'POST' : 'GET', url, true);
+		xhttp.open(req.post ? 'POST' : 'GET', req.url, true);
 		xhttp.send();
 	}
 

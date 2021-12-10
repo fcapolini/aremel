@@ -69,7 +69,7 @@ export interface PageObj {
 	doc: DomDocument,
 	window: RuntimeEventSource,
 	nodes: Array<any>,
-	requester: (url:string, post:boolean, cb:(s:string)=>void)=>void,
+	requester: (req:RequestObj, cb:(s:string)=>void)=>void,
 	script?: string,
 }
 
@@ -84,9 +84,9 @@ export interface ValueObj {
 
 export interface RequestObj {
 	url: string,
+	post?: boolean,
 	type: string,
 	target: ValueObj,
-	post?: boolean,
 	scriptElement?: DomElement,
 }
 
@@ -534,7 +534,7 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 
 		if (r.url) {
 			runtime.requests.push(r);
-			runtime.page.requester(r.url, r.post === true, res);
+			runtime.page.requester(r, res);
 		}
 	}
 

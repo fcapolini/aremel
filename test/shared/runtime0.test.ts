@@ -866,7 +866,7 @@ describe("test runtime", () => {
 });
 
 function run(doc:HtmlDocument, ret?:Array<RuntimeObj>, dump=false): any {
-	var app = new App(doc);
+	var app = new App(new URL('http://localhost/'), doc);
 	var page = app.output();
 	var rt = make(page);
 	var script = `(${page.script})(rt)`;
