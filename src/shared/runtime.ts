@@ -1,5 +1,6 @@
 import { makeHyphenName } from "./util";
 import { DomDocument, DomElement, DomNode, DomTextNode, ELEMENT_NODE, TEXT_NODE } from "./dom";
+import { color2Components, mixColors } from "./color";
 
 export const DOM_DYNAMIC_ATTR_PREFIX = ':';
 export const DOM_CLASS_ATTR_PREFIX = ':class-';
@@ -55,10 +56,10 @@ export interface RuntimeObj {
 	addRequest: (r:RequestObj)=>void,
 	requests: Array<RequestObj>,
 
-	// rgb: (c:string)=>string,
-	// mixColors: (c1:string,c2:string,ratio:number)=>string,
-	// elementIndex: (e:DomElement)=>number,
-	// isLastElement: (e:DomElement)=>boolean,
+	rgb: (c:string)=>string,
+	mixColors: (c1:string,c2:string,ratio:number)=>string,
+	elementIndex: (e:DomElement)=>number,
+	isLastElement: (e:DomElement)=>boolean,
 
 	start: ()=>void;
 	cb?: ()=>void,
@@ -106,17 +107,21 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 		addRequest: addRequest,
 		requests: new Array<RequestObj>(),
 
-		// rgb: (color:string) => {
-		// 	var rgba = ColorTools.color2Components(color);
-		// 	return '${rgba.r}, ${rgba.g}, ${rgba.b}';
-		// },
-		// mixColors: (col1:string, col2:string, ratio:number) => {
-		// 	return ColorTools.mix(col1, col2, ratio);
-		// },
-		// elementIndex: elementIndex,
-		// isLastElement: (e:DomElement) => {
-		// 	return elementIndex(e) >= (e.parentElement.childElementCount - 1);
-		// },
+		rgb: (color:string) => {
+			var rgba = color2Components(color);
+			return rgba ? `${rgba.r}, ${rgba.g}, ${rgba.b}` : '#000';
+		},
+		mixColors: (col1:string, col2:string, ratio:number) => {
+			return mixColors(col1, col2, ratio);
+		},
+		
+		elementIndex: elementIndex,
+		isLastElement: (e:DomElement) => {
+			return e.parentElement
+				? elementIndex(e) >= (e.parentElement.childElementCount - 1)
+				: true
+		},
+
 		cb: cb,
 		start: () => {
 			link(runtime.links);
@@ -389,118 +394,6 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 		});
 		return value;
 	}
-
-	// function _addRequest(r:RequestObj) {
-	// 	function res(s:string) {
-	// 		try {
-	// 			if (r.scriptElement) {
-	// 				var t = r.scriptElement.firstChild;
-	// 				if (t) {
-	// 					(t as DomTextNode).nodeValue = s;
-	// 				} else {
-	// 					t = r.scriptElement.ownerDocument?.createTextNode(s);
-	// 					r.scriptElement.appendChild(t as DomNode);
-	// 				}
-	// 			}
-	// 			if (r.type === 'text/json') {
-	// 				set(r.target, JSON.parse(s));
-	// 			} else {
-	// 				set(r.target, s);
-	// 			}
-	// 		} catch (ex:any) {
-	// 			//TODO
-	// 		}
-
-	// 		var i = runtime.requests.indexOf(r);
-	// 		if (i >= 0) {
-	// 			runtime.requests.splice(i, 1);
-	// 		}
-	// 		if (runtime.requests.length < 1 && runtime.cb) {
-	// 			setTimeout(runtime.cb, 0);
-	// 		}
-	// 	}
-
-	// 	if (r.url) {
-	// 		runtime.requests.push(r);
-	// 		var xhttp = new XMLHttpRequest();
-	// 		xhttp.onreadystatechange = function() {
-	// 			if (this.readyState === 4) {
-	// 				if (this.status === 200) {
-	// 					// try {
-	// 					// 	var v = undefined;
-	// 					// 	if (r.type === 'text/json') {
-	// 					// 		v = JSON.parse(this.responseText);
-	// 					// 	} else if (r.type === 'text/xml') {
-	// 					// 		v = this.responseXML;
-	// 					// 	} else {
-	// 					// 		v = this.responseText;
-	// 					// 	}
-	// 					// 	set(r.target, v);
-	// 					// } catch (ex:any) {
-	// 					// 	//TODO: error
-	// 					// }
-	// 					res(this.responseText);
-	// 				} else {
-	// 					res(`ERROR ${this.status}`);
-	// 				}
-					
-	// 				// var i = runtime.requests.indexOf(r);
-	// 				// if (i >= 0) {
-	// 				// 	runtime.requests.splice(i, 1);
-	// 				// }
-	// 				// if (runtime.requests.length < 1 && runtime.cb) {
-	// 				// 	setTimeout(runtime.cb, 0);
-	// 				// }
-	// 			}
-	// 		}
-	// 		xhttp.open(r.post ? 'POST' : 'GET', r.url, true);
-	// 		xhttp.send();
-	// 	}
-	// }
-
-	// function addRequest(r:RequestObj) {
-	// 	function res(s:string) {
-	// 		try {
-	// 			if (r.scriptElement) {
-	// 				var t = r.scriptElement.firstChild;
-	// 				if (t) {
-	// 					(t as DomTextNode).nodeValue = s;
-	// 				} else {
-	// 					t = r.scriptElement.ownerDocument?.createTextNode(s);
-	// 					r.scriptElement.appendChild(t as DomNode);
-	// 				}
-	// 			}
-	// 			if (r.type === 'text/json') {
-	// 				set(r.target, JSON.parse(s));
-	// 			} else {
-	// 				set(r.target, s);
-	// 			}
-	// 		} catch (ex:any) {
-	// 			//TODO
-	// 		}
-
-	// 		var i = runtime.requests.indexOf(r);
-	// 		if (i >= 0) {
-	// 			runtime.requests.splice(i, 1);
-	// 		}
-	// 		if (runtime.requests.length < 1 && runtime.cb) {
-	// 			setTimeout(runtime.cb, 0);
-	// 		}
-	// 	}
-
-	// 	if (r.url) {
-	// 		runtime.requests.push(r);
-
-	// 		var output = '';
-	// 		const req = request(r.url, r => {
-	// 			r.setEncoding('utf8');
-	// 			r.on('data', (chunk) => output += chunk);
-	// 			r.on('end', () => res(output));
-	// 		});
-	// 		req.on('error', e => res(`ERROR ${e}`));
-	// 		req.end();
-	// 	}
-	// }
 
 	function addRequest(r:RequestObj) {
 		function res(s:string) {

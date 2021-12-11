@@ -215,28 +215,43 @@ describe("test server app", () => {
 		`function(__rt) {
 			var __f, __data = null;
 			var __add = __rt.add;
-			function __nn(v) {return v != null ? v : \"\";}
+			function __nn(v) {return v != null ? v : "";}
 			function __link(l) {__rt.links.push(l);}
 			function __ev(h) {__rt.evhandlers.push(h);}
 			function __domGetter(id) {return __rt.page.nodes[id];}
 			var __this, __scope_0;
 			__this = __scope_0 = {__dom:__domGetter(0),__win:__rt.page.window,__doc:__rt.page.doc};
 			var v1 = __this.v1 = __add(__this,"v1",{fn:function() {return 1;}});
-			Object.defineProperty(__this,\"v1\",{get:function() {return __rt.get(v1)}, set:function(__v_) {return __rt.set(v1, __v_)}});
-			Object.defineProperty(__this,\"__value_v1\",{get:function() {return v1}});
+			Object.defineProperty(__this,"v1",{get:function() {return __rt.get(v1)}, set:function(__v_) {return __rt.set(v1, __v_)}});
+			Object.defineProperty(__this,"__value_v1",{get:function() {return v1}});
 			__f = function(__outer,__data,__add,__link,__ev,__domGetter,__self) {
 				var __this, __scope_1;
 				__this = __scope_1 = {__outer:__outer,__dom:__domGetter(1),__self:__self};
 				__scope_0.__scope_1 = __this;
 				var v2 = __this.v2 = __add(__this,"v2",{fn:function() {return __scope_0.v1 * 2;}});
-				Object.defineProperty(__this,\"v2\",{get:function() {return __rt.get(v2)}, set:function(__v_) {return __rt.set(v2, __v_)}});
-				Object.defineProperty(__this,\"__value_v2\",{get:function() {return v2}});
-				__link({\"o\":__this.__value_v2, \"v\":function() {return __scope_0.__value_v1;}});
+				Object.defineProperty(__this,"v2",{get:function() {return __rt.get(v2)}, set:function(__v_) {return __rt.set(v2, __v_)}});
+				Object.defineProperty(__this,"__value_v2",{get:function() {return v2}});
+				__link({"o":__this.__value_v2, "v":function() {return __scope_0.__value_v1;}});
 				return __this;
 			}
 			__this.body = __f(__this,null,__add,__link,__ev,__domGetter,__f);
 			return __this;
 		}`));
 	});
+
+	// it("should execute complex class expression", () => {
+	// 	var doc = HtmlParser.parse(`<html
+	// 		:type="primary"
+	// 		:size=""
+	// 		:outline=[[false]]
+	// 		:nowrap=[[true]]
+	// 		class="btn btn-[[outline ? 'outline-' : '']][[type]][[nowrap ? ' text-nowrap' : '']][[size ? ' btn-'+size : '']]"
+	// 	></html>`);
+	// 	var app = new App(new URL('http://localhost/'), doc);
+	// 	// var page = app.output();
+	// 	// console.log(page.script);
+	// 	// expect (page.script).toBe(normalizeText(
+	// 	// 	``));
+	// });
 
 });

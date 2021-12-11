@@ -69,4 +69,9 @@ describe("test expressions", () => {
 		]`);
 	});
 
+	it("should prepare complex class expression", () => {
+		expect(prepareExpr(`btn btn-[[outline ? 'outline-' : '']][[type]][[nowrap ? ' text-nowrap' : '']][[size ? ' btn-'+size : '']]`))
+		.toBe(`'btn btn-'+__nn(outline ? 'outline-' : '')+__nn(type)+__nn(nowrap ? ' text-nowrap' : '')+__nn(size ? ' btn-'+size : '')`);
+	});
+
 });

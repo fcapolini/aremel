@@ -3,9 +3,9 @@
 	<head>
 	</head>
 	<body>
-		<:data-source :aka="datasource" :url="http://localhost:8080/data.json"/>
-		<ul>
-			<li :data=[[datasource.content.list]]>item [[data]]</li>
+		<:data-source :aka="datasource" :url="/data.json"/>
+		<ul :data=[[datasource.content]]>
+			<li :data=[[data.list]]>item [[data]]</li>
 		</ul>
 	</body>
 </html>

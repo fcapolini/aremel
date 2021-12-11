@@ -1,10 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 	<head>
-		<meta charset="UTF-8"/>
-		<meta name="color-scheme" content="light dark"/>
+		<:include src="/.kit/bootstrap/all.htm"/>
 	</head>
 	<body>
-		<div :data=[[['a','b','c']]]>[[data]]</div>
+		<bs-page>
+			<!-- <bs-alert>
+				A simple primary alert with <a href="#">an example link</a>. Give it a click if you like.
+			</bs-alert> -->
+			<bs-accordion :flush=[[true]]>
+				<bs-accordion-item :header="Item #1">
+					<bs-breadcrumb>
+						<bs-breadcrumb-item><a href="#">Cip</a></bs-breadcrumb-item>
+						<bs-breadcrumb-item><a href="#">Ciop</a></bs-breadcrumb-item>
+					</bs-breadcrumb>
+					<bs-button>Primary</bs-button>
+					<bs-buttongroup>
+						<bs-button>Primary</bs-button>
+						<bs-button>Primary</bs-button>
+						<bs-button>Primary</bs-button>
+					</bs-buttongroup>
+				</bs-accordion-item>
+				<bs-accordion-item :header="Item #2">
+					<strong>This is the first item's accordion body.</strong> It is shown by default, until the
+					collapse plugin adds the appropriate classes that we use to style each element. These classes
+					control the overall appearance, as well as the showing and hiding via CSS transitions. You can
+					modify any of this with custom CSS or overriding our default variables. It's also worth noting
+					that just about any HTML can go within the <code>.accordion-body</code>, though the transition
+					does limit overflow.
+				</bs-accordion-item>
+			</bs-accordion>
+		</bs-page>
 	</body>
 </html>
