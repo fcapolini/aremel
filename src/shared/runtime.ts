@@ -124,10 +124,14 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 
 		cb: cb,
 		start: () => {
-			link(runtime.links);
-			runtime.links=[];
-			addEvHandlers(runtime.evhandlers);
-			refresh();
+			try {
+				link(runtime.links);
+				runtime.links=[];
+				addEvHandlers(runtime.evhandlers);
+				refresh();
+			} catch (ex:any) {
+				//TODO
+			}
 			if (runtime.requests.length < 1 && cb) {
 				// cb();
 				setTimeout(cb, 0);

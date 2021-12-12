@@ -318,11 +318,11 @@ describe("test htmlparser", () => {
 	});
 
 	it("should handle both the `style` attribute and `style` object", () => {
-		var doc = HtmlParser.parse('<html style="display:block;color:red"></html>');
-		expect(doc.toString()).toBe('<html style="display:block;color:red;"></html>');
+		var doc = HtmlParser.parse('<html style="display:block"></html>');
+		expect(doc.toString()).toBe('<html style="display:block;"></html>');
 		var root = doc.firstElementChild;
-		root.style.removeProperty('display');
-		expect(doc.toString()).toBe('<html style="color:red;"></html>');
+		root.style.setProperty('color', 'red');
+		expect(doc.toString()).toBe('<html style="display:block;color:red;"></html>');
 	});
 
 	//TODO test innertHTML getter & setter

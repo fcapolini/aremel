@@ -36,9 +36,11 @@ describe("test runtime", () => {
 	it("should reflect `:style-` attributes", () => {
 		var doc = HtmlParser.parse('<html :style-display="block"/>');
 		var root = run(doc);
-		expect(doc.toString(true)).toBe('<html data-aremel="0" style="display:block;"></html>');
+		var html = doc.toString(true);
+		expect(html).toBe('<html data-aremel="0" style="display:block;"></html>');
 		root.style_display = null;
-		expect(doc.toString(true)).toBe('<html data-aremel="0"></html>');
+		html = doc.toString(true);
+		expect(html).toBe('<html data-aremel="0"></html>');
 	});
 
 	it("should reflect DOM attributes", () => {

@@ -88,11 +88,8 @@ export class HtmlElement extends HtmlNode {
 		this.style = {
 			setProperty: function(k:string, v:string) {
 				var a = that.attributes.get('style') as HtmlStyleAttribute;
-				if (a) {
-					a.setProperty(k, v);
-				} else {
-					that.setAttribute('style', `${k}:${v}`);
-				}
+				!a ? a = that.setAttribute('style', '') as HtmlStyleAttribute : null;
+				a.setProperty(k, v);
 			},
 			removeProperty: function(k:string) {
 				var a = that.attributes.get('style') as HtmlStyleAttribute;
@@ -492,46 +489,6 @@ class HtmlStyleAttribute extends HtmlAttribute {
 		this.value = value;
 	}
 
-	set value(v:string) {
-		v ? v = v.trim() : '';
-		var oldStyles = this._getStyleMap(this._value);
-		var newStyles = this._getStyleMap(v);
-		oldStyles.forEach((v,k) => {
-			if (!newStyles.has(k)) {
-				this.removeProperty(k);
-			}
-		});
-		newStyles.forEach((v,k) => {
-			this.setProperty(k, v);
-		});
-		this._value = v;
-	}
-
-	_getStyleMap(s:string): Map<string,string> {
-		var ret = new Map<string,string>();
-		var styles = s.split(';');
-		for (var style of styles) {
-			var parts = style.split(':');
-			var key = parts.length > 0 ? parts[0].trim() : '';
-			var val = parts.length > 1 ? parts[1].trim() : '';
-			if (key.length > 0) {
-				ret.set(key, val);
-			}
-		}
-		return ret;
-	}
-
-	get value(): string {
-		var sb = new StringBuf();
-		if (this.styles) {
-			this.styles.forEach((v,k) => {
-				sb.add(k); sb.add(':');
-				sb.add(v); sb.add(';');
-			});
-		}
-		return sb.toString().trim();
-	}
-
 	setProperty(k:string, v:string) {
 		!this.styles ? this.styles = new Map() : null;
 		v ? this.styles.set(k, v) : this.styles.delete(k);
@@ -542,9 +499,25 @@ class HtmlStyleAttribute extends HtmlAttribute {
 	}
 
 	override output(sb:StringBuf, sort:boolean, plain:boolean) {
-		if (this.styles && this.styles.size > 0) {
+		if (this.value != '' || (this.styles && this.styles.size > 0)) {
 			super.output(sb, sort, plain);
 		}
 	}
 
+	//TODO: sort
+	override getOutputValue(sort:boolean, plain:boolean): string {
+		var sb = new StringBuf();
+		var s = this.value.trim();
+		if (s != '') {
+			sb.add(s);
+			!s.endsWith(';') ? sb.add(';') : null;
+		}
+		if (!plain && this.styles) {
+			this.styles.forEach((v,k) => {
+				sb.add(k); sb.add(':');
+				sb.add(v); sb.add(';');
+			});
+		}
+		return sb.toString().trim();
+	}
 }
