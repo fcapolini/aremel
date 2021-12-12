@@ -239,19 +239,48 @@ describe("test server app", () => {
 		}`));
 	});
 
-	// it("should execute complex class expression", () => {
-	// 	var doc = HtmlParser.parse(`<html
-	// 		:type="primary"
-	// 		:size=""
-	// 		:outline=[[false]]
-	// 		:nowrap=[[true]]
-	// 		class="btn btn-[[outline ? 'outline-' : '']][[type]][[nowrap ? ' text-nowrap' : '']][[size ? ' btn-'+size : '']]"
-	// 	></html>`);
-	// 	var app = new App(new URL('http://localhost/'), doc);
-	// 	// var page = app.output();
-	// 	// console.log(page.script);
-	// 	// expect (page.script).toBe(normalizeText(
-	// 	// 	``));
-	// });
+	it("should execute complex class expression", () => {
+		var doc = HtmlParser.parse(`<html
+			:type="primary"
+			:size=""
+			:outline=[[false]]
+			:nowrap=[[true]]
+			class="btn btn-[[outline ? 'outline-' : '']][[type]][[nowrap ? ' text-nowrap' : '']][[size ? ' btn-'+size : '']]"
+		></html>`);
+		var app = new App(new URL('http://localhost/'), doc);
+		var page = app.output();
+		// console.log(page.script);
+		expect (page.script).toBe(normalizeText(
+		`function(__rt) {
+			var __f, __data = null;
+			var __add = __rt.add;
+			function __nn(v) {return v != null ? v : "";}
+			function __link(l) {__rt.links.push(l);}
+			function __ev(h) {__rt.evhandlers.push(h);}
+			function __domGetter(id) {return __rt.page.nodes[id];}
+			var __this, __scope_0;
+			__this = __scope_0 = {__dom:__domGetter(0),__win:__rt.page.window,__doc:__rt.page.doc};
+			var attr_class = __this.attr_class = __add(__this,"attr_class",{fn:function() {return 'btn btn-' + __nn(outline ? 'outline-' : '') + __nn(__scope_0.type) + __nn(nowrap ? ' text-nowrap' : '') + __nn(size ? ' btn-' + __scope_0.size : '');}});
+			Object.defineProperty(__this,"attr_class",{get:function() {return __rt.get(attr_class)}, set:function(__v_) {return __rt.set(attr_class, __v_)}});
+			Object.defineProperty(__this,"__value_attr_class",{get:function() {return attr_class}});
+			__link({"o":__this.__value_attr_class, "v":function() {return __scope_0.__value_outline;}});
+			__link({"o":__this.__value_attr_class, "v":function() {return __scope_0.__value_type;}});
+			__link({"o":__this.__value_attr_class, "v":function() {return __scope_0.__value_nowrap;}});
+			__link({"o":__this.__value_attr_class, "v":function() {return __scope_0.__value_size;}});
+			var nowrap = __this.nowrap = __add(__this,"nowrap",{fn:function() {return true;}});
+			Object.defineProperty(__this,"nowrap",{get:function() {return __rt.get(nowrap)}, set:function(__v_) {return __rt.set(nowrap, __v_)}});
+			Object.defineProperty(__this,"__value_nowrap",{get:function() {return nowrap}});
+			var outline = __this.outline = __add(__this,"outline",{fn:function() {return false;}});
+			Object.defineProperty(__this,"outline",{get:function() {return __rt.get(outline)}, set:function(__v_) {return __rt.set(outline, __v_)}});
+			Object.defineProperty(__this,"__value_outline",{get:function() {return outline}});
+			var size = __this.size = __add(__this,"size",{v:""});
+			Object.defineProperty(__this,"size",{get:function() {return __rt.get(size)}, set:function(__v_) {return __rt.set(size, __v_)}});
+			Object.defineProperty(__this,"__value_size",{get:function() {return size}});
+			var type = __this.type = __add(__this,"type",{v:"primary"});
+			Object.defineProperty(__this,"type",{get:function() {return __rt.get(type)}, set:function(__v_) {return __rt.set(type, __v_)}});
+			Object.defineProperty(__this,"__value_type",{get:function() {return type}});
+			return __this;
+		}`));
+	});
 
 });

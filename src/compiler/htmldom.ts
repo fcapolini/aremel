@@ -37,13 +37,13 @@ export class HtmlNode {
 		return this;
 	}
 
-	toString(sort=false) {
+	toString(sort=false, plain=false) {
 		var sb = new StringBuf();
-		this.output(sb, sort);
+		this.output(sb, sort, plain);
 		return sb.toString();
 	}
 
-	output(sb:StringBuf, sort=false): StringBuf {
+	output(sb:StringBuf, sort:boolean, plain:boolean): StringBuf {
 		return sb;
 	}
 }
@@ -233,7 +233,7 @@ export class HtmlElement extends HtmlNode {
 	get innerHTML() {
 		var sb = new StringBuf();
 		for (var i in this.children) {
-			this.children[i].output(sb);
+			this.children[i].output(sb, false, true);
 		}
 		return sb.toString();
 	}
@@ -262,22 +262,22 @@ export class HtmlElement extends HtmlNode {
 
 	get outerHTML() {
 		var sb = new StringBuf();
-		this.output(sb);
+		this.output(sb, false, true);
 		return sb.toString();
 	}
 
-	override output(sb:StringBuf, sort=false): StringBuf {
+	override output(sb:StringBuf, sort:boolean, plain:boolean): StringBuf {
 		var name = this.tagName.toLowerCase();
 		sb.add('<'); sb.add(name);
 
-		this.outputAttributes(sb, sort);
+		this.outputAttributes(sb, sort, plain);
 
 		if (this.isVoid()) {
 			sb.add(' />');
 		} else {
 			sb.add('>');
 			for (var i in this.children) {
-				this.children[i].output(sb, sort);
+				this.children[i].output(sb, sort, plain);
 			}
 			sb.add('</'); sb.add(name); sb.add('>');
 		}
@@ -285,14 +285,14 @@ export class HtmlElement extends HtmlNode {
 	}
 
 	//TODO: handle both `:style-*` and `style` at the same time
-	outputAttributes(sb:StringBuf, sort=false) {
+	outputAttributes(sb:StringBuf, sort:boolean, plain:boolean) {
 		var keys = this.getAttributeNames();
 		if (sort) {
 			keys = keys.sort((a, b) => (a > b ? 1 : (a < b ? -1 : 0)));
 		}
 		for (var key of keys) {
 			var a = this.attributes.get(key);
-			a?.output(sb, sort);
+			a?.output(sb, sort, plain);
 		}
 	}
 
@@ -338,13 +338,71 @@ export class HtmlDocument extends HtmlElement {
 		return ret;
 	}
 
-	override output(sb:StringBuf, sort=false): StringBuf {
+	override output(sb:StringBuf, sort:boolean, plain:boolean): StringBuf {
 		for (var i in this.children) {
-			this.children[i].output(sb, sort);
+			this.children[i].output(sb, sort, plain);
 		}
 		return sb;
 	}
 }
+
+export class HtmlText extends HtmlNode {
+	escape: boolean;
+	nodeValue: string;
+
+	constructor(doc:HtmlDocument | undefined, parent:HtmlElement | undefined,
+				text:string, i1:number, i2:number, origin:number, escape=true) {
+		super(doc, parent, TEXT_NODE, i1, i2, origin);
+		this.escape = escape;
+		this.nodeValue = (escape ? htmlUnescape(text) : text);
+	}
+
+	override output(sb:StringBuf, sort:boolean, plain:boolean): StringBuf {
+		sb.add(this.nodeValue
+			? (this.escape ? htmlEscape(this.nodeValue) : this.nodeValue)
+			: '');
+		return sb;
+	}
+}
+
+// https://www.w3docs.com/snippets/javascript/how-to-html-encode-a-string.html
+function htmlEscape(str:string): string {
+	return str
+		.replace(/&/g, '&amp;')
+		.replace(/'/g, "&apos;")
+		.replace(/"/g, '&quot;')
+		.replace(/>/g, '&gt;')
+		.replace(/</g, '&lt;');
+}
+function htmlUnescape(str: string): string {
+	return str
+		.replace(/&quot;/g, '"')
+		.replace(/&apos;/g, "'")
+		.replace(/&lt;/g, '<')
+		.replace(/&gt;/g, '>')
+		.replace(/&amp;/g, '&');
+}
+
+export class HtmlComment extends HtmlNode {
+	text: string;
+
+	constructor(doc:HtmlDocument | undefined, parent:HtmlElement | undefined,
+				text:string, i1:number, i2:number, origin:number) {
+		super(doc, parent, COMMENT_NODE, i1, i2, origin);
+		this.text = text;
+	}
+
+	override output(sb:StringBuf, sort:boolean, plain:boolean): StringBuf {
+		if (this.text) {
+			sb.add(this.text);
+		}
+		return sb;
+	}
+}
+
+// =============================================================================
+// HtmlAttribute
+// =============================================================================
 
 export class HtmlAttribute {
 	name: string;
@@ -371,9 +429,9 @@ export class HtmlAttribute {
 		return this._value;
 	}
 
-	output(sb:StringBuf, sort=false) {
+	output(sb:StringBuf, sort:boolean, plain:boolean) {
 		sb.add(' '); sb.add(this.name);
-		var outputValue = this.getOutputValue(sort);
+		var outputValue = this.getOutputValue(sort, plain);
 		if (outputValue !== '' || this.quote) {
 			var q = this.quote === "'" ? "'" : '"';
 			sb.add('='); sb.add(q);
@@ -382,7 +440,7 @@ export class HtmlAttribute {
 		}
 	}
 
-	getOutputValue(sort:boolean): string {
+	getOutputValue(sort:boolean, plain:boolean): string {
 		return this.value;
 	}
 }
@@ -404,33 +462,17 @@ class HtmlClassAttribute extends HtmlAttribute {
 		this.classes ? this.classes.delete(name.trim()) : null;
 	}
 
-	// override output(sb:StringBuf, sort=false) {
-	// 	sb.add(' '); sb.add(this.name);
-	// 	if (this.value !== '' || (this.classes != null && this.classes.size > 0) || this.quote) {
-	// 		var q = this.quote === "'" ? "'" : '"';
-	// 		sb.add('='); sb.add(q);
-	// 		sb.add(HtmlElement.escape(this.value, "\r\n" + q));
-	// 		if (this.classes) {
-	// 			for (var c of this.classes) {
-	// 				sb.add(' ');
-	// 				sb.add(c);
-	// 			}
-	// 		}
-	// 		sb.add(q);
-	// 	}
-	// }
-
-	override output(sb:StringBuf, sort=false) {
+	override output(sb:StringBuf, sort:boolean, plain:boolean) {
 		if (this.value != '' || (this.classes && this.classes.size > 0)) {
-			super.output(sb, sort);
+			super.output(sb, sort, plain);
 		}
 	}
 
 	//TODO: sort
-	override getOutputValue(sort:boolean): string {
+	override getOutputValue(sort:boolean, plain:boolean): string {
 		var sb = new StringBuf();
 		sb.add(this.value);
-		if (this.classes) {
+		if (!plain && this.classes) {
 			for (var c of this.classes) {
 				sb.add(' ');
 				sb.add(c);
@@ -438,61 +480,6 @@ class HtmlClassAttribute extends HtmlAttribute {
 		}
 		return sb.toString().trim();
 	}
-}
-
-class _HtmlClassAttribute extends HtmlAttribute {
-	classes?: Set<string>;
-
-	constructor(name:string, value:string, quote?:string,
-				i1?:number, i2?:number, origin?:number) {
-		super(name, value, quote, i1, i2, origin);
-		this._value = '';
-		this.value = value;
-	}
-
-	set value(v:string) {
-		v ? v = normalizeSpace(v.trim()) : null;
-		var oldClasses = new Set(this._value.length > 0 ? this._value.split(' ') : []);
-		var newClasses = new Set(v.length > 0 ? v.split(' ') : []);
-		for (var c of newClasses) {
-			if (!oldClasses.has(c)) {
-				this.add(c);
-			}
-		}
-		for (var c of oldClasses) {
-			if (!newClasses.has(c)) {
-				this.remove(c);
-			}
-		}
-		this._value = v;
-	}
-
-	get value(): string {
-		var sb = new StringBuf();
-		if (this.classes) {
-			for (var c of this.classes) {
-				sb.add(c);
-				sb.add(' ');
-			}
-		}
-		return sb.toString().trim();
-	}
-
-	add(name:string) {
-		!this.classes ? this.classes = new Set() : null;
-		this.classes.add(name.trim());
-	}
-
-	remove(name:string) {
-		this.classes ? this.classes.delete(name.trim()) : null;
-	}
-
-	output(sb:StringBuf, sort=false) {
-		if (this.classes && this.classes.size > 0) {
-			super.output(sb, sort);
-		}
-	}
-
 }
 
 class HtmlStyleAttribute extends HtmlAttribute {
@@ -554,64 +541,10 @@ class HtmlStyleAttribute extends HtmlAttribute {
 		this.styles ? this.styles.delete(k.trim()) : null;
 	}
 
-	output(sb:StringBuf, sort=false) {
+	override output(sb:StringBuf, sort:boolean, plain:boolean) {
 		if (this.styles && this.styles.size > 0) {
-			super.output(sb, sort);
+			super.output(sb, sort, plain);
 		}
 	}
 
-}
-
-export class HtmlText extends HtmlNode {
-	escape: boolean;
-	nodeValue: string;
-
-	constructor(doc:HtmlDocument | undefined, parent:HtmlElement | undefined,
-				text:string, i1:number, i2:number, origin:number, escape=true) {
-		super(doc, parent, TEXT_NODE, i1, i2, origin);
-		this.escape = escape;
-		this.nodeValue = (escape ? htmlUnescape(text) : text);
-	}
-
-	override output(sb:StringBuf, sort=false): StringBuf {
-		sb.add(this.nodeValue
-			? (this.escape ? htmlEscape(this.nodeValue) : this.nodeValue)
-			: '');
-		return sb;
-	}
-}
-
-// https://www.w3docs.com/snippets/javascript/how-to-html-encode-a-string.html
-function htmlEscape(str:string): string {
-	return str
-		.replace(/&/g, '&amp;')
-		.replace(/'/g, "&apos;")
-		.replace(/"/g, '&quot;')
-		.replace(/>/g, '&gt;')
-		.replace(/</g, '&lt;');
-}
-function htmlUnescape(str: string): string {
-	return str
-		.replace(/&quot;/g, '"')
-		.replace(/&apos;/g, "'")
-		.replace(/&lt;/g, '<')
-		.replace(/&gt;/g, '>')
-		.replace(/&amp;/g, '&');
-}
-
-export class HtmlComment extends HtmlNode {
-	text: string;
-
-	constructor(doc:HtmlDocument | undefined, parent:HtmlElement | undefined,
-				text:string, i1:number, i2:number, origin:number) {
-		super(doc, parent, COMMENT_NODE, i1, i2, origin);
-		this.text = text;
-	}
-
-	override output(sb:StringBuf, sort=false): StringBuf {
-		if (this.text) {
-			sb.add(this.text);
-		}
-		return sb;
-	}
 }
