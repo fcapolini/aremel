@@ -75,11 +75,8 @@ export class HtmlElement extends HtmlNode {
 		this.classList = {
 			add: function(name:string) {
 				var a = that.attributes.get('class') as HtmlClassAttribute;
-				if (a) {
-					a.add(name);
-				} else {
-					that.setAttribute('class', name);
-				}
+				!a ? a = that.setAttribute('class', '') as HtmlClassAttribute : null;
+				a.add(name);
 			},
 			remove: function(name:string) {
 				var a = that.attributes.get('class') as HtmlClassAttribute;
@@ -90,7 +87,7 @@ export class HtmlElement extends HtmlNode {
 		};
 		this.style = {
 			setProperty: function(k:string, v:string) {
-				var a = that.attributes.get('class') as HtmlStyleAttribute;
+				var a = that.attributes.get('style') as HtmlStyleAttribute;
 				if (a) {
 					a.setProperty(k, v);
 				} else {
@@ -376,16 +373,74 @@ export class HtmlAttribute {
 
 	output(sb:StringBuf, sort=false) {
 		sb.add(' '); sb.add(this.name);
-		if (this.value !== '' || this.quote) {
+		var outputValue = this.getOutputValue(sort);
+		if (outputValue !== '' || this.quote) {
 			var q = this.quote === "'" ? "'" : '"';
 			sb.add('='); sb.add(q);
-			sb.add(HtmlElement.escape(this.value, "\r\n" + q));
+			sb.add(HtmlElement.escape(outputValue, "\r\n" + q));
 			sb.add(q);
 		}
+	}
+
+	getOutputValue(sort:boolean): string {
+		return this.value;
 	}
 }
 
 class HtmlClassAttribute extends HtmlAttribute {
+	classes?: Set<string>;
+
+	constructor(name:string, value:string, quote?:string,
+				i1?:number, i2?:number, origin?:number) {
+		super(name, value, quote, i1, i2, origin);
+	}
+
+	add(name:string) {
+		!this.classes ? this.classes = new Set() : null;
+		this.classes.add(name.trim());
+	}
+
+	remove(name:string) {
+		this.classes ? this.classes.delete(name.trim()) : null;
+	}
+
+	// override output(sb:StringBuf, sort=false) {
+	// 	sb.add(' '); sb.add(this.name);
+	// 	if (this.value !== '' || (this.classes != null && this.classes.size > 0) || this.quote) {
+	// 		var q = this.quote === "'" ? "'" : '"';
+	// 		sb.add('='); sb.add(q);
+	// 		sb.add(HtmlElement.escape(this.value, "\r\n" + q));
+	// 		if (this.classes) {
+	// 			for (var c of this.classes) {
+	// 				sb.add(' ');
+	// 				sb.add(c);
+	// 			}
+	// 		}
+	// 		sb.add(q);
+	// 	}
+	// }
+
+	override output(sb:StringBuf, sort=false) {
+		if (this.value != '' || (this.classes && this.classes.size > 0)) {
+			super.output(sb, sort);
+		}
+	}
+
+	//TODO: sort
+	override getOutputValue(sort:boolean): string {
+		var sb = new StringBuf();
+		sb.add(this.value);
+		if (this.classes) {
+			for (var c of this.classes) {
+				sb.add(' ');
+				sb.add(c);
+			}
+		}
+		return sb.toString().trim();
+	}
+}
+
+class _HtmlClassAttribute extends HtmlAttribute {
 	classes?: Set<string>;
 
 	constructor(name:string, value:string, quote?:string,

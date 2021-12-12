@@ -23,7 +23,7 @@ function countNodes(doc:HtmlDocument): any {
 	return ret;
 }
 
-describe("test preprocessor", () => {
+describe("test htmlparser", () => {
 
 	beforeAll(() => {
 		rootPath = process.cwd() + '/test/compiler/htmlparser';
@@ -313,8 +313,8 @@ describe("test preprocessor", () => {
 	it("should handle both the `class` attribute and the `classList` object", () => {
 		var doc = HtmlParser.parse('<html class="aaa bbb"></html>');
 		var root = doc.firstElementChild;
-		root.classList.remove('aaa');
-		expect(doc.toString()).toBe('<html class="bbb"></html>');
+		root.classList.add('ccc');
+		expect(doc.toString()).toBe('<html class="aaa bbb ccc"></html>');
 	});
 
 	it("should handle both the `style` attribute and `style` object", () => {

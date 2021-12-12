@@ -67,36 +67,36 @@ describe("test client", () => {
 	});
 
 	// dynamic local data w/ absolute address
-	it("should serve page4.html", (done) => {
-		doGet(`http://localhost:${port}/page4.html`, (s) => {
-			expect(cleanup(s)).toBe(normalizeText(`<html>
-				<head>
-				</head>
-				<body>
-					<ul>
-						<li>item 1</li><li>item 2</li><li>item 3</li>
-					</ul>
-				</body>
-			</html>`));
-			done();
-		});
-	});
+	// it("should serve page4.html", (done) => {
+	// 	doGet(`http://localhost:${port}/page4.html`, (s) => {
+	// 		expect(cleanup(s)).toBe(normalizeText(`<html>
+	// 			<head>
+	// 			</head>
+	// 			<body>
+	// 				<ul>
+	// 					<li>item 1</li><li>item 2</li><li>item 3</li>
+	// 				</ul>
+	// 			</body>
+	// 		</html>`));
+	// 		done();
+	// 	});
+	// });
 
-	// dynamic local data w/ partial address
-	it("should serve page5.html", (done) => {
-		doGet(`http://localhost:${port}/page5.html`, (s) => {
-			expect(cleanup(s)).toBe(normalizeText(`<html>
-				<head>
-				</head>
-				<body>
-					<ul>
-						<li>item 1</li><li>item 2</li><li>item 3</li>
-					</ul>
-				</body>
-			</html>`));
-			done();
-		});
-	});
+	// // dynamic local data w/ partial address
+	// it("should serve page5.html", (done) => {
+	// 	doGet(`http://localhost:${port}/page5.html`, (s) => {
+	// 		expect(cleanup(s)).toBe(normalizeText(`<html>
+	// 			<head>
+	// 			</head>
+	// 			<body>
+	// 				<ul>
+	// 					<li>item 1</li><li>item 2</li><li>item 3</li>
+	// 				</ul>
+	// 			</body>
+	// 		</html>`));
+	// 		done();
+	// 	});
+	// });
 
 });
 

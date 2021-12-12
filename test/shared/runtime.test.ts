@@ -26,9 +26,11 @@ describe("test runtime", () => {
 	it("should reflect `:class-` attributes", () => {
 		var doc = HtmlParser.parse('<html :class-page=[[true]]/>');
 		var root = run(doc);
-		expect(doc.toString(true)).toBe('<html class="page" data-aremel="0"></html>');
+		var html = doc.toString(true);
+		expect(html).toBe('<html class="page" data-aremel="0"></html>');
 		root.class_page = false;
-		expect(doc.toString(true)).toBe('<html data-aremel="0"></html>');
+		html = doc.toString(true);
+		expect(html).toBe('<html data-aremel="0"></html>');
 	});
 
 	it("should reflect `:style-` attributes", () => {
