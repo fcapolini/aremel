@@ -26,12 +26,14 @@ What follows is a comparison of two of [React's homepage examples](https://react
 ```html
 <!DOCTYPE html>
 <html>
-  <:define tag="hello-message"
-           :name="">
-    Hello [[name]]
-  </:define>
+  <body>
+    <:define tag="hello-message"
+             :name="">
+      Hello [[name]]
+    </:define>
 
-  <hello-nessage :name="Taylor"/>
+    <hello-nessage :name="Taylor"/>
+  </body>
 </html>
 ```
 
@@ -66,13 +68,15 @@ ReactDOM.render(
 ```html
 <!DOCTYPE html>
 <html>
-  <:define tag="seconds-counter"
-           :count=[[0]]
-           :on-count=[[setTimeout(() => count++, 1000)]]>
-    Seconds: [[count]]
-  </:define>
-  
-  <seconds-counter/>
+  <body>
+    <:define tag="seconds-counter"
+             :count=[[0]]
+             :on-count=[[setTimeout(() => count++, 1000)]]>
+      Seconds: [[count]]
+    </:define>
+
+    <seconds-counter/>
+  </body>
 </html>
 ```
 
