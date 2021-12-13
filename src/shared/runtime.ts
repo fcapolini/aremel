@@ -482,10 +482,13 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 	}
 
 	function elementIndex(e:DomElement): number {
-		var ret = -1;
-		e.parentElement?.childNodes.forEach((n:DomNode, i:number) => {
-			if (n === e) {
-				ret = i;
+		var ret = -1, i = 0;
+		e.parentElement?.childNodes.forEach((n:DomNode, _) => {
+			if (n.nodeType === ELEMENT_NODE) {
+				if (n === e) {
+					ret = i;
+				}
+				i++;
 			}
 		});
 		return ret;

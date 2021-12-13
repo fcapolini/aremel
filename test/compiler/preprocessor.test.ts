@@ -246,7 +246,7 @@ describe("test preprocessor", () => {
 		expect(msg).toBe('');
 	});
 
-	it("should users nest macros (1)", () => {
+	it("should let users nest macros (1)", () => {
 		var msg = '';
 		try {
 			var doc = preprocessor.read('test204.html');
@@ -266,7 +266,7 @@ describe("test preprocessor", () => {
 		expect(msg).toBe('');
 	});
 
-	it("should users nest macros (2)", () => {
+	it("should let users nest macros (2)", () => {
 		var msg = '';
 		try {
 			var doc = preprocessor.read('testNestedMacros1.html');
@@ -279,6 +279,21 @@ describe("test preprocessor", () => {
 						<div class=\"kit-nav\"><div>[[pageScrollY]] ([[pageScrollDeltaY]])</div></div>
 					</div>
 				</body>
+			</html>`));
+		} catch (ex:any) {
+			msg = `${ex}`;
+		}
+		expect(msg).toBe('');
+	});
+
+	it("should support [[*]] attributes in macros", () => {
+		var msg = '';
+		try {
+			var doc = preprocessor.read('testAttributesInMacro.html');
+			expect(normalizeText(doc?.toString())).toBe(normalizeText(`<html>
+				<div :ok="[[true]]">
+					<span :class-ok="[[ok]]"></span>
+				</div>
 			</html>`));
 		} catch (ex:any) {
 			msg = `${ex}`;

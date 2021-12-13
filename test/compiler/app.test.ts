@@ -113,6 +113,8 @@ describe("test server app", () => {
 			function __domGetter(id) {return __rt.page.nodes[id];}
 			var __this, __scope_0;
 			__this = __scope_0 = {__dom:__domGetter(0),__win:__rt.page.window,__doc:__rt.page.doc};
+			var __id = __this.__id = 0;
+			var __dom = __this.__dom;
 			__ev({e:__this.__dom,t:"click",h:(function (ev) {console.log(ev);})});
 			return __this;
 		}`));
@@ -190,10 +192,14 @@ describe("test server app", () => {
 			function __domGetter(id) {return __rt.page.nodes[id];}
 			var __this, __scope_0;
 			__this = __scope_0 = {__dom:__domGetter(0),__win:__rt.page.window,__doc:__rt.page.doc};
+			var __id = __this.__id = 0;
+			var __dom = __this.__dom;
 			__f = function(__outer,__data,__add,__link,__ev,__domGetter,__self) {
 				var __this, __scope_1;
 				__this = __scope_1 = {__outer:__outer,__dom:__domGetter(1),__self:__self};
 				__scope_0.__scope_1 = __this;
+				var __id = __this.__id = 1;
+				var __dom = __this.__dom;
 				var v1 = __this.v1 = __add(__this,"v1",{v:"a"});
 				Object.defineProperty(__this,"v1",{get:function() {return __rt.get(v1)}, set:function(__v_) {return __rt.set(v1, __v_)}});
 				Object.defineProperty(__this,"__value_v1",{get:function() {return v1}});
@@ -221,6 +227,8 @@ describe("test server app", () => {
 			function __domGetter(id) {return __rt.page.nodes[id];}
 			var __this, __scope_0;
 			__this = __scope_0 = {__dom:__domGetter(0),__win:__rt.page.window,__doc:__rt.page.doc};
+			var __id = __this.__id = 0;
+			var __dom = __this.__dom;
 			var v1 = __this.v1 = __add(__this,"v1",{fn:function() {return 1;}});
 			Object.defineProperty(__this,"v1",{get:function() {return __rt.get(v1)}, set:function(__v_) {return __rt.set(v1, __v_)}});
 			Object.defineProperty(__this,"__value_v1",{get:function() {return v1}});
@@ -228,6 +236,8 @@ describe("test server app", () => {
 				var __this, __scope_1;
 				__this = __scope_1 = {__outer:__outer,__dom:__domGetter(1),__self:__self};
 				__scope_0.__scope_1 = __this;
+				var __id = __this.__id = 1;
+				var __dom = __this.__dom;
 				var v2 = __this.v2 = __add(__this,"v2",{fn:function() {return __scope_0.v1 * 2;}});
 				Object.defineProperty(__this,"v2",{get:function() {return __rt.get(v2)}, set:function(__v_) {return __rt.set(v2, __v_)}});
 				Object.defineProperty(__this,"__value_v2",{get:function() {return v2}});
@@ -260,6 +270,8 @@ describe("test server app", () => {
 			function __domGetter(id) {return __rt.page.nodes[id];}
 			var __this, __scope_0;
 			__this = __scope_0 = {__dom:__domGetter(0),__win:__rt.page.window,__doc:__rt.page.doc};
+			var __id = __this.__id = 0;
+			var __dom = __this.__dom;
 			var attr_class = __this.attr_class = __add(__this,"attr_class",{fn:function() {return 'btn btn-' + __nn(outline ? 'outline-' : '') + __nn(__scope_0.type) + __nn(nowrap ? ' text-nowrap' : '') + __nn(size ? ' btn-' + __scope_0.size : '');}});
 			Object.defineProperty(__this,"attr_class",{get:function() {return __rt.get(attr_class)}, set:function(__v_) {return __rt.set(attr_class, __v_)}});
 			Object.defineProperty(__this,"__value_attr_class",{get:function() {return attr_class}});

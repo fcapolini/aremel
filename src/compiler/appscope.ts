@@ -88,6 +88,8 @@ export class AppScope {
 				+ `__win:__rt.page.window,`
 				+ `__doc:__rt.page.doc};\n`);
 		}
+		sb.add(`var __id = __this.__id = ${this.id};\n`);
+		sb.add(`var __dom = __this.__dom;\n`);
 
 		// values
 		var keys = new Array();
