@@ -30,6 +30,7 @@ What follows is a comparison of two of [React's homepage examples](https://react
            :name="">
     Hello [[name]]
   </:define>
+
   <hello-nessage :name="Taylor"/>
 </html>
 ```
@@ -70,6 +71,7 @@ ReactDOM.render(
            :on-count=[[setTimeout(() => count++, 1000)]]>
     Seconds: [[count]]
   </:define>
+  
   <seconds-counter/>
 </html>
 ```
