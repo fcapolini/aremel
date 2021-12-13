@@ -24,12 +24,13 @@ What follows is a comparison of two of [React's homepage examples](https://react
 ### Aremel:
 
 ```html
+<!DOCTYPE html>
 <html>
-	<:define tag="hello-message"
-	         :name="">
-		Hello [[name]]
-	</:define>
-	<hello-nessage :name="Taylor"/>
+  <:define tag="hello-message"
+           :name="">
+    Hello [[name]]
+  </:define>
+  <hello-nessage :name="Taylor"/>
 </html>
 ```
 
@@ -62,13 +63,14 @@ ReactDOM.render(
 ### Aremel:
 
 ```html
+<!DOCTYPE html>
 <html>
-	<:define tag="seconds-counter"
-	         :count=[[0]]
-	         :on-count=[[setTimeout(() => count++, 1000)]]>
-		Seconds: [[count]]
-	</:define>
-	<seconds-counter/>
+  <:define tag="seconds-counter"
+           :count=[[0]]
+           :on-count=[[setTimeout(() => count++, 1000)]]>
+    Seconds: [[count]]
+  </:define>
+  <seconds-counter/>
 </html>
 ```
 
