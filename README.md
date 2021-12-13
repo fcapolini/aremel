@@ -24,11 +24,9 @@ What follows is a comparison of two of [React's homepage examples](https://react
 ### Aremel:
 
 ```html
-<!DOCTYPE html>
 <html>
   <body>
-    <:define tag="hello-message"
-             :name="">
+    <:define tag="hello-message" :name="">
       Hello [[name]]
     </:define>
 
@@ -59,14 +57,13 @@ ReactDOM.render(
 * React makes a distinction between stateless and stateful components, whereas in Aremel all components are stateful in React terms. Components whose data don't change can be considered akin to React's stateless components.
 * The Aremel version of this example is a complete page which can be used as is in its server, which automatically compiles and serves it.
 * In contrast, you need a development environment to compile the JSX example plus a companion HTML page to load your logic before you can consider serving it to a browser.
-* In spite of this the Aremel version is much shorter and, in my opinion, much more readable.
+* In spite of this the Aremel version is shorter and, in my opinion, much more readable.
 
 ## Aremel vs JSX example: A Stateful Component
 
 ### Aremel:
 
 ```html
-<!DOCTYPE html>
 <html>
   <body>
     <:define tag="seconds-counter"
