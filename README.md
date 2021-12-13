@@ -3,7 +3,9 @@
 [![CodeQL](https://github.com/fcapolini/aremel/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/fcapolini/aremel/actions/workflows/codeql-analysis.yml)
 [![Node.js CI](https://github.com/fcapolini/aremel/actions/workflows/node.js.yml/badge.svg)](https://github.com/fcapolini/aremel/actions/workflows/node.js.yml)
 
-Aremel is a groundbreaking Node.js/Express web framework that adds *reactivity*, *modularity* and *isomorphism* to plain HTML.
+Aremel is a groundbreaking [Node.js](https://nodejs.dev)/[Express](http://expressjs.com) web framework that adds *reactivity*, *modularity* and *isomorphism* to plain HTML.
+
+👉  Aremel is in active development and will be published via npm when a first release is ready.
 
 ## Concepts
 
@@ -34,6 +36,9 @@ What follows is a comparison of two of [React's homepage examples](https://react
   </body>
 </html>
 ```
+
+* `<:define>` declares a component named `hello-message`, implemented by default as a `<div>`, which expects a `:name` attribute
+* `<hello-message>` uses the component with a specific `:name`
 
 ### JSX:
 
@@ -77,7 +82,14 @@ ReactDOM.render(
 </html>
 ```
 
+* `<:define>` declares a `seconds-counter` component with a `:count` value and an `:on-count` handler which gets executed each time the value changes.
+* `<seconds-counter>` creates an instance of the component.
+* Server-side, `:count` is set to zero at delivery time and `:on-count` is executed, but it uses `setTimeout()` which does nothing since anything in the future is left to the client.
+* The output page contains  `Seconds: 0`.
+* Client-side, the same process takes place, but this time `setTimeout()` is real, so after one second `:count` gets incremented (and automatically reflected in the DOM thanks to reactivity). This in turn executes `:on-count` and so on.
+
 ### JSX:
+
 ```jsx
 class Timer extends React.Component {
   constructor(props) {
@@ -123,4 +135,6 @@ ReactDOM.render(
 * Aremel uses a preprocessor to implement modularization with `<:import>` and componentization with `<:define>`.
 * The preprocessor supports multiline attributes with unescaped `<` and `>` characters in their content so tag attributes can be comfortably used to contain sizeable blocks of code. Output HTML is always standars compliant, of course.
 * The construct `attribute=[[<code>]]` is syntax sugar for `attribute="[[<code>]]"` where you don't need to escape attribute's quotes in your code.
+* Aremel validates JavaScript, and extracts dependencies in order to implement reactivity, using [Babel](https://babeljs.io),
 * One subject I haven't touched upon here is Aremel's support for data binding, replication and JSON/XML data.
+
