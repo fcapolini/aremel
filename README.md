@@ -54,9 +54,9 @@ ReactDOM.render(
 ```
 
 * React makes a distinction between stateless and stateful components, whereas in Aremel all components are stateful in React terms. Components whose data don't change can be considered akin to React's stateless components.
-* The Aremel version of this example is a complete page which can be served as is through its server, which automatically compiles and serves it.
-* In contrast, you need a complete development environment to compile the JSX example plus a companion HTML page before you can consider serving it to a browser.
-* In spite of this the Aremel vesion is much shorter and, in our opinion, much more readable.
+* The Aremel version of this example is a complete page which can be used as is in its server, which automatically compiles and serves it.
+* In contrast, you need a development environment to compile the JSX example plus a companion HTML page to load your logic before you can consider serving it to a browser.
+* In spite of this the Aremel version is much shorter and, in my opinion, much more readable.
 
 ## Aremel vs JSX example: A Stateful Component
 
@@ -118,6 +118,6 @@ ReactDOM.render(
 ## A Few Important Details
 
 * Aremel uses a preprocessor to implement modularization with `<:import>` and componentization with `<:define>`.
-* The preprocessor supports multiline attributes with unescaped `<` and `>` characters in their content so tag attributes can be comfortably used to contain sizeable blocks of code, just like methods in object oriented languages. Output HTML is always standars compliant, of course.
+* The preprocessor supports multiline attributes with unescaped `<` and `>` characters in their content so tag attributes can be comfortably used to contain sizeable blocks of code. Output HTML is always standars compliant, of course.
 * The construct `attribute=[[<code>]]` is syntax sugar for `attribute="[[<code>]]"` where you don't need to escape attribute's quotes in your code.
-* One subject we haven't touched upon here is Aremel's support for data binding, replication and JSON/XML data sources.
+* One subject I haven't touched upon here is Aremel's support for data binding, replication and JSON/XML data sources.
