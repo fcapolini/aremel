@@ -64,7 +64,7 @@ ReactDOM.render(
 ```html
 <html>
 	<:define tag="seconds-counter"
-           :count=[[0]]
+	         :count=[[0]]
 	         :on-count=[[setTimeout(() => count++, 1000)]]>
 		Seconds: [[count]]
 	</:define>
