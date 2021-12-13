@@ -123,4 +123,4 @@ ReactDOM.render(
 * Aremel uses a preprocessor to implement modularization with `<:import>` and componentization with `<:define>`.
 * The preprocessor supports multiline attributes with unescaped `<` and `>` characters in their content so tag attributes can be comfortably used to contain sizeable blocks of code. Output HTML is always standars compliant, of course.
 * The construct `attribute=[[<code>]]` is syntax sugar for `attribute="[[<code>]]"` where you don't need to escape attribute's quotes in your code.
-* One subject I haven't touched upon here is Aremel's support for data binding, replication and JSON/XML data sources.
+* One subject I haven't touched upon here is Aremel's support for data binding, replication and JSON/XML data.
