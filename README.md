@@ -14,9 +14,9 @@ Aremel is a groundbreaking [Node.js](https://nodejs.dev)/[Express](http://expres
 with `:`. They don't appear in the output HTML and are turned into
 JavaScript code behind the scenes.
 * Anywhere in your markup you can insert *JavaScript expressions* surrounded by the `[[` and `]]` markers. They are replaced by their value in the output HTML.
-* You can define your own reusable components using the `<:define>` tag. Combined with `<:import>` it also lets you define reusable component libraries with remarkable ease.
+* You can define your own reusable components using the `<:define>` tag. Combined with `<:import>` it also lets you define reusable component libraries with ease.
 * Reactivity is completely transparent, in a design reminiscent of the venerable [OpenLaszlo](https://en.wikipedia.org/wiki/OpenLaszlo) framework: no need to call `render()` or anything to keep your page up to date.
-* Aremel's server is also your compiler: you only need to set the server up and it transparently compiles your code for both the client and the server as needed to serve your pages.
+* Aremel's server is also its compiler: you only need to set the server up and it transparently compiles your code for both the client and the server as needed to serve your pages.
 * Finally, Aremel supports [Server Side Rendering](https://www.digitalocean.com/community/tutorials/react-server-side-rendering) out of the box, automatically implementing an [isomprphic](https://medium.com/@ElyseKoGo/an-introduction-to-isomorphic-web-application-architecture-a8c81c42f59) behaviour with zero effort on your side.
 
 What follows is a comparison of two of [React's homepage examples](https://reactjs.org/) in Aremel and React's [JSX](https://reactjs.org/docs/introducing-jsx.html).
@@ -135,6 +135,6 @@ ReactDOM.render(
 * Aremel uses a preprocessor to implement modularization with `<:import>` and componentization with `<:define>`.
 * The preprocessor supports multiline attributes with unescaped `<` and `>` characters in their content so tag attributes can be comfortably used to contain sizeable blocks of code. Output HTML is always standars compliant, of course.
 * The construct `attribute=[[<code>]]` is syntax sugar for `attribute="[[<code>]]"` where you don't need to escape attribute's quotes in your code.
-* Aremel validates JavaScript, and extracts dependencies in order to implement reactivity, using [Babel](https://babeljs.io),
-* One subject I haven't touched upon here is Aremel's support for data binding, replication and JSON/XML data.
+* Aremel validates JavaScript, and extracts dependencies in order to implement reactivity, using [Babel](https://babeljs.io).
+* One subject I haven't touched upon here is Aremel's support for data binding, replication and JSON/XML data/services.
 
