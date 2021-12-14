@@ -8,7 +8,7 @@ import { DomElement, ELEMENT_NODE } from "../../src/shared/dom";
 const port = 8081;
 let server: AremelServer;
 
-describe("test client", () => {
+describe("test server", () => {
 	jest.setTimeout(30000);
 
 	beforeAll((done) => {

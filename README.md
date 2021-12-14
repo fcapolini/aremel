@@ -13,7 +13,7 @@ Aremel is a groundbreaking [Node.js](https://nodejs.dev)/[Express](http://expres
 * You can add logic to HTML tags by using *logic attributes*, prefixed
 with `:`. They don't appear in the output HTML and are compiled to
 JavaScript code behind the scenes.
-* Anywhere in your markup you can insert *JavaScript expressions* surrounded by the `[[` and `]]` markers. Again, they're compiled to JavaScript and replaced with their resulting value in the output HTML.
+* Anywhere in your markup you can insert *expressions* surrounded by the `[[` and `]]` markers. Again, they're compiled to JavaScript and they are replaced with their resulting value in the output HTML.
 * You can define your own reusable components using the `<:define>` tag. Combined with `<:import>` it also lets you very easily define reusable component libraries.
 * Reactivity is completely transparent, in a design reminiscent of the venerable [OpenLaszlo](https://en.wikipedia.org/wiki/OpenLaszlo) framework: no need to call `render()` or anything to keep your page up to date.
 * Aremel's server is also its compiler: you only need to set the server up and it transparently compiles your code for both the client and the server as needed to serve your pages.
@@ -131,12 +131,15 @@ ReactDOM.render(
 * The difference in size and, more importantly, in readability is now much greater.
 * In general the more real-world your code gets, the greater the difference in complexity between Aremel and JSX code.
 
-## A Few Important Details
+## Notes
 
-* Aremel uses a preprocessor to implement modularization with `<:import>` and componentization with `<:define>`. Aremel components are conceptually similar to C macros.
+* Aremel uses a preprocessor to implement modularization with `<:import>` and componentization with `<:define>`. Aremel components are conceptually similar to C macros. Component names must include at least one dash character.
+* Aremel components can be based on any tag (`div` is the default) and can include `<:slot>`s where content can be added. Components can extend other components much like classes can extend other classes in object oriented languages.
+* In addition to values, `:` attributes can define functions which act as methods in the context of their tag.
+* Tags in Aremel work as visibility scopes for page logic: nested tags can access outer values and functions, while outer tags can only access a nested tag's values via dot notation if it'a given a name with the `:aka` attribute.
 * The preprocessor supports multiline attributes with unescaped `<` and `>` characters in their content so tag attributes can be comfortably used to contain blocks of code. Of course, output HTML is always standars compliant.
 * The construct `attribute=[[<code>]]` is syntactic sugar for `attribute="[[<code>]]"` where you don't need to escape attribute's quotes in your code.
 * Any tag can be self closed and it's turned into an open/close tag combination if needed in the output HTML. E.g. `<div/>` becomes `<div></div>`, while `<meta/>` and  `<meta>` both become `<meta />`. You can just self close tags with no content as you would in XML.
-* Aremel validates JavaScript, and infers dependencies in order to implement reactivity, using [Babel](https://babeljs.io).
+* Aremel uses the [Babel](https://babeljs.io) JavaScript compiler to validate expressions and infer their dependencies in order to implement reactivity.
 * Subjects we haven't touched upon here include Aremel's support for data binding, replication, JSON/XML data and services.
 

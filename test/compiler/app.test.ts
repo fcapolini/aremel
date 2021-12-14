@@ -272,7 +272,7 @@ describe("test server app", () => {
 			__this = __scope_0 = {__dom:__domGetter(0),__win:__rt.page.window,__doc:__rt.page.doc};
 			var __id = __this.__id = 0;
 			var __dom = __this.__dom;
-			var attr_class = __this.attr_class = __add(__this,"attr_class",{fn:function() {return 'btn btn-' + __nn(outline ? 'outline-' : '') + __nn(__scope_0.type) + __nn(nowrap ? ' text-nowrap' : '') + __nn(size ? ' btn-' + __scope_0.size : '');}});
+			var attr_class = __this.attr_class = __add(__this,"attr_class",{fn:function() {return 'btn btn-' + __nn(__scope_0.outline ? 'outline-' : '') + __nn(__scope_0.type) + __nn(__scope_0.nowrap ? ' text-nowrap' : '') + __nn(__scope_0.size ? ' btn-' + __scope_0.size : '');}});
 			Object.defineProperty(__this,"attr_class",{get:function() {return __rt.get(attr_class)}, set:function(__v_) {return __rt.set(attr_class, __v_)}});
 			Object.defineProperty(__this,"__value_attr_class",{get:function() {return attr_class}});
 			__link({"o":__this.__value_attr_class, "v":function() {return __scope_0.__value_outline;}});
