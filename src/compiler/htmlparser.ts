@@ -31,7 +31,7 @@ export default class HtmlParser {
 		while ((i2 = s.indexOf('<', i1)) >= 0) {
 			i4 = i2;
 			i1 = i2 + 1;
-			(closure = s.charCodeAt(i1) == '/'.charCodeAt(0)) ? i1++ : null;
+			(closure = s.charCodeAt(i1) === '/'.charCodeAt(0)) ? i1++ : null;
 			if ((i2 = this.skipName(s, i1)) > i1) {
 				if (i4 > i3) {
 					new HtmlText(p.ownerDocument, p, s.substring(i3, i4),
@@ -39,8 +39,8 @@ export default class HtmlParser {
 				}
 				if (closure) {
 					var name = s.substring(i1, i2).toUpperCase();
-					if (s.charCodeAt(i2) == '>'.charCodeAt(0)) {
-						if (name == p.tagName) {
+					if (s.charCodeAt(i2) === '>'.charCodeAt(0)) {
+						if (name === p.tagName) {
 							i1 = i2 + 1;
 							closetag = name;
 							break;
@@ -88,7 +88,7 @@ export default class HtmlParser {
 		i1 = this.parseAttributes(e, s, i2, origin);
 		i1 = this.skipBlanks(s, i1);
 		var selfclose = false;
-		if ((selfclose = (s.charCodeAt(i1) == '/'.charCodeAt(0)))) {
+		if ((selfclose = (s.charCodeAt(i1) === '/'.charCodeAt(0)))) {
 			i1++;
 		}
 		if (s.charCodeAt(i1) != '>'.charCodeAt(0)) {
@@ -127,10 +127,10 @@ export default class HtmlParser {
 			if (s.charCodeAt(i1) === '='.charCodeAt(0)) {
 				i1 = this.skipBlanks(s, i1 + 1);
 				var quote = s.charCodeAt(i1);
-				if (a && (quote == '"'.charCodeAt(0) || quote == "'".charCodeAt(0))) {
+				if (a && (quote === '"'.charCodeAt(0) || quote === "'".charCodeAt(0))) {
 					i1 = this.parseValue(a, s, i1 + 1, quote, String.fromCharCode(quote), origin);
 			// #if (HTML_EXTENSIONS)
-				} else if (a && (quote == '['.charCodeAt(0) && s.charCodeAt(i1 + 1) == '['.charCodeAt(0))) {
+				} else if (a && (quote === '['.charCodeAt(0) && s.charCodeAt(i1 + 1) === '['.charCodeAt(0))) {
 					i1 = this.parseValue(a, s, i1 + 2, quote, ']]', origin);
 			// #end
 				} else {
@@ -156,7 +156,7 @@ export default class HtmlParser {
 		} else {
 			a.quote = String.fromCharCode(quote);
 			var i = i2 + term.length;
-			while (i < s.length && s.charCodeAt(i) == term.charCodeAt(0)) {
+			while (i < s.length && s.charCodeAt(i) === term.charCodeAt(0)) {
 				i2++; i++;
 			}
 			a.value = s.substring(i1, i2);
@@ -167,9 +167,9 @@ export default class HtmlParser {
 	}
 
 	skipComment(s:string, i1:number, origin:number) {
-		if (s.charCodeAt(i1) == '!'.charCodeAt(0)
-			&& s.charCodeAt(i1 + 1) == '-'.charCodeAt(0)
-			&& s.charCodeAt(i1 + 2) == '-'.charCodeAt(0)) {
+		if (s.charCodeAt(i1) === '!'.charCodeAt(0)
+			&& s.charCodeAt(i1 + 1) === '-'.charCodeAt(0)
+			&& s.charCodeAt(i1 + 2) === '-'.charCodeAt(0)) {
 			if ((i1 = s.indexOf('-->', i1 + 3)) < 0) {
 				throw new HtmlException(
 					'Unterminated comment',
@@ -188,7 +188,7 @@ export default class HtmlParser {
 			i1 = i2 + 2;
 			i2 = this.skipName(s, i1);
 			if (i2 > i1) {
-				if (s.substring(i1, i2).toUpperCase() == tag) {
+				if (s.substring(i1, i2).toUpperCase() === tag) {
 					i2 = this.skipBlanks(s, i2);
 					if (s.charCodeAt(i2) != '>'.charCodeAt(0)) {
 						throw new HtmlException(

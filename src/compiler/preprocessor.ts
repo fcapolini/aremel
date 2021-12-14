@@ -122,7 +122,7 @@ export default class Preprocessor {
 			throw new PreprocessorError(msg, f, this.rootPath, pos);
 		}
 		var extension = path.extname(filePath).toLowerCase();
-		if (extension == '.html' || extension == '.htm') {
+		if (extension === '.html' || extension === '.htm') {
 			// module inclusion
 			try {
 				this.sources.push(text);
@@ -193,8 +193,7 @@ export default class Preprocessor {
 		}
 		// cascade root attributes
 		for (var k of root.attributes.keys()) {
-			if (/*k.startsWith(ServerLoader.LOGIC_ATTR_PREFIX)
-					&&*/ !parent.attributes.has(k)) {
+			if (!parent.attributes.has(k)) {
 				var a = root.attributes.get(k);
 				if (a) {
 					parent.attributes.set(k, a);
@@ -330,7 +329,7 @@ export default class Preprocessor {
 		function f(p:HtmlElement) {
 			var ret = false;
 			for (var n of p.children.slice()) {
-				if (n.nodeType == ELEMENT_NODE) {
+				if (n.nodeType === ELEMENT_NODE) {
 					var name = (n as HtmlElement).tagName;
 					var def = that.macros.get(name);
 					if (def != null) {
@@ -378,7 +377,7 @@ export default class Preprocessor {
 		var slots = this.collectSlots(dst);
 		for (var n of src.children.slice()) {
 			var slotName = 'default', s;
-			if (n.nodeType == ELEMENT_NODE
+			if (n.nodeType === ELEMENT_NODE
 				&& ((s = (n as HtmlElement).getAttribute(SLOT_ATTR)))) {
 				slotName = s;
 			}

@@ -255,7 +255,7 @@ export class AppValue {
 											type !== 'FunctionExpression') {
 										var program = path.parent as Program;
 										var i = program.body.indexOf(node);
-										if (i == (program.body.length - 1)) {
+										if (i === (program.body.length - 1)) {
 											path.replaceWith(returnStatement(
 												node.expression
 											));

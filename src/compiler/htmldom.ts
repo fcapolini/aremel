@@ -281,7 +281,6 @@ export class HtmlElement extends HtmlNode {
 		return sb;
 	}
 
-	//TODO: handle both `:style-*` and `style` at the same time
 	outputAttributes(sb:StringBuf, sort:boolean, plain:boolean) {
 		var keys = this.getAttributeNames();
 		if (sort) {
@@ -401,6 +400,7 @@ export class HtmlComment extends HtmlNode {
 // HtmlAttribute
 // =============================================================================
 
+//TODO: value accessors aren't needed anymore
 export class HtmlAttribute {
 	name: string;
 	_value: string;

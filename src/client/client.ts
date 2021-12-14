@@ -40,6 +40,7 @@ export default class AremelClient {
 		return ret;
 	}
 
+	//TODO: use DOM queries to lookup the script!
 	getScript(doc:DomDocument): string|undefined {
 		var html:DomElement|undefined = doc.firstElementChild;
 		var code:string|undefined = undefined;

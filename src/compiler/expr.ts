@@ -32,7 +32,7 @@ export function prepareExpr(s:string): string {
 	var i = 0, i1, i2;
 	while ((i1 = s.indexOf(DOM_EXP_MARKER1, i)) >= 0
 			&& (i2 = s.indexOf(DOM_EXP_MARKER2, i1)) >= 0) {
-		while ((i2 + 2) < s.length && s.charAt(i2 + 2) == ']') i2++;
+		while ((i2 + 2) < s.length && s.charAt(i2 + 2) === ']') i2++;
 		sb.add(sep); sep = '+';
 		if (i1 > i) {
 			sb.add("'" + escape(s.substring(i, i1)) + "'+");
@@ -42,7 +42,7 @@ export function prepareExpr(s:string): string {
 		sb.add(exprEnd);
 		i = i2 + DOM_EXP_MARKER2.length;
 	}
-	if (i < s.length || sep == '') {
+	if (i < s.length || sep === '') {
 		sb.add(sep);
 		sb.add("'" + escape(s.substr(i)) + "'");
 	}

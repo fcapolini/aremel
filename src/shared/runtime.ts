@@ -513,7 +513,7 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 	}
 
 	function areEqual(a:any, b:any) {
-		return (a != null ? a == b : b == null);
+		return (a != null ? a === b : b == null);
 	}
 
 	function isTrue(v:any): boolean {

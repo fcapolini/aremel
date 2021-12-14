@@ -68,7 +68,7 @@ export default class App {
 	_loadProps(e:HtmlElement): Map<string,Prop> {
 		var ret = new Map<string,Prop>();
 		for (var attr of e.attributes.values()) {
-			var val = attr.quote == '['
+			var val = attr.quote === '['
 				? DOM_EXP_MARKER1 + attr.value + DOM_EXP_MARKER2
 				: attr.value;
 			var key = attr.name;
