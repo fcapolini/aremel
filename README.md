@@ -10,9 +10,7 @@ Aremel is a groundbreaking [Node.js](https://nodejs.dev)/[Express](http://expres
 ## Concepts
 
 * Aremel is a modern *reactive framework* like React. But rather than turning JavaScript into a page descriptor, it turns HTML into a reactive language.
-* You can add logic to HTML tags by using *logic attributes*, prefixed
-with `:`. They don't appear in the output HTML and are compiled to
-JavaScript code behind the scenes.
+* You can add logic to HTML tags by using *logic attributes*, prefixed with `:`. They don't appear in the output HTML and are compiled to JavaScript code behind the scenes.
 * Anywhere in your markup you can insert *expressions* surrounded by the `[[` and `]]` markers. Again, they're compiled to JavaScript and they are replaced with their resulting value in the output HTML.
 * You can define your own reusable components using the `<:define>` tag. Combined with `<:import>` it also lets you very easily define reusable component libraries.
 * Reactivity is completely transparent, in a design reminiscent of the venerable [OpenLaszlo](https://en.wikipedia.org/wiki/OpenLaszlo) framework: no need to call `render()` or anything to keep your page up to date.
@@ -85,7 +83,7 @@ ReactDOM.render(
 
 * `<:define>` declares a `seconds-counter` component with a `:count` value and an `:on-count` handler which gets executed each time the value changes.
 * `<seconds-counter>` creates an instance of the component.
-* Server-side, `:count` is set to zero at delivery time and `:on-count` is executed, but it uses `setTimeout()` which does nothing since anything in the future is left to the client.
+* Server-side, `:count` is initialized to zero at delivery time and `:on-count` is executed, but it uses `setTimeout()` which does nothing since anything in the future is left to the client.
 * The output page content-ready and contains  `Seconds: 0`. This way static clients like web crawlers get a fully indexable page, while web browser get a client-side web app with its initial state already expressed in an immediately displayable page.
 * Client-side, Aremel runtime is asynchronously loaded and the same process takes place, but this time `setTimeout()` is real, so after one second `:count` gets incremented (and automatically reflected in the DOM thanks to reactivity). This in turn executes `:on-count` and so on.
 
@@ -133,7 +131,7 @@ ReactDOM.render(
 
 ## Notes
 
-* Aremel uses a preprocessor to implement modularization with `<:import>` and componentization with `<:define>`. Aremel components are conceptually similar to C macros. Component names must include at least one dash character.
+* Aremel uses a preprocessor to support modularization with `<:import>` and componentization with `<:define>`. Aremel components are conceptually similar to C macros. Component names must include at least one dash character.
 * Aremel components can be based on any tag (`div` is the default) and can include `<:slot>`s where content can be added. Components can extend other components much like classes can extend other classes in object oriented languages.
 * In addition to values, `:` attributes can define functions which act as methods in the context of their tag.
 * Tags in Aremel work as visibility scopes for page logic: nested tags can access outer values and functions, while outer tags can only access a nested tag's values via dot notation if it'a given a name with the `:aka` attribute.
