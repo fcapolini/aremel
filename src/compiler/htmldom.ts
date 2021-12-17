@@ -304,8 +304,8 @@ export class HtmlElement extends HtmlNode {
 	// from haxe-htmlparser: htmlparser.HtmlTools.hx
 	static escape(text:string, chars=""): string {
 		var r = text;
-		r = r.split("<").join("&lt;");
-		r = r.split(">").join("&gt;");
+		if (chars.indexOf('<') >= 0) r = r.split("<").join("&lt;");
+		if (chars.indexOf('>') >= 0) r = r.split(">").join("&gt;");
 		if (chars.indexOf('"') >= 0) r = r.split('"').join("&quot;");
 		if (chars.indexOf("'") >= 0) r = r.split("'").join("&apos;");
 		if (chars.indexOf(" ") >= 0) r = r.split(" ").join("&nbsp;");
@@ -432,7 +432,11 @@ export class HtmlAttribute {
 		if (outputValue !== '' || this.quote) {
 			var q = this.quote === "'" ? "'" : '"';
 			sb.add('='); sb.add(q);
-			sb.add(HtmlElement.escape(outputValue, "\r\n" + q));
+			if (plain) {
+				sb.add(HtmlElement.escape(outputValue, q));
+			} else {
+				sb.add(HtmlElement.escape(outputValue, "<>\r\n" + q));
+			}
 			sb.add(q);
 		}
 	}

@@ -5,36 +5,12 @@
 		<:include src="/.kit/bootstrap/all.htm"/>
 	</head>
 	<body>
-		<bs-page>
-			<!-- <bs-alert>
-				A simple primary alert with <a href="#">an example link</a>. Give it a click if you like.
-			</bs-alert> -->
-			<bs-accordion :flush=[[false]]>
-				<bs-accordion-item :header="Item #1">
-					<strong>This is the first item's accordion body.</strong> It is shown by default, until the
-					collapse plugin adds the appropriate classes that we use to style each element. These classes
-					control the overall appearance, as well as the showing and hiding via CSS transitions. You can
-					modify any of this with custom CSS or overriding our default variables. It's also worth noting
-					that just about any HTML can go within the <code>.accordion-body</code>, though the transition
-					does limit overflow.
-				</bs-accordion-item>
-
-				<bs-accordion-item :header="Item #2">
-					<bs-breadcrumb>
-						<bs-breadcrumb-item><a href="#">Cip</a></bs-breadcrumb-item>
-						<bs-breadcrumb-item><a href="#">Ciop</a></bs-breadcrumb-item>
-					</bs-breadcrumb>
-					<bs-button>Primary</bs-button>
-					<bs-buttongroup>
-						<bs-button>Primary</bs-button>
-						<bs-button>Primary</bs-button>
-						<bs-button>Primary</bs-button>
-					</bs-buttongroup>
-				</bs-accordion-item>
-			</bs-accordion>
-
-			<bs-alert :type="success">Hello there</bs-alert>
-			<bs-badge>Cips</bs-badge>
+		<bs-page style="padding:1em 0">
+			<bs-alert-example/><hr/>
+			<bs-accordion-example/><hr/>		
+			<bs-card-example/><hr/>
+			<bs-carousel-example/><hr/>
+			<bs-collapse-example/><hr/>
 		</bs-page>
 	</body>
 </html>
