@@ -303,6 +303,38 @@ describe("test preprocessor", () => {
 
 });
 
+it("should let users extend macros (1)", () => {
+	var msg = '';
+	try {
+		var doc = preprocessor.read('testExtendedMacro1.html');
+		expect(adjacentTextNodes(doc)).toBeFalsy();
+		expect(normalizeText(doc?.toString())).toBe(normalizeText(`<html>
+		<head>
+		</head>
+		<body>
+			<div class="kit-item">
+				<label>
+					<input type="radio" />
+					Item1
+				</label>
+				<span class="badge rounded-pill">badge</span>
+			</div>
+
+			<div class="kit-item">
+				<label>
+					<input type="radio" />
+					Item2
+				</label>
+				<span class="badge rounded-pill">badge</span>
+			</div>
+		</body>
+		</html>`));
+	} catch (ex:any) {
+		msg = `${ex}`;
+	}
+	expect(msg).toBe('');
+});
+
 // =============================================================================
 // util
 // =============================================================================

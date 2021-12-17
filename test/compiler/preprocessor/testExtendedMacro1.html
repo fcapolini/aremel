@@ -1,0 +1,22 @@
+<html>
+<head>
+	<:define tag="kit-item" class="kit-item">
+		<:slot name="default"/>
+		<span class="badge rounded-pill">badge</span>
+	</:define>
+	<:define tag="kit-special-item:kit-item">
+		<label>
+			<input type="radio"/>
+			<:slot name="default"/>
+		</label>
+	</:define>
+</head>
+<body>
+	<kit-special-item>
+		Item1
+	</kit-special-item>
+	<kit-special-item>
+		Item2
+	</kit-special-item>
+</body>
+</html>

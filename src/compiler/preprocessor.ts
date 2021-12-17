@@ -326,7 +326,15 @@ export default class Preprocessor {
 	expandMacro(use:HtmlElement, def:Definition): HtmlElement {
 		var ret = null;
 		if (def.ext != null) {
-			ret = this.expandMacro(def.e, def.ext);
+			var e = new HtmlElement(def.e.ownerDocument, undefined, def.e.tagName,
+					use.pos.i1, use.pos.i2, use.pos.origin);
+			for (var a of def.e.attributes.values()) {
+				var a2 = e.setAttribute(a.name, a.value, a.quote,
+						a.pos1?.i1, a.pos1?.i2, a.pos1?.origin);
+				a2 ? a2.pos2 = a.pos1 : null;
+			}
+			e.innerHTML = def.e.innerHTML;
+			ret = this.expandMacro(e, def.ext);
 		} else {
 			ret = new HtmlElement(def.e.ownerDocument, undefined, def.name2,
 					use.pos.i1, use.pos.i2, use.pos.origin);
