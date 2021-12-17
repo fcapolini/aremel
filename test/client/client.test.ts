@@ -67,5 +67,7 @@ function load(fname:string, cb:(client:AremelClient)=>void) {
 		expect(win.__aremel).toBeDefined();
 		expect(client.root).toBeDefined();
 		cb(client);
+	}, (err) => {
+		expect(err).toBeUndefined();
 	});
 }

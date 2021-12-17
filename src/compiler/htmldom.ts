@@ -430,14 +430,21 @@ export class HtmlAttribute {
 		sb.add(' '); sb.add(this.name);
 		var outputValue = this.getOutputValue(sort, plain);
 		if (outputValue !== '' || this.quote) {
-			var q = this.quote === "'" ? "'" : '"';
-			sb.add('='); sb.add(q);
 			if (plain) {
-				sb.add(HtmlElement.escape(outputValue, q));
+				var q = this.quote ? this.quote : '"';
+				sb.add('='); sb.add(q === '[' ? '[[' : q);
+				if (q === '[') {
+					sb.add(outputValue);
+				} else {
+					sb.add(HtmlElement.escape(outputValue, q));
+				}
+				sb.add(q === '[' ? ']]' : q);
 			} else {
+				var q = this.quote === "'" ? "'" : '"';
+				sb.add('='); sb.add(q);
 				sb.add(HtmlElement.escape(outputValue, "<>\r\n" + q));
+				sb.add(q);
 			}
-			sb.add(q);
 		}
 	}
 

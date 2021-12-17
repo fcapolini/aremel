@@ -1,0 +1,47 @@
+<lib>
+	<:import src="doubleQuotesInSquareAttributes2_include1.htm"/>
+	
+	<:define tag="bs-list:ul" class="list-group"
+		:flush=[[false]]
+		:horizontal=[[false]]
+		:equalWidth=[[false]]
+
+		:class-listGroupFlush=[[flush]]
+		:class-listGroupHorizontal=[[horizontal]]
+	>
+	</:define>
+
+	<:define tag="bs-item:a"
+		class="list-group-item list-group-item-action[[
+			type ? ' list-group-item-'+type : ''
+		]] d-flex justify-content-between align-items-center"
+		:active=[[false]]
+		:disabled=[[false]]
+		:link="#"
+		:type=""
+		:badge=""
+		:badgeType="primary"
+
+		href=[[disabled ? null : link]]
+		:class-active=[[active]]
+		:class-disabled=[[disabled]]
+		:class-flexFill=[[equalWidth]]
+	>
+		<:slot name="default"/>
+		<span class="badge bg-[[badgeType]] rounded-pill"
+			:hidden=[[!badge]]
+		>[[badge]]</span>
+	</:define>
+
+	<:define tag="bs-checkbox-item:bs-item"
+		:radio=[[false]]
+		:selected=[[false]]
+	>
+		<label style="width:100%">
+			<input class="form-check-input me-1"
+				type=[[radio ? "radio" : "checkbox"]]
+				value=[[selected ? 'true' : '']]/>
+			<:slot name="default"/>
+		</label>
+	</:define>
+</lib>

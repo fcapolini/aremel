@@ -98,18 +98,59 @@ describe("test server", () => {
 		});
 	});
 
+	it("should accept double quotes in square attributes (1)", (done) => {
+		doGet(`http://localhost:${port}/doubleQuotesInSquareAttributes1.html`, (s) => {
+			expect(cleanup(s)).toBe(normalizeText(
+				`<html lang="en"><body></body></html>`));
+			done();
+		});
+	});
+
+	it("should accept double quotes in square attributes (2)", (done) => {
+		doGet(`http://localhost:${port}/doubleQuotesInSquareAttributes2.html`, (s) => {
+			try {
+				s = cleanup(s);
+				// console.log(s);//tempdebug
+				expect(s).toBe(normalizeText(
+				`<html>
+					<head>
+					</head>
+					<body>
+						<div>
+							<ul class="list-group">
+								<a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="#">
+									<label style="width:100%;">
+										<input class="form-check-input me-1" type="checkbox" value="" />
+									</label>
+									<span class="badge bg-primary rounded-pill __aremel-autohide"></span>
+								</a>
+							</ul>
+							<!--<script src="/.kit/bootstrap/res/bootstrap.bundle.min.js"></script>-->
+						</div>
+					</body>
+				</html>`));
+				done();
+			} catch (error) {
+				done(error);
+			}
+		});
+	});
+
 });
 
 // https://nodejs.dev/learn/making-http-requests-with-nodejs
 // https://stackoverflow.com/a/9577651
 function doGet(url:string, res:(s:string)=>void) {
 	var output = '';
+	function f(s:string) {
+		res(s);
+	}
 	const req = request(url, r => {
 		r.setEncoding('utf8');
 		r.on('data', (chunk) => output += chunk);
-		r.on('end', () => res(output));
+		r.on('end', () => f(output));
 	});
-	req.on('error', e => res(`ERROR ${e}`));
+	req.on('error', e => f(`ERROR ${e}`));
 	req.end();
 }
 

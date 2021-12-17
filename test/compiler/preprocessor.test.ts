@@ -290,9 +290,9 @@ describe("test preprocessor", () => {
 		var msg = '';
 		try {
 			var doc = preprocessor.read('testAttributesInMacro.html');
-			expect(normalizeText(doc?.toString())).toBe(normalizeText(`<html>
-				<div :ok="[[true]]">
-					<span :class-ok="[[ok]]"></span>
+			expect(normalizeText(doc?.toString(false, true))).toBe(normalizeText(`<html>
+				<div :ok=[[true]]>
+					<span :class-ok=[[ok]]></span>
 				</div>
 			</html>`));
 		} catch (ex:any) {

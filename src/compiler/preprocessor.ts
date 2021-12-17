@@ -253,7 +253,6 @@ export default class Preprocessor {
 			this.joinAdjacentTexts(parent);
 		}
 		e.setAttribute(DEFINE_ARG, undefined);
-		this.fixSpecialAttributes(e);
 		this.expandMacros(e);
 		this.macros.set(names[0], {
 			name1: names[0],
@@ -261,31 +260,6 @@ export default class Preprocessor {
 			e: e,
 			ext: this.macros.get(names[1])
 		});
-	}
-
-	/*
-		Replaces attributes with `[[` quoting with attributes with `"`
-		quoting and `[[...]]` content.
-
-		This is needed because macros are expanded using HtmlElement's
-		innerHTML, which is designed to work with standard attributes
-		(i.e. with `"` or `'` quotes).
-	*/
-	fixSpecialAttributes(e:HtmlElement) {
-		function f(e:HtmlElement) {
-			e.attributes.forEach((attr, _) => {
-				if (attr.quote === '[') {
-					attr.quote = '"';
-					attr.value = `[[${attr.value}]]`;
-				}
-			});
-			for (var n of e.children) {
-				if (n.nodeType === ELEMENT_NODE) {
-					f(n as HtmlElement);
-				}
-			}
-		}
-		f(e);
 	}
 
 	collectSlots(p:HtmlElement) {
@@ -368,7 +342,6 @@ export default class Preprocessor {
 	}
 
 	populateMacro(src:HtmlElement, dst:HtmlElement) {
-		this.fixSpecialAttributes(src);
 		for (var a of src.attributes.values()) {
 			var a2 = dst.setAttribute(a.name, a.value, a.quote,
 					a.pos1?.i1, a.pos1?.i2, a.pos1?.origin);

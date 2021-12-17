@@ -30,25 +30,29 @@ export class AppValue {
 
 	compile() {
 		if (this.expr) {
-			if (this.key === JS_DATA_VAR) {
-				if (/^\s*[\[|\{]/.test(this.expr.src)) {
-					// JSON
-					this.expr.code = `return ${this.expr.src};`;
+			// try {
+				if (this.key === JS_DATA_VAR) {
+					if (/^\s*[\[|\{]/.test(this.expr.src)) {
+						// JSON
+						this.expr.code = `return ${this.expr.src};`;
+					} else {
+						// JS
+						this._patchExpr(this.expr);
+						if (this.expr?.fndecl) {
+							//TODO throw error
+						}
+					}
 				} else {
-					// JS
 					this._patchExpr(this.expr);
 					if (this.expr?.fndecl) {
-						//TODO throw error
+						// function values don't get refreshed by changes in
+						// values they reference
+						this.refs.clear();
 					}
 				}
-			} else {
-				this._patchExpr(this.expr);
-				if (this.expr?.fndecl) {
-					// function values don't get refreshed by changes in
-					// values they reference
-					this.refs.clear();
-				}
-			}
+			// } catch (error) {
+			// 	console.trace(error);
+			// }
 			if (this.key.startsWith(JS_HANDLER_VALUE_PREFIX)) {
 				this.refs.clear();
 				var name = this.key.substr(JS_HANDLER_VALUE_PREFIX.length);

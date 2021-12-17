@@ -295,4 +295,27 @@ describe("test server app", () => {
 		}`));
 	});
 
+	it("should allow double quotes `\"` in [[...]] attributes", () => {
+		var doc = HtmlParser.parse(`<html lang=[[true ? "en" : "es"]]/>`);
+		var app = new App(new URL('http://localhost/'), doc);
+		var page = app.output();
+		expect (page.script).toBe(normalizeText(
+		`function(__rt) {
+			var __f, __data = null;
+			var __add = __rt.add;
+			function __nn(v) {return v != null ? v : "";}
+			function __link(l) {__rt.links.push(l);}
+			function __ev(h) {__rt.evhandlers.push(h);}
+			function __domGetter(id) {return __rt.page.nodes[id];}
+			var __this, __scope_0;
+			__this = __scope_0 = {__dom:__domGetter(0),__win:__rt.page.window,__doc:__rt.page.doc};
+			var __id = __this.__id = 0;
+			var __dom = __this.__dom;
+			var attr_lang = __this.attr_lang = __add(__this,"attr_lang",{fn:function() {return true ? "en" : "es";}});
+			Object.defineProperty(__this,"attr_lang",{get:function() {return __rt.get(attr_lang)}, set:function(__v_) {return __rt.set(attr_lang, __v_)}});
+			Object.defineProperty(__this,"__value_attr_lang",{get:function() {return attr_lang}});
+			return __this;
+		}`));
+	});
+
 });
