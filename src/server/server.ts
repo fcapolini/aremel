@@ -25,7 +25,7 @@ export default class AremelServer {
 			var prepro = new Preprocessor(rootpath);
 			var base = `http://${req.headers.host}`;
 			var url = new URL(req.url, base);
-			AremelServer._getPageWithCache(prepro, url, pageCache, (html) => {
+			AremelServer._getPageWithCache(prepro, url, cb ? null : pageCache, (html) => {
 				res.header("Content-Type",'text/html');
 				res.send(html);
 			}, (err) => {
@@ -58,7 +58,7 @@ export default class AremelServer {
 
 	static _getPageWithCache(prepro:Preprocessor,
 							url:URL,
-							cache:Map<string,CachedPage>,
+							cache:Map<string,CachedPage>|null,
 							cb:(doc:string)=>void,
 							err:(err:any)=>void) {
 		var that = this;
@@ -111,24 +111,26 @@ export default class AremelServer {
 					}
 				});
 			} else {
-				that._getPage(prepro, url, (doc) => {
+				that.getPage(prepro, url, (doc) => {
 					that._normalizeSpace(doc);
 					var html = doc.toString();
 					cb(html);
-					fs.writeFile(filePath, html, {encoding:'utf8'}, (error) => {
-						if (error) {
-							console.log(error);//TODO
-						} else {
-							var tstamp = new Date().valueOf();
-							cachedPage = new CachedPage(tstamp, prepro);
-							cache.set(filePath, cachedPage);
-						}
-					});
+					if (cache) {
+						fs.writeFile(filePath, html, {encoding:'utf8'}, (error) => {
+							if (error) {
+								console.log(error);//TODO
+							} else {
+								var tstamp = new Date().valueOf();
+								cachedPage = new CachedPage(tstamp, prepro);
+								cache.set(filePath, cachedPage);
+							}
+						});
+					}
 				}, err);
 			}
 		}
 
-		cachedPage = cache.get(filePath);
+		cachedPage = cache?.get(filePath);
 		if (cachedPage) {
 			cachedPage.isUpToDate(f);
 		} else {
@@ -136,7 +138,7 @@ export default class AremelServer {
 		}
 	}
 
-	static _getPage(prepro:Preprocessor,
+	static getPage(prepro:Preprocessor,
 					url:URL,
 					cb:(doc:HtmlDocument)=>void,
 					err:(err:any)=>void) {
