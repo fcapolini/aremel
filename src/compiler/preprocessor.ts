@@ -155,7 +155,7 @@ export default class Preprocessor {
 		var tags = new Set([INCLUDE_TAG, IMPORT_TAG]);
 		// tags.add(INCLUDE_TAG);
 		// tags.add(IMPORT_TAG);
-		var includes = this.lookupTags(doc, tags);
+		var includes = Preprocessor.lookupTags(doc, tags);
 		for (var e of includes) {
 			var src = e.getAttribute(INCLUDE_ARG);
 			if (src && (src = src.trim()).length > 0) {
@@ -218,7 +218,7 @@ export default class Preprocessor {
 	collectMacros(p:HtmlElement) {
 		var tags = new Set<string>();
 		tags.add(DEFINE_TAG);
-		var macros = this.lookupTags(p, tags);
+		var macros = Preprocessor.lookupTags(p, tags);
 		for (var e of macros) {
 			this.collectMacro(e);
 		}
@@ -266,7 +266,7 @@ export default class Preprocessor {
 		var ret = new Map<string, HtmlElement>();
 		var tags = new Set<string>();
 		tags.add(SLOT_TAG);
-		var slots = this.lookupTags(p, tags);
+		var slots = Preprocessor.lookupTags(p, tags);
 		for (var e of slots) {
 			var s = e.getAttribute(SLOT_ARG);
 			var names = (s ? s.split(',') : undefined);
@@ -392,7 +392,7 @@ export default class Preprocessor {
 	// util
 	// =========================================================================
 
-	lookupTags(p:HtmlElement, tags:Set<string>): Array<HtmlElement> {
+	static lookupTags(p:HtmlElement, tags:Set<string>): Array<HtmlElement> {
 		var ret = new Array<HtmlElement>();
 		function f(p:HtmlElement) {
 			for (var n of p.children) {

@@ -9,7 +9,7 @@ export default class AremelClient {
 	constructor(doc:DomDocument, window:any, getAndCleanScript=false) {
 		this.pageObj = {
 			doc: doc,
-			nodes: this.collectNodes(doc),
+			nodes: AremelClient.collectNodes(doc),
 			window: window,
 			requester: AremelClient.httpRequest,
 			script: getAndCleanScript ? this.getScript(doc) : undefined,
@@ -23,7 +23,7 @@ export default class AremelClient {
 		window.aremel = this.root;
 	}
 
-	collectNodes(doc:DomDocument): Array<DomElement> {
+	static collectNodes(doc:DomDocument): Array<DomElement> {
 		var ret = new Array<DomElement>();
 		function f(e:DomElement) {
 			var id = e.getAttribute(DOM_ID_ATTR);
