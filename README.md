@@ -84,7 +84,7 @@ ReactDOM.render(
 * `<:define>` declares a `seconds-counter` component with a `:count` value and an `:on-count` handler which gets executed each time the value changes.
 * `<seconds-counter>` creates an instance of the component.
 * Server-side, `:count` is initialized to zero at delivery time and `:on-count` is executed, but it uses `setTimeout()` which does nothing since anything in the future is left to the client.
-* The output page content-ready and contains  `Seconds: 0`. This way static clients like web crawlers get a fully indexable page, while web browser get a client-side web app with its initial state already expressed in an immediately displayable page.
+* The output page is content-ready and contains `Seconds: 0`. This way static clients like web crawlers get a fully indexable page, while web browser get a client-side web app with its initial state already expressed in an immediately displayable page.
 * Client-side, Aremel runtime is asynchronously loaded and the same process takes place, but this time `setTimeout()` is real, so after one second `:count` gets incremented (and automatically reflected in the DOM thanks to reactivity). This in turn executes `:on-count` and so on.
 
 ### JSX:
@@ -140,4 +140,3 @@ ReactDOM.render(
 * Any tag can be self closed and it's turned into an open/close tag combination if needed in the output HTML. E.g. `<div/>` becomes `<div></div>`, while `<meta/>` and  `<meta>` both become `<meta />`. You can just self close tags with no content as you would in XML.
 * Aremel uses the [Babel](https://babeljs.io) JavaScript compiler to validate expressions and infer their dependencies in order to implement reactivity.
 * Subjects we haven't touched upon here include Aremel's support for data binding, replication, JSON/XML data and services.
-

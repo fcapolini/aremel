@@ -90,6 +90,9 @@ export class AppScope {
 		}
 		sb.add(`var __id = __this.__id = ${this.id};\n`);
 		sb.add(`var __dom = __this.__dom;\n`);
+		if (this.aka) {
+			sb.add(`var aka = __this.aka = "${this.aka}";\n`);
+		}
 
 		// values
 		var keys = new Array();

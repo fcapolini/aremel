@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Router } from 'express';
 import fs from "fs";
 import { request, Server } from 'http';
 import path from "path";
@@ -21,11 +21,24 @@ export default class AremelServer {
 		const app = express();
 		const pageCache = new Map<string, CachedPage>();
 
+		app.get("*", (req, res, next) => {
+			if (/^[^\.]+$/.test(req.url)) {
+				var base = `http://${req.headers.host}`;
+				var url = new URL(req.url, base);
+				var pathname = path.join(rootpath, url.pathname);
+				if (fs.statSync(pathname)?.isDirectory()) {
+					req.url = path.join(req.url, 'index.html');
+				}
+			}
+			next('route');
+		});
+		
 		app.get('*.html', (req, res) => {
 			var prepro = new Preprocessor(rootpath);
 			var base = `http://${req.headers.host}`;
 			var url = new URL(req.url, base);
-			AremelServer._getPageWithCache(prepro, url, cb ? null : pageCache, (html) => {
+			AremelServer._getPageWithCache(prepro, url, cb ? null : pageCache,
+			(html) => {
 				res.header("Content-Type",'text/html');
 				res.send(html);
 			}, (err) => {
@@ -34,8 +47,6 @@ export default class AremelServer {
 				console.log(`[server]: error for ${url.toString()}: ${err}`);
 			});
 		});
-
-		app.get('/', (req, res) => res.redirect('/index.html'));
 
 		app.use(express.static(rootpath));
 
@@ -56,6 +67,7 @@ export default class AremelServer {
 		}
 	}
 
+	//TODO: prevent concurrency problems
 	static _getPageWithCache(prepro:Preprocessor,
 							url:URL,
 							cache:Map<string,CachedPage>|null,
@@ -215,6 +227,7 @@ class CachedPage {
 		}
 	}
 
+	//TODO: no two actual checks within the same second
 	isUpToDate(cb:(ok:boolean)=>void) {
 		var that = this;
 		var i = this.sources.length - 1;
