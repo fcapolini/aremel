@@ -1,0 +1,1 @@
+{"version":"1.0.0","name":"aremel","dependencies":{"@babel/core":{"version":"7.16.0"},"@types/express":{"version":"4.17.13"},"express":{"version":"4.17.1"}}}
