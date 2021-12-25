@@ -80,7 +80,7 @@ export interface ValueObj {
 	fn?: ()=>any,
 	observers?: Array<ValueObj>,
 	callbacks?: Array<(v:any)=>any>,
-	// k?: string,
+	k?: string,
 }
 
 export interface RequestObj {
@@ -143,11 +143,11 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 		runtime.cycle++;
 		for (var i in runtime.values) {
 			get(runtime.values[i]);
-		}	
+		}
 	}
 
 	function add(o:any, k:string, v:ValueObj): ValueObj {
-		// v.k = k;
+		v.k = k;
 		runtime.values.push(v);
 		if (k.startsWith(JS_CLASS_VALUE_PREFIX)) {
 			linkClass(o.__dom, makeHyphenName(k.substr(JS_CLASS_VALUE_PREFIX.length)), v);
@@ -457,6 +457,14 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 			if (v1 != null && v2 != null) {
 				if (v2.observers != null) v2.observers.push(v1);
 				else v2.observers = [v1];
+			}
+			if (v1?.k?.startsWith(JS_HANDLER_VALUE_PREFIX)) {
+				// the observer is a value handler: we patch it to work as such
+				// 1) use its function as a callback of itself
+				var fn = v1.fn as ()=>void;
+				addCallback(v1, (v) => {fn(); return v;});
+				// 2) replace its function so it returns observed value's value
+				v1.fn = () => v2.v;
 			}
 		}
 		for (var i in links) {

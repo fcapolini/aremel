@@ -62,6 +62,14 @@ describe("test runtime", () => {
 		expect(root.v2).toBe(6);
 	});
 
+	it("should call value handlers once at init and then once for each value change", () => {
+		var doc = HtmlParser.parse('<html :v="a" :on-v=[[count++]] :count=[[0]]/>');
+		var root = run(doc);
+		expect(root.count).toBe(1);
+		root.v = 'b';
+		expect(root.count).toBe(2);
+	});
+
 	it("should reflect texts", () => {
 		var doc = HtmlParser.parse('<html :v=[["Bob"]]>Hello [[v]].</html>');
 		var root = run(doc);
