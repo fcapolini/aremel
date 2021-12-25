@@ -5,7 +5,7 @@
 
 Aremel is a groundbreaking [Node.js](https://nodejs.dev)/[Express](http://expressjs.com) web framework that adds *reactivity*, *modularity* and *isomorphism* to plain HTML.
 
-👉  Aremel is in active development and will be published via npm when a first release is ready.
+👉  Aremel is currently in active development and will be published via npm.
 
 ## Concepts
 
