@@ -464,7 +464,7 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 				var fn = v1.fn as ()=>void;
 				addCallback(v1, (v) => {fn(); return v;});
 				// 2) replace its function so it returns observed value's value
-				v1.fn = () => v2.v;
+				v1.fn = () => get(v2);
 			}
 		}
 		for (var i in links) {
