@@ -373,7 +373,7 @@ export default class Preprocessor {
 					this.sources[n.pos.origin]
 				);
 				throw new PreprocessorError(
-					'unknown slot "$slotName"', err.fname, this.rootPath,
+					`unknown slot "${slotName}"`, err.fname, this.rootPath,
 					err.pos, err.row, err.col
 				);
 			}
