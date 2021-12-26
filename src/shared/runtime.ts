@@ -86,6 +86,7 @@ export interface ValueObj {
 export interface RequestObj {
 	url: string,
 	post?: boolean,
+	params?: any,
 	type: string,
 	target: ValueObj,
 	scriptElement?: DomElement,

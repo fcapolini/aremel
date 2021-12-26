@@ -44,6 +44,7 @@ export default class App {
 		var base = `http://${this.url.hostname}:${this.url.port}`;
 		function requester(req:RequestObj, cb:(s:string)=>void) {
 			//TODO: req.post
+			//TODO: req.params
 			var output = '';
 			var url = new URL(req.url, base);
 			const r = request(url, r => {

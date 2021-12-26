@@ -93,7 +93,7 @@ export default class HtmlParser {
 		}
 		if (s.charCodeAt(i1) != '>'.charCodeAt(0)) {
 			throw new HtmlException(
-				'Unterminated tag ${e.name}',
+				`Unterminated tag ${e.tagName}`,
 				this.origins[origin], i1, s
 			);
 		}
@@ -103,7 +103,7 @@ export default class HtmlParser {
 				var res = this.skipContent(e.tagName, s, i1, origin);
 				if (!res) {
 					throw new HtmlException(
-						'Unterminated tag ${e.name}',
+						`Unterminated tag ${e.tagName}`,
 						this.origins[origin], i1, s
 					);
 				}

@@ -21,6 +21,16 @@ export default class AremelServer {
 		const app = express();
 		const pageCache = new Map<string, CachedPage>();
 
+		app.use(express.json());
+		app.use(express.urlencoded({ extended: true }));
+
+		// https://www.digitalocean.com/community/tutorials/use-expressjs-to-get-url-and-post-parameters
+		app.post('/playground-compiler', (req, res) => {
+			const pageSource = req.body.source;
+			console.log('/playground-compiler: ' + pageSource);//tempdebug
+			res.send(`${pageSource}`);
+		});
+
 		app.get("*", (req, res, next) => {
 			if (/^[^\.]+$/.test(req.url)) {
 				var base = `http://${req.headers.host}`;
@@ -163,16 +173,30 @@ export default class AremelServer {
 				</style>
 				<:define tag=":data-source:script"
 					:url=""
+					:autoGet=[[true]]
 					:type="text/json"
 					:post=[[false]]
+					:params=[[null]]
 
 					type=[[type]]
-					:on-url="[[
+					:on-url=[[
+						if (autoGet) {
+							__rt.addRequest({
+								url:url, type:type,
+								post:post, params:undefined,
+								target:__this.__value_content,
+								scriptElement:__this.__dom
+							});
+						}
+					]]
+					:doRequest=[[(params) => {
 						__rt.addRequest({
-							url:url, type:type, target:__this.__value_content,
-							post:post, scriptElement:__this.__dom
-						})
-					]]"
+							url:url, type:type,
+							post:post, params:params,
+							target:__this.__value_content,
+							scriptElement:__this.__dom
+						});
+					}]]
 					:content=[[undefined]]
 				/>
 			</lib>`) as HtmlDocument;

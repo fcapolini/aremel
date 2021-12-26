@@ -77,7 +77,20 @@ export default class AremelClient {
 			}
 		}
 		xhttp.open(req.post ? 'POST' : 'GET', req.url, true);
-		xhttp.send();
+		var params = undefined;
+		// https://stackoverflow.com/a/9713078
+		if (req.post && req.params) {
+			xhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+			// Turn the data object into an array of URL-encoded key/value pairs.
+			let urlEncodedDataPairs = [], name;
+			for (name in req.params) {
+				urlEncodedDataPairs.push(
+					encodeURIComponent(name) + '='
+					+ encodeURIComponent(req.params[name]));
+			}
+			params = urlEncodedDataPairs.join('&');
+		}
+		xhttp.send(params);
 	}
 
 }
