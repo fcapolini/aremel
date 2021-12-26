@@ -335,6 +335,28 @@ it("should let users extend macros (1)", () => {
 	expect(msg).toBe('');
 });
 
+// =========================================================================
+// virtual files
+// =========================================================================
+
+it("should 'read' virtual files", () => {
+	var msg = '';
+	try {
+		var prepro = new Preprocessor(preprocessor.rootPath, [{
+			fname: 'dummy.html',
+			content: '<html><body>Dummy</body></html>'
+		}]);
+		var doc = prepro.read('dummy.html');
+		expect(adjacentTextNodes(doc)).toBeFalsy();
+		expect(normalizeText(doc?.toString())).toBe(normalizeText(
+			`<html><body>Dummy</body></html>`
+		));
+	} catch (ex:any) {
+		msg = `${ex}`;
+	}
+	expect(msg).toBe('');
+});
+
 // =============================================================================
 // util
 // =============================================================================

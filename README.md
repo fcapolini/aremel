@@ -31,7 +31,7 @@ What follows is a comparison of two of [React's homepage examples](https://react
       Hello [[name]]
     </:define>
 
-    <hello-nessage :name="Taylor"/>
+    <hello-message :name="Taylor"/>
   </body>
 </html>
 ```

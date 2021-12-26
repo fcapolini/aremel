@@ -1,4 +1,4 @@
-import express, { Router } from 'express';
+import express from 'express';
 import fs from "fs";
 import { request, Server } from 'http';
 import path from "path";
@@ -26,9 +26,21 @@ export default class AremelServer {
 
 		// https://www.digitalocean.com/community/tutorials/use-expressjs-to-get-url-and-post-parameters
 		app.post('/playground-compiler', (req, res) => {
-			const pageSource = req.body.source;
-			console.log('/playground-compiler: ' + pageSource);//tempdebug
-			res.send(`${pageSource}`);
+			console.log('playground-compiler 1: ' + req.body.source);//tempdebug
+			const prepro = new Preprocessor(rootpath, [{
+				fname: 'index.html',
+				content: req.body.source
+			}])
+			var base = `http://${req.headers.host}`;
+			var url = new URL('index.html', base);
+			AremelServer.getPage(prepro, url, (doc) => {
+				console.log('playground-compiler 1: ' + doc.toString());//tempdebug
+				res.header("Content-Type",'text/html');
+				res.send(doc.toString());
+			}, (err) => {
+				res.header("Content-Type",'text/plain');
+				res.send(`${err}`.split('<').join('&lt;').split('>').join('&gt;'));
+			});
 		});
 
 		app.get("*", (req, res, next) => {
@@ -53,7 +65,7 @@ export default class AremelServer {
 				res.send(html);
 			}, (err) => {
 				res.header("Content-Type",'text/plain');
-				res.send(`${err}`);
+				res.send(`${err}`.split('<').join('&lt;').split('>').join('&gt;'));
 				console.log(`[server]: error for ${url.toString()}: ${err}`);
 			});
 		});
@@ -211,7 +223,7 @@ export default class AremelServer {
 			script.setAttribute('src', '/.aremel/bin/aremel.js');
 			script.setAttribute('defer', '');
 		} catch (ex:any) {
-			console.trace(ex);
+			// console.trace(ex);
 			err(ex);
 		}
 	}

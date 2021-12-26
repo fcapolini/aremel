@@ -26,17 +26,30 @@ export interface SourcePos {
 	col: number,
 }
 
+export interface VirtualFile {
+	fname: string,
+	content: string,
+}
+
 export default class Preprocessor {
 	rootPath: string;
 	parser: HtmlParser;
 	sources: Array<string>;
 	macros: Map<string, Definition>;
+	virtualFiles: Map<string, string>|undefined;
 
-	constructor(rootPath:string) {
+	constructor(rootPath:string, virtualFiles?:Array<VirtualFile>) {
 		this.rootPath = rootPath;
 		this.parser = new HtmlParser();
 		this.sources = [];
 		this.macros = new Map();
+		if (virtualFiles) {
+			this.virtualFiles = new Map();
+			for (var v of virtualFiles) {
+				var filePath = path.normalize(path.join(rootPath, v.fname));;
+				this.virtualFiles.set(filePath, v.content);
+			}
+		}
 	}
 
 	read(fname:string, embeddedInclude?:string): HtmlDocument | undefined {
@@ -112,7 +125,11 @@ export default class Preprocessor {
 		}
 		var text;
 		try {
-			text = fs.readFileSync(filePath, {encoding: 'utf8'});
+			if (this.virtualFiles?.has(filePath)) {
+				text = this.virtualFiles.get(filePath) as string;
+			} else {
+				text = fs.readFileSync(filePath, {encoding: 'utf8'});
+			}
 		} catch (ex:any) {
 			var msg = `Could not read file "${fname}"`;
 			var f = (includedBy
