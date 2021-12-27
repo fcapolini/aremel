@@ -26,7 +26,6 @@ export default class AremelServer {
 
 		// https://www.digitalocean.com/community/tutorials/use-expressjs-to-get-url-and-post-parameters
 		app.post('/playground-compiler', (req, res) => {
-			console.log('playground-compiler 1: ' + req.body.source);//tempdebug
 			const prepro = new Preprocessor(rootpath, [{
 				fname: 'index.html',
 				content: req.body.source
@@ -34,7 +33,6 @@ export default class AremelServer {
 			var base = `http://${req.headers.host}`;
 			var url = new URL('index.html', base);
 			AremelServer.getPage(prepro, url, (doc) => {
-				console.log('playground-compiler 1: ' + doc.toString());//tempdebug
 				res.header("Content-Type",'text/html');
 				res.send(doc.toString());
 			}, (err) => {
