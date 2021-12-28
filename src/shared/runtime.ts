@@ -69,6 +69,7 @@ export interface RuntimeObj {
 export interface PageObj {
 	doc: DomDocument,
 	window: RuntimeWindow,
+	isClient: boolean,
 	nodes: Array<any>,
 	requester: (req:RequestObj, cb:(s:string)=>void)=>void,
 	script?: string,

@@ -134,6 +134,7 @@ export default class AremelServer {
 							doc: doc as DomDocument,
 							nodes: AremelClient.collectNodes(doc as DomDocument),
 							window: window,
+							isClient: false,
 							requester: requester,
 							script: code
 						};

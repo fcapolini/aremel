@@ -60,6 +60,7 @@ export default class App {
 		return {
 			doc: this.doc as DomDocument,
 			window: window,
+			isClient: false,
 			nodes: this.nodes,
 			requester: requester,
 			script: sb.toString()

@@ -11,6 +11,7 @@ export default class AremelClient {
 			doc: doc,
 			nodes: AremelClient.collectNodes(doc),
 			window: window,
+			isClient: true,
 			requester: AremelClient.httpRequest,
 			script: getAndCleanScript ? this.getScript(doc) : undefined,
 		};
