@@ -37,9 +37,9 @@ export interface RuntimeEventSource {
 	removeEventListener: (t:string,h:any)=>void,
 }
 
-// export interface RuntimeHttpRequester {
-// 	request: (url:string, type:string, post:boolean, cb:(s:string)=>void)=>void
-// }
+export interface RuntimeWindow extends RuntimeEventSource {
+	showdown?: any,
+}
 
 export interface RuntimeObj {
 	page: PageObj,
@@ -68,7 +68,7 @@ export interface RuntimeObj {
 
 export interface PageObj {
 	doc: DomDocument,
-	window: RuntimeEventSource,
+	window: RuntimeWindow,
 	nodes: Array<any>,
 	requester: (req:RequestObj, cb:(s:string)=>void)=>void,
 	script?: string,

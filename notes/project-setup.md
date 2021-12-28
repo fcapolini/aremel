@@ -142,3 +142,14 @@ mkdir docroot
 # # npm install --save-dev tinyify
 ```
 
+### [Showdown](https://www.npmjs.com/package/showdown) for markdown rendering
+
+```bash
+npm install showdown
+npm install @types/showdown
+```
+
+### [Highlight.js](https://www.npmjs.com/package/highlight.js) for syntax highlighting in markdown
+
+```bash
+```

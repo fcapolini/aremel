@@ -1,10 +1,11 @@
 import { request } from 'http';
+import Showdown from 'showdown';
 import { DomDocument } from "../shared/dom";
-import { DOM_AKA_ATTR, DOM_ATTR_ATTR_PREFIX, DOM_CLASS_ATTR_PREFIX, DOM_DYNAMIC_ATTR_PREFIX, DOM_EVENT_ATTR_PREFIX, DOM_EXP_MARKER1, DOM_EXP_MARKER2, DOM_HANDLER_ATTR_PREFIX, DOM_HIDDEN_ATTR, DOM_STYLE_ATTR_PREFIX, JS_AKA_VAR, JS_ATTR_VALUE_PREFIX, JS_AUTOHIDE_CLASS, JS_CLASS_VALUE_PREFIX, JS_DATALENGTH_VAR, JS_DATAOFFSET_VAR, JS_DATA_VAR, JS_EVENT_VALUE_PREFIX, JS_HANDLER_VALUE_PREFIX, JS_STYLE_VALUE_PREFIX, PageObj, RequestObj, RuntimeEventSource } from "../shared/runtime";
+import { DOM_AKA_ATTR, DOM_ATTR_ATTR_PREFIX, DOM_CLASS_ATTR_PREFIX, DOM_DYNAMIC_ATTR_PREFIX, DOM_EVENT_ATTR_PREFIX, DOM_EXP_MARKER1, DOM_EXP_MARKER2, DOM_HANDLER_ATTR_PREFIX, DOM_HIDDEN_ATTR, DOM_STYLE_ATTR_PREFIX, JS_AKA_VAR, JS_ATTR_VALUE_PREFIX, JS_AUTOHIDE_CLASS, JS_CLASS_VALUE_PREFIX, JS_DATALENGTH_VAR, JS_DATAOFFSET_VAR, JS_DATA_VAR, JS_EVENT_VALUE_PREFIX, JS_HANDLER_VALUE_PREFIX, JS_STYLE_VALUE_PREFIX, PageObj, RequestObj, RuntimeWindow } from "../shared/runtime";
+import { makeCamelName, StringBuf } from "../shared/util";
 import { AppScope } from "./appscope";
 import { ELEMENT_NODE, HtmlDocument, HtmlElement, HtmlNode, HtmlPos, HtmlText, TEXT_NODE } from "./htmldom";
 import Preprocessor from "./preprocessor";
-import { makeCamelName, StringBuf } from "../shared/util";
 
 export const nonValues = new Set([JS_AKA_VAR]);
 
@@ -32,13 +33,14 @@ export default class App {
 		this._cleanupDom(root);
 	}
 
-	output(window?:RuntimeEventSource): PageObj {
+	output(window?:RuntimeWindow): PageObj {
 		var sb = new StringBuf();
 		this.root.output(sb);
 		if (!window) {
 			window = {
 				addEventListener: (t:string, h:any) => {},
 				removeEventListener: (t:string, h:any) => {},
+				showdown: Showdown,
 			}
 		}
 		var base = `http://${this.url.hostname}:${this.url.port}`;
