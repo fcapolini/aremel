@@ -16,6 +16,15 @@ export default class AremelClient {
 			script: getAndCleanScript ? this.getScript(doc) : undefined,
 		};
 		this.runtime = make(this.pageObj);
+		var textDecoder = doc.createElement('span');
+		this.runtime.textCallback = (n:DomTextNode, v:any) => {
+			// client-side, textCallback needs HTML entities decoding
+			var s = (v ? '' + v : '').replace(/>/g, '&gt;').replace(/</g, '&lt;');	
+			textDecoder.innerHTML = s;
+			n.nodeValue = textDecoder.firstChild
+				? (textDecoder.firstChild as DomTextNode).nodeValue
+				: '';
+		}
 		if (getAndCleanScript) {
 			eval(this.pageObj.script as string);
 		}

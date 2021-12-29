@@ -52,6 +52,7 @@ export interface RuntimeObj {
 	get: (o:ValueObj)=>any,
 	set: (o:ValueObj, v:any)=>any,
 	tnode: (e:DomElement, n:string)=>any,
+	textCallback: (n:DomTextNode, v:any)=>void;
 
 	addRequest: (r:RequestObj)=>void,
 	requests: Array<RequestObj>,
@@ -105,6 +106,7 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 		get: get,
 		set: set,
 		tnode: tnode,
+		textCallback: textCallback,
 
 		addRequest: addRequest,
 		requests: new Array<RequestObj>(),
@@ -257,11 +259,15 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 		return value;
 	}
 	
+	function textCallback(node:DomTextNode, v:any) {
+		node ? node.nodeValue = (v ? '' + v : '') : null;
+	}
+
 	function linkText(dom:DomElement, name:string, value:ValueObj) {
 		var node = tnode(dom, name);
-		addCallback(value, (v) => {
-			node ? node.nodeValue = (v ? '' + v : '') : null;
-		});
+		if (node) {
+			addCallback(value, (v) => runtime.textCallback(node as DomTextNode, v));
+		}
 		return value;
 	}
 

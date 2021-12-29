@@ -355,7 +355,7 @@ export class HtmlText extends HtmlNode {
 
 	override output(sb:StringBuf, sort:boolean, plain:boolean): StringBuf {
 		sb.add(this.nodeValue
-			? (this.escape ? htmlEscape(this.nodeValue) : this.nodeValue)
+			? (this.escape ? htmlEscape2(this.nodeValue) : this.nodeValue)
 			: '');
 		return sb;
 	}
@@ -365,6 +365,13 @@ export class HtmlText extends HtmlNode {
 function htmlEscape(str:string): string {
 	return str
 		.replace(/&/g, '&amp;')
+		.replace(/'/g, "&apos;")
+		.replace(/"/g, '&quot;')
+		.replace(/>/g, '&gt;')
+		.replace(/</g, '&lt;');
+}
+function htmlEscape2(str:string): string {
+	return str
 		.replace(/'/g, "&apos;")
 		.replace(/"/g, '&quot;')
 		.replace(/>/g, '&gt;')
