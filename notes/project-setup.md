@@ -161,3 +161,13 @@ npm install @types/showdown
 ```
 see https://github.com/advisories/GHSA-9pcf-h8q9-63f6
 Since we're actually executing more controlled code (even in the playground) safe-eval security should be enough for us. But we don't want to have this vulnerability marked out for Aremel, so we'll take its source code and bring into Aremel w/ credits
+
+### Express rate limit
+
+* https://github.com/fcapolini/aremel/security/code-scanning/35?query=ref%3Arefs%2Fheads%2Fmaster
+* https://www.npmjs.com/package/express-rate-limit
+* https://github.com/nfriedly/express-rate-limit
+
+```bash
+npm install express-rate-limit
+```

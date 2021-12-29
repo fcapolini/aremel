@@ -1,3 +1,4 @@
+import rateLimit from 'express-rate-limit'
 import express from 'express';
 import fs from "fs";
 import { request, Server } from 'http';
@@ -21,9 +22,22 @@ export default class AremelServer {
 	constructor(port:number, rootpath:string, cb?:()=>void) {
 		const app = express();
 		const pageCache = new Map<string, CachedPage>();
-
 		app.use(express.json());
 		app.use(express.urlencoded({ extended: true }));
+
+		// rate limit {
+		// Enable if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
+		// see https://expressjs.com/en/guide/behind-proxies.html
+		// app.set('trust proxy', 1);
+		const playgroundCompilerLimiter = rateLimit({
+			windowMs: 10 * 60 * 1000,
+			max: 300,
+			standardHeaders: true,
+			legacyHeaders: false,
+		});
+		// Apply the rate limiting middleware to API calls only
+		app.use('/playground-compiler', playgroundCompilerLimiter);
+		// } rate limit
 
 		// https://www.digitalocean.com/community/tutorials/use-expressjs-to-get-url-and-post-parameters
 		app.post('/playground-compiler', (req, res) => {
@@ -41,6 +55,21 @@ export default class AremelServer {
 				res.send(`${err}`.split('<').join('&lt;').split('>').join('&gt;'));
 			});
 		});
+
+		// rate limit {
+		// Enable if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
+		// see https://expressjs.com/en/guide/behind-proxies.html
+		// app.set('trust proxy', 1);
+		const pageLimiter = rateLimit({
+			windowMs: 10 * 60 * 1000,
+			max: 1200,
+			standardHeaders: true,
+			legacyHeaders: false,
+		});
+		// Apply the rate limiting middleware to API calls only
+		app.use('*', pageLimiter);
+		app.use('*.html', pageLimiter);
+		// } rate limit
 
 		app.get("*", (req, res, next) => {
 			if (/^[^\.]+$/.test(req.url)) {
