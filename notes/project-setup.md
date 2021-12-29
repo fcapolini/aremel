@@ -157,4 +157,7 @@ npm install @types/showdown
 
 ### [safe-eval](https://www.npmjs.com/package/safe-eval) for more secure server-side logic evaluation
 ```bash
+# npm install safe-eval
 ```
+see https://github.com/advisories/GHSA-9pcf-h8q9-63f6
+Since we're actually executing more controlled code (even in the playground) safe-eval security is enough for us. But we don't want to have this vulnerability marked out for Aremel, so we'll take its source code and bring into Aremel w/ credits

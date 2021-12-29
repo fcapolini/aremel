@@ -10,6 +10,7 @@ import Preprocessor from '../compiler/preprocessor';
 import { DomDocument, ELEMENT_NODE, TEXT_NODE } from '../shared/dom';
 import { CSS_AUTOHIDE_CLASS, make, PageObj, RequestObj } from '../shared/runtime';
 import { normalizeText } from '../shared/util';
+import safeEval from './safe-eval';
 
 const CODE_PREFIX = 'window.__aremel = ';
 const CODE_PREFIX_LEN = CODE_PREFIX.length;
@@ -214,7 +215,7 @@ export default class AremelServer {
 			var app = new App(url, doc);
 			var page = app.output();
 			var rt = make(page, () => cb(doc));
-			var root = eval(`(${page.script})(rt)`);
+			var root = safeEval(`(${page.script})(rt)`, {rt:rt});
 			rt.start();
 			var code = new HtmlElement(doc, root.body.__dom, 'script', 0, 0, 0);
 			new HtmlText(doc, code, CODE_PREFIX + page.script, 0, 0, 0, false);
