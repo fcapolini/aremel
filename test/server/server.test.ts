@@ -101,7 +101,8 @@ describe("test server", () => {
 	it("should accept double quotes in square attributes (1)", (done) => {
 		doGet(`http://localhost:${port}/doubleQuotesInSquareAttributes1.html`, (s) => {
 			expect(cleanup(s)).toBe(normalizeText(
-				`<html lang="en"><body></body></html>`));
+				`<html lang="en"><head>
+				</head><body></body></html>`));
 			done();
 		});
 	});

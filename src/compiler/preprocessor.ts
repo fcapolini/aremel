@@ -64,7 +64,7 @@ export default class Preprocessor {
 		if (ret) {
 			if (embeddedInclude != null) {
 				domEnsureHeadAndBody(ret);
-				var head = ret ? domGetTop(ret, 'HEAD') : undefined;
+				var head = domGetTop(ret, 'HEAD');
 				if (head) {
 					var inc = this.parser.parseDoc(embeddedInclude, 'embedded');
 					this.include(inc.firstElementChild, head as HtmlElement, undefined);
@@ -490,8 +490,8 @@ function domEnsureHeadAndBody(doc:HtmlDocument) {
 	if (!(body = domGetTop(doc, 'BODY'))) {
 		body = new HtmlElement(doc, e, 'BODY', 0, 0, doc.pos.origin);
 	}
-	if (!(head = domGetTop(doc, 'HEAD')) == null) {
-		head = new HtmlElement(doc, undefined, 'BODY', 0, 0, doc.pos.origin);
+	if (!(head = domGetTop(doc, 'HEAD'))) {
+		head = new HtmlElement(doc, undefined, 'HEAD', 0, 0, doc.pos.origin);
 		e?.addChild(head, body);
 	}
 }
