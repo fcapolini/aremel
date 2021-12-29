@@ -1,1 +1,6 @@
-{"msg": "Hello!", "list":[1, 2, 3]}
+{"list":[
+    {"name":"Inbox", "count":3},
+    {"name":"Drafts", "count":3},
+    {"name":"Sent", "count":3},
+    {"name":"Junk", "count":3}
+]}
