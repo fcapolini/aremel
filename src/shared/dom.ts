@@ -45,6 +45,7 @@ export interface DomElement extends DomNode {
 		setProperty: (key:string, val:string)=>void;
 		removeProperty: (key:string)=>void;
 	};
+	getAttributeNames: ()=>Array<string>;
 	getAttribute: (key:string)=>string|undefined;
 	setAttribute: (key:string, val:string)=>void;
 	removeAttribute: (key:string)=>void;

@@ -354,9 +354,15 @@ export class HtmlText extends HtmlNode {
 	}
 
 	override output(sb:StringBuf, sort:boolean, plain:boolean): StringBuf {
-		sb.add(this.nodeValue
-			? (this.escape ? htmlEscape2(this.nodeValue) : this.nodeValue)
-			: '');
+		if (!this.nodeValue) {
+			// make sure collapsed text nodes are represented in output
+			// https://stackoverflow.com/a/2814268/12573599
+			sb.add('&zwnj;');
+		} else {
+			sb.add(this.nodeValue
+				? (this.escape ? htmlEscape2(this.nodeValue) : this.nodeValue)
+				: '');
+		}
 		return sb;
 	}
 }

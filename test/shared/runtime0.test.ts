@@ -112,7 +112,7 @@ describe("test runtime", () => {
 	it("testDotDependency3", () => {
 		var doc = HtmlParser.parse(`<html>
 			<head :attr-dataNote="color is [[body.color]]">
-				<style :aka="style" :attr-dataNote="color is [[body.color]]"></style>
+				<style :aka="style" :attr-dataNote="color is [[body.color]]"/>
 			</head>
 			<body :color="red">
 			</body>
@@ -139,7 +139,7 @@ describe("test runtime", () => {
 	it("testAnonymousScope", () => {
 		var doc = HtmlParser.parse(`<html>
 			<head>
-				<style :attr-dataNote="color is [[body.color]]"></style>
+				<style :attr-dataNote="color is [[body.color]]"/>
 			</head>
 			<body :color="red">
 			</body>
@@ -518,7 +518,7 @@ describe("test runtime", () => {
 		var rt = new Array<RuntimeObj>();
 		var root = run(doc, rt);
 		expect(doc.toString(true)).toBe(`<html data-aremel="0">
-			<body class="__aremel-autohide" data-aremel="1"></body>
+			<body class="__aremel-autohide" data-aremel="1">&zwnj;</body>
 		</html>`);
 		root.data = {"info":{"name":"Jane"}};
 		expect(doc.toString(true)).toBe(`<html data-aremel="0">

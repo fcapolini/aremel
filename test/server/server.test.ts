@@ -123,7 +123,7 @@ describe("test server", () => {
 									<label style="width:100%;">
 										<input class="form-check-input me-1" type="checkbox" value="" />
 									</label>
-									<span class="badge bg-primary rounded-pill __aremel-autohide"></span>
+									<span class="badge bg-primary rounded-pill __aremel-autohide">&zwnj;</span>
 								</a>
 							</ul>
 							<!--<script src="/.kit/bootstrap/res/bootstrap.bundle.min.js"></script>-->
@@ -137,6 +137,61 @@ describe("test server", () => {
 		});
 	});
 
+	it("should perform replication (1)", (done) => {
+		doGet(`http://localhost:${port}/replication1.html`, (s) => {
+			try {
+				s = cleanup(s);
+				// console.log(s);//tempdebug
+				expect(s).toBe(normalizeText(
+				`<!DOCTYPE html>
+				<html>
+				<head>
+				</head><body>
+				<ul>
+				<li>
+				1
+				</li><li>
+				2
+				</li><li>
+				3
+				</li>
+				</ul>
+				</body>
+				</html>`));
+				done();
+			} catch (error) {
+				done(error);
+			}
+		});
+	});
+
+	it("should perform replication (2)", (done) => {
+		doGet(`http://localhost:${port}/replication2.html`, (s) => {
+			try {
+				s = cleanup(s);
+				// console.log(s);//tempdebug
+				expect(s).toBe(normalizeText(
+				`<!DOCTYPE html>
+				<html>
+				<head>
+				</head><body>
+				<ul>
+				<li>
+				Item 1
+				</li><li>
+				Item 2
+				</li><li>
+				Item 3
+				</li>
+				</ul>
+				</body>
+				</html>`));
+				done();
+			} catch (error) {
+				done(error);
+			}
+		});
+	});
 });
 
 // https://nodejs.dev/learn/making-http-requests-with-nodejs

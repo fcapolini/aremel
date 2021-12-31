@@ -3,6 +3,7 @@ import { HtmlAttribute, HtmlComment, HtmlDocument, HtmlElement, HtmlText, VOID_E
 const ORIGIN_LITERAL = 'literal';
 const SKIP_CONTENT_TAGS = new Set(['SCRIPT', 'STYLE']);
 
+//TODO: it shouldn't create an empty text node as child of e.g. <span></span>
 export default class HtmlParser {
 	origins: Array<string>;
 	

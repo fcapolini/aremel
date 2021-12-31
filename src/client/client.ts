@@ -19,7 +19,7 @@ export default class AremelClient {
 		var textDecoder = doc.createElement('span');
 		this.runtime.textCallback = (n:DomTextNode, v:any) => {
 			// client-side, textCallback needs HTML entities decoding
-			var s = (v ? '' + v : '').replace(/>/g, '&gt;').replace(/</g, '&lt;');	
+			var s = (v ? '' + v : '&zwnj;').replace(/>/g, '&gt;').replace(/</g, '&lt;');	
 			textDecoder.innerHTML = s;
 			n.nodeValue = textDecoder.firstChild
 				? (textDecoder.firstChild as DomTextNode).nodeValue

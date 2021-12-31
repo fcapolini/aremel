@@ -1,6 +1,6 @@
-import { makeHyphenName } from "./util";
-import { DomDocument, DomElement, DomNode, DomTextNode, ELEMENT_NODE, TEXT_NODE } from "./dom";
 import { color2Components, mixColors } from "./color";
+import { DomDocument, DomElement, DomNode, DomTextNode, ELEMENT_NODE, TEXT_NODE } from "./dom";
+import { makeHyphenName } from "./util";
 
 export const DOM_DYNAMIC_ATTR_PREFIX = ':';
 export const DOM_CLASS_ATTR_PREFIX = ':class-';
@@ -260,7 +260,7 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 	}
 	
 	function textCallback(node:DomTextNode, v:any) {
-		node ? node.nodeValue = (v ? '' + v : '') : null;
+		node ? node.nodeValue = (v ? '' + v : '&zwnj;') : null;
 	}
 
 	function linkText(dom:DomElement, name:string, value:ValueObj) {
@@ -321,7 +321,7 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 					get(v);
 				}	
 			}
-		return ret;
+			return ret;
 		}
 
 		function remove(that:any) {

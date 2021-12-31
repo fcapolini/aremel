@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <:data-source :aka="sampleData"
+                  :url="/data.json"/>
+    <ul>
+      <li :data=[[sampleData.content.list]]>
+        [[data]]
+      </li>
+    </ul>
+  </body>
+</html>

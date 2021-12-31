@@ -187,13 +187,49 @@ describe("test runtime", () => {
 						})
 					]]"
 					:content=[[undefined]]
-				></script>
+				/>
 			</body>
 		</html>`);
 		var root = run(doc);
 		expect(doc.toString(true)).toBe(`<html data-aremel="0">
 			<body data-aremel="1">
 				<script data-aremel="2" type="text/json"></script>
+			</body>
+		</html>`);
+	});
+
+	it("should support replication (1)", () => {
+		var doc = HtmlParser.parse(`<html>
+			<body :data=[[{msg: "Hello", list:[1, 2, 3]}]]>
+			<ul>
+				<li :data=[[data.list]]>[[data]]</li>
+			</ul>
+			</body>
+		</html>`);
+		var root = run(doc);
+		expect(doc.toString(true)).toBe(`<html data-aremel=\"0\">
+			<body data-aremel=\"1\">
+			<ul>
+				<li data-aremel=\"2\" data-aremel-i=\"0\">1</li><li data-aremel=\"2\" data-aremel-i=\"1\">2</li><li data-aremel=\"2\">3</li>
+			</ul>
+			</body>
+		</html>`);
+	});
+
+	it("should support replication (2)", () => {
+		var doc = HtmlParser.parse(`<html>
+			<body :data=[[{msg: "Hello", list:[{"name": "Item 1"},{"name": "Item 2"},{"name": "Item 3"}]}]]>
+			<ul>
+				<li :data=[[data.list]]>[[data.name]]</li>
+			</ul>
+			</body>
+		</html>`);
+		var root = run(doc);
+		expect(doc.toString(true)).toBe(`<html data-aremel=\"0\">
+			<body data-aremel=\"1\">
+			<ul>
+				<li data-aremel=\"2\" data-aremel-i=\"0\">Item 1</li><li data-aremel=\"2\" data-aremel-i=\"1\">Item 2</li><li data-aremel=\"2\">Item 3</li>
+			</ul>
 			</body>
 		</html>`);
 	});
