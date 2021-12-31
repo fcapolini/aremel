@@ -76,11 +76,20 @@ export default class AremelServer {
 				var base = `http://${req.headers.host}`;
 				var url = new URL(req.url, base);
 				var pathname = path.join(rootpath, url.pathname);
-				if (fs.statSync(pathname)?.isDirectory()) {
-					req.url = path.join(req.url, 'index.html');
+				if (fs.existsSync(pathname) && fs.statSync(pathname)?.isDirectory()) {
+					if (url.pathname.endsWith('/')) {
+						req.url = path.join(req.url, 'index.html');
+						next('route');
+					} else {
+						res.redirect(req.url + '/index');
+					}
+				} else {
+					req.url = req.url + '.html';
+					next('route');
 				}
+			} else {
+				next('route');
 			}
-			next('route');
 		});
 		
 		app.get('*.html', (req, res) => {
