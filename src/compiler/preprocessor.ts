@@ -13,6 +13,8 @@ const SLOT_TAG = ':SLOT';
 const SLOT_ARG = 'name';
 const SLOT_ATTR = ':slot';
 
+const MAX_RECURSIONS = 100;
+
 interface Definition {
 	name1: string,
 	name2: string,
@@ -60,18 +62,18 @@ export default class Preprocessor {
 			this.macros = new Map();
 			this.parser.origins = [];
 		}
-		var ret = this.readFile(fname);
+		var ret = this._readFile(fname, 0);
 		if (ret) {
 			if (embeddedInclude != null) {
 				domEnsureHeadAndBody(ret);
 				var head = domGetTop(ret, 'HEAD');
 				if (head) {
 					var inc = this.parser.parseDoc(embeddedInclude, 'embedded');
-					this.include(inc.firstElementChild, head as HtmlElement, undefined);
-					this.joinAdjacentTexts(head);
+					this._include(inc.firstElementChild, head as HtmlElement, undefined);
+					this._joinAdjacentTexts(head);
 				}
 			}
-			this.processMacros(ret);
+			this._processMacros(ret);
 		}
 		return ret;
 	}
@@ -108,10 +110,14 @@ export default class Preprocessor {
 	// includes
 	// =========================================================================
 
-	readFile(fname:string,
+	_readFile(fname:string,
+			nesting:number,
 			currPath?:string,
 			once=false,
 			includedBy?:HtmlElement): HtmlDocument | undefined {
+		if (nesting >= MAX_RECURSIONS) {
+			throw new PreprocessorError(`Too many nested includes/imports "${fname}"`);
+		}
 		var ret:HtmlDocument;
 		fname.startsWith('/') ? currPath = undefined : null;
 		!currPath ? currPath = this.rootPath : null;
@@ -144,7 +150,7 @@ export default class Preprocessor {
 			try {
 				this.sources.push(text);
 				ret = this.parser.parseDoc(text, filePath);
-				this.processIncludes(ret, currPath);
+				this._processIncludes(ret, currPath, nesting);
 			} catch (ex:any) {
 				if (ex instanceof HtmlException) {
 					throw new PreprocessorError(ex.msg, ex.fname, this.rootPath,
@@ -168,15 +174,15 @@ export default class Preprocessor {
 		return ret;
 	}
 
-	processIncludes(doc:HtmlDocument, currPath:string) {
+	_processIncludes(doc:HtmlDocument, currPath:string, nesting:number) {
 		var tags = new Set([INCLUDE_TAG, IMPORT_TAG]);
 		// tags.add(INCLUDE_TAG);
 		// tags.add(IMPORT_TAG);
-		var includes = Preprocessor.lookupTags(doc, tags);
+		var includes = lookupTags(doc, tags);
 		for (var e of includes) {
 			var src = e.getAttribute(INCLUDE_ARG);
 			if (src && (src = src.trim()).length > 0) {
-				this.processInclude(e, src, e.tagName === IMPORT_TAG, currPath);
+				this._processInclude(e, src, e.tagName === IMPORT_TAG, currPath, nesting);
 			} else {
 				throw new HtmlException(
 					'Missing "src" attribute', this.parser.origins[e.pos.origin],
@@ -186,25 +192,25 @@ export default class Preprocessor {
 		}
 	}
 
-	processInclude(e:HtmlElement, src:string, once:boolean, currPath:string) {
+	_processInclude(e:HtmlElement, src:string, once:boolean, currPath:string, nesting:number) {
 		var parent = e.parentElement;
 		var before = undefined;
 		if (parent) {
 			var i = parent.children.indexOf(e) + 1;
 			before = (i < parent.children.length ? parent.children[i] : undefined);
 			e.remove();
-			var doc = this.readFile(src, currPath, once, e);
+			var doc = this._readFile(src, nesting + 1, currPath, once, e);
 			if (doc != null) {
 				var root = doc.getFirstElementChild();
 				if (root) {
-					this.include(root, parent, before);
+					this._include(root, parent, before);
 				}
 			}
-			this.joinAdjacentTexts(parent);
+			this._joinAdjacentTexts(parent);
 		}
 	}
 
-	include(root:HtmlElement, parent:HtmlElement, before?:HtmlNode) {
+	_include(root:HtmlElement, parent:HtmlElement, before?:HtmlNode) {
 		for (var n of root.children.slice()) {
 			parent.addChild(n.remove(), before);
 		}
@@ -223,25 +229,25 @@ export default class Preprocessor {
 	// macros
 	// =========================================================================
 
-	processMacros(doc:HtmlDocument) {
-		this.collectMacros(doc);
-		this.expandMacros(doc);
+	_processMacros(doc:HtmlDocument) {
+		this._collectMacros(doc, 0);
+		this._expandMacros(doc, 0);
 	}
 
 	// -------------------------------------------------------------------------
 	// collect
 	// -------------------------------------------------------------------------
 
-	collectMacros(p:HtmlElement) {
+	_collectMacros(p:HtmlElement, nesting:number) {
 		var tags = new Set<string>();
 		tags.add(DEFINE_TAG);
-		var macros = Preprocessor.lookupTags(p, tags);
+		var macros = lookupTags(p, tags);
 		for (var e of macros) {
-			this.collectMacro(e);
+			this._collectMacro(e, nesting);
 		}
 	}
 
-	collectMacro(e:HtmlElement) {
+	_collectMacro(e:HtmlElement, nesting:number) {
 		var tag = e.getAttribute(DEFINE_ARG);
 		if (!tag || (tag = tag.trim()).length === 0) {
 			throw new HtmlException(
@@ -267,10 +273,10 @@ export default class Preprocessor {
 		var parent = e.parentElement;
 		if (parent) {
 			e.remove();
-			this.joinAdjacentTexts(parent);
+			this._joinAdjacentTexts(parent);
 		}
 		e.setAttribute(DEFINE_ARG, undefined);
-		this.expandMacros(e);
+		this._expandMacros(e, nesting);
 		this.macros.set(names[0], {
 			name1: names[0],
 			name2: names[1],
@@ -279,11 +285,11 @@ export default class Preprocessor {
 		});
 	}
 
-	collectSlots(p:HtmlElement) {
+	_collectSlots(p:HtmlElement) {
 		var ret = new Map<string, HtmlElement>();
 		var tags = new Set<string>();
 		tags.add(SLOT_TAG);
-		var slots = Preprocessor.lookupTags(p, tags);
+		var slots = lookupTags(p, tags);
 		for (var e of slots) {
 			var s = e.getAttribute(SLOT_ARG);
 			var names = (s ? s.split(',') : undefined);
@@ -315,7 +321,7 @@ export default class Preprocessor {
 	// expand
 	// -------------------------------------------------------------------------
 
-	expandMacros(p:HtmlElement) {
+	_expandMacros(p:HtmlElement, nesting:number) {
 		var that = this;
 		function f(p:HtmlElement) {
 			var ret = false;
@@ -324,23 +330,35 @@ export default class Preprocessor {
 					var name = (n as HtmlElement).tagName;
 					var def = that.macros.get(name);
 					if (def != null) {
-						var e = that.expandMacro(n as HtmlElement, def);
+						var e = that._expandMacro(n as HtmlElement, def, nesting);
 						p.addChild(e, n);
 						n.remove();
 						ret = true;
 					} else {
-						that.expandMacros(n as HtmlElement);
+						that._expandMacros(n as HtmlElement, nesting);
 					}
 				}
 			}
 			return ret;
 		}
 		if (f(p)) {
-			this.joinAdjacentTexts(p);
+			this._joinAdjacentTexts(p);
 		}
 	}
 
-	expandMacro(use:HtmlElement, def:Definition): HtmlElement {
+	_expandMacro(use:HtmlElement, def:Definition, nesting:number): HtmlElement {
+		if (nesting >= MAX_RECURSIONS) {
+			var err = new HtmlException(
+				this.parser.origins[use.pos.origin],
+				'',
+				use.pos.i1,
+				this.sources[use.pos.origin]
+			);
+			throw new PreprocessorError(
+				`Too many nested macros "${use.tagName}"`, err.fname, this.rootPath,
+				err.pos, err.row, err.col
+			);
+		}
 		var ret = null;
 		if (def.ext != null) {
 			var e = new HtmlElement(def.e.ownerDocument, undefined, def.e.tagName,
@@ -351,7 +369,7 @@ export default class Preprocessor {
 				a2 ? a2.pos2 = a.pos1 : null;
 			}
 			e.innerHTML = def.e.innerHTML;
-			ret = this.expandMacro(e, def.ext);
+			ret = this._expandMacro(e, def.ext, nesting + 1);
 		} else {
 			ret = new HtmlElement(def.e.ownerDocument, undefined, def.name2,
 					use.pos.i1, use.pos.i2, use.pos.origin);
@@ -362,17 +380,17 @@ export default class Preprocessor {
 			}
 			ret.innerHTML = def.e.innerHTML;
 		}
-		this.populateMacro(use, ret);
+		this._populateMacro(use, ret, nesting);
 		return ret;
 	}
 
-	populateMacro(src:HtmlElement, dst:HtmlElement) {
+	_populateMacro(src:HtmlElement, dst:HtmlElement, nesting:number) {
 		for (var a of src.attributes.values()) {
 			var a2 = dst.setAttribute(a.name, a.value, a.quote,
 					a.pos1?.i1, a.pos1?.i2, a.pos1?.origin);
 			a2 ? a2.pos2 = a.pos1 : null;
 		}
-		var slots = this.collectSlots(dst);
+		var slots = this._collectSlots(dst);
 		for (var n of src.children.slice()) {
 			var slotName = 'default', s;
 			if (n.nodeType === ELEMENT_NODE
@@ -399,34 +417,17 @@ export default class Preprocessor {
 			var p = e.parentElement;
 			if (p) {
 				e.remove();
-				this.joinAdjacentTexts(p);
+				this._joinAdjacentTexts(p);
 			}
 		}
-		this.expandMacros(dst);
+		this._expandMacros(dst, nesting + 1);
 	}
 
 	// =========================================================================
 	// util
 	// =========================================================================
 
-	static lookupTags(p:HtmlElement, tags:Set<string>): Array<HtmlElement> {
-		var ret = new Array<HtmlElement>();
-		function f(p:HtmlElement) {
-			for (var n of p.children) {
-				if (n.nodeType === ELEMENT_NODE) {
-					if (tags.has((n as HtmlElement).tagName)) {
-						ret.push(n as HtmlElement);
-					} else {
-						f(n as HtmlElement);
-					}
-				}
-			}
-		}
-		f(p);
-		return ret;
-	}
-
-	joinAdjacentTexts(e:HtmlElement) {
+	_joinAdjacentTexts(e:HtmlElement) {
 		var prevTextNode:HtmlText|undefined = undefined;
 		for (var n of e.children.slice()) {
 			if (n.nodeType === TEXT_NODE) {
@@ -483,6 +484,23 @@ export function domGetTop(doc:HtmlDocument, name:string): HtmlElement | undefine
 		}
 	}
 	return undefined;
+}
+
+export function lookupTags(p:HtmlElement, tags:Set<string>): Array<HtmlElement> {
+	var ret = new Array<HtmlElement>();
+	function f(p:HtmlElement) {
+		for (var n of p.children) {
+			if (n.nodeType === ELEMENT_NODE) {
+				if (tags.has((n as HtmlElement).tagName)) {
+					ret.push(n as HtmlElement);
+				} else {
+					f(n as HtmlElement);
+				}
+			}
+		}
+	}
+	f(p);
+	return ret;
 }
 
 function domEnsureHeadAndBody(doc:HtmlDocument) {

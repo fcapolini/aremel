@@ -7,7 +7,7 @@ import AremelClient from '../client/client';
 import App from '../compiler/app';
 import { HtmlDocument, HtmlElement, HtmlText } from '../compiler/htmldom';
 import HtmlParser from '../compiler/htmlparser';
-import Preprocessor from '../compiler/preprocessor';
+import Preprocessor, { lookupTags } from '../compiler/preprocessor';
 import { DomDocument, ELEMENT_NODE, TEXT_NODE } from '../shared/dom';
 import { CSS_AUTOHIDE_CLASS, make, PageObj, RequestObj } from '../shared/runtime';
 import { normalizeText } from '../shared/util';
@@ -149,9 +149,9 @@ export default class AremelServer {
 						err(error);
 					} else {
 						var doc = HtmlParser.parse(data);
-						var body = Preprocessor.lookupTags(doc.firstElementChild, new Set(['BODY']))[0] as HtmlElement;
+						var body = lookupTags(doc.firstElementChild, new Set(['BODY']))[0] as HtmlElement;
 						// last two scripts are always: page code, runtime loading
-						var scripts = Preprocessor.lookupTags(body, new Set(['SCRIPT']));
+						var scripts = lookupTags(body, new Set(['SCRIPT']));
 						scripts.pop();
 						var window = {
 							addEventListener: (t:string, h:any) => {},

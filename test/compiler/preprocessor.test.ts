@@ -335,6 +335,26 @@ it("should let users extend macros (1)", () => {
 	expect(msg).toBe('');
 });
 
+it("should limit recursive inclusions", () => {
+	var msg = '';
+	try {
+		var doc = preprocessor.read('testRecursiveInclude.html');
+	} catch (ex:any) {
+		msg = `${ex}`;
+	}
+	expect(msg).toBe('Too many nested includes/imports "testRecursiveInclude.html"');
+});
+
+it("should limit recursive macros", () => {
+	var msg = '';
+	try {
+		var doc = preprocessor.read('testRecursiveMacro.html');
+	} catch (ex:any) {
+		msg = `${ex}`;
+	}
+	expect(msg).toBe('Too many nested macros "DUMMY-TAG"');
+});
+
 // =========================================================================
 // virtual files
 // =========================================================================
