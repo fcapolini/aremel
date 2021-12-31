@@ -244,7 +244,7 @@ describe("test htmlparser", () => {
 			expect(doc).toBeTruthy();
 			var counts = countNodes(doc);
 			expect(counts.elements).toBe(148);
-			expect(counts.texts).toBe(268);
+			expect(counts.texts).toBe(267);
 			expect(counts.comments).toBe(0);
 		} catch (ex:any) {
 			msg = `${ex}`;

@@ -3,7 +3,6 @@ import { HtmlAttribute, HtmlComment, HtmlDocument, HtmlElement, HtmlText, VOID_E
 const ORIGIN_LITERAL = 'literal';
 const SKIP_CONTENT_TAGS = new Set(['SCRIPT', 'STYLE']);
 
-//TODO: it shouldn't create an empty text node as child of e.g. <span></span>
 export default class HtmlParser {
 	origins: Array<string>;
 	
@@ -108,8 +107,10 @@ export default class HtmlParser {
 						this.origins[origin], i1, s
 					);
 				}
-				new HtmlText(e.ownerDocument, e, s.substring(i1, res.i0),
-							i1, res.i0, origin, false);
+				if (res.i0 > i1) {
+					new HtmlText(e.ownerDocument, e, s.substring(i1, res.i0),
+								i1, res.i0, origin, false);
+				}
 				i1 = res.i2;
 			} else {
 				i1 = this.parseNodes(e, s, i1, origin);
