@@ -151,9 +151,13 @@ npm install @types/showdown
 
 ### [Highlight.js](https://www.npmjs.com/package/highlight.js) for syntax highlighting in markdown
 
-```bash
+https://github.com/highlightjs/highlight.js
 
+```bash
+npm install highlight.js
 ```
+
+and https://highlightjs.org/download/ for the client lib
 
 ### [safe-eval](https://www.npmjs.com/package/safe-eval) for more secure server-side logic evaluation
 ```bash

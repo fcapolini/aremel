@@ -52,6 +52,16 @@ export function normalizeSpace(s?:string): string {
 	return undefined;
 }
 
+export function eregMap(s:string, e:string, f:(re:any)=>string): string {
+	var s = s.split('\n').join('\\n');
+	// @ts-ignore
+	s = new EReg(e, 'gm').map(s, (re) => {
+		return f({group:(i:number) => re.matched(i).split('\\n').join('\n')});
+	});
+	s = s.split('\\n').join('\n');
+	return s;
+}
+
 // -----------------------------------------------------------------------------
 // stolen from Haxe implementation
 // -----------------------------------------------------------------------------

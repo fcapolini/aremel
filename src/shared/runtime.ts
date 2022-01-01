@@ -38,7 +38,12 @@ export interface RuntimeEventSource {
 }
 
 export interface RuntimeWindow extends RuntimeEventSource {
+	aremelEregMap?: any,
 	showdown?: any,
+	hljs?: any,
+	// client-side stuff
+	__aremel?: any,
+	aremel?: any,
 }
 
 export interface RuntimeObj {

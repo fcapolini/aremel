@@ -1,12 +1,14 @@
 import { DomDocument, DomElement, DomTextNode, ELEMENT_NODE } from "../shared/dom";
-import { DOM_ID_ATTR, make, PageObj, RequestObj, RuntimeEventSource, RuntimeObj } from "../shared/runtime";
+import { DOM_ID_ATTR, make, PageObj, RequestObj, RuntimeEventSource, RuntimeObj, RuntimeWindow } from "../shared/runtime";
+import { eregMap } from "../shared/util";
 
 export default class AremelClient {
 	pageObj: PageObj;
 	runtime: RuntimeObj;
 	root: any;
 
-	constructor(doc:DomDocument, window:any, getAndCleanScript=false) {
+	constructor(doc:DomDocument, window:RuntimeWindow, getAndCleanScript=false) {
+		window.aremelEregMap = eregMap;
 		this.pageObj = {
 			doc: doc,
 			nodes: AremelClient.collectNodes(doc),
