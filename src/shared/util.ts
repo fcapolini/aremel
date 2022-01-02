@@ -53,12 +53,12 @@ export function normalizeSpace(s?:string): string {
 }
 
 export function eregMap(s:string, e:string, f:(re:any)=>string): string {
-	var s = s.split('\n').join('\\n');
+	var s = s.split('\n').join('__new__line__');
 	// @ts-ignore
 	s = new EReg(e, 'gm').map(s, (re) => {
-		return f({group:(i:number) => re.matched(i).split('\\n').join('\n')});
+		return f({group:(i:number) => re.matched(i).split('__new__line__').join('\n')});
 	});
-	s = s.split('\\n').join('\n');
+	s = s.split('__new__line__').join('\n');
 	return s;
 }
 
