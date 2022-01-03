@@ -1,3 +1,3 @@
 import AremelServer from "./server/server";
 
-new AremelServer(8080, process.cwd());
+new AremelServer(3000, process.cwd());
