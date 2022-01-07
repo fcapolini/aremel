@@ -12,7 +12,10 @@ describe("test server", () => {
 	jest.setTimeout(30000);
 
 	beforeAll((done) => {
-		server = new AremelServer(port, process.cwd() + '/test/server/pages', done);
+		server = new AremelServer({
+			port: port,
+			rootPath: process.cwd() + '/test/server/pages'
+		}, undefined, done);
 	});
 
 	afterAll((done) => server.close(done));

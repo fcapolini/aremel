@@ -1,5 +1,5 @@
-import rateLimit from 'express-rate-limit'
-import express from 'express';
+import express, { Application } from 'express';
+import rateLimit from 'express-rate-limit';
 import fs from "fs";
 import { request, Server } from 'http';
 import path from "path";
@@ -16,70 +16,59 @@ import safeEval from './safe-eval';
 const CODE_PREFIX = 'window.__aremel = ';
 const CODE_PREFIX_LEN = CODE_PREFIX.length;
 
+export interface TrafficLimit {
+	windowMs: number,
+	maxRequests: number,
+}
+
+export interface ServerProps {
+	port: number,
+	rootPath: string,
+	behindProxy?: boolean,
+	domainsWhitelist?: Set<string>,
+	pageLimit?: TrafficLimit,
+}
+
 export default class AremelServer {
 	server: Server;
 
-	constructor(port:number, rootpath:string, cb?:()=>void) {
+	constructor(props:ServerProps,
+				init?:(props:ServerProps, app:Application)=>void,
+				cb?:()=>void) {
 		const app = express();
 		const pageCache = new Map<string, CachedPage>();
 		app.use(express.json());
 		app.use(express.urlencoded({ extended: true }));
 
-/*
-		// rate limit {
-		// Enable if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
-		// see https://expressjs.com/en/guide/behind-proxies.html
-		// app.set('trust proxy', 1);
-		const playgroundCompilerLimiter = rateLimit({
-			windowMs: 10 * 60 * 1000,
-			max: 300,
-			standardHeaders: true,
-			legacyHeaders: false,
-		});
-		// Apply the rate limiting middleware to API calls only
-		app.use('/playground-compiler', playgroundCompilerLimiter);
-		// } rate limit
-*/
+		if (props.behindProxy) {
+			// see https://expressjs.com/en/guide/behind-proxies.html
+			app.set('trust proxy', 1);
+		}
 
-		// https://www.digitalocean.com/community/tutorials/use-expressjs-to-get-url-and-post-parameters
-		app.post('/playground-compiler', (req, res) => {
-			const prepro = new Preprocessor(rootpath, [{
-				fname: 'index.html',
-				content: req.body.source
-			}])
-			var base = `http://${req.headers.host}`;
-			var url = new URL('index.html', base);
-			AremelServer.getPage(prepro, url, (doc) => {
-				res.header("Content-Type",'text/html');
-				res.send(doc.toString());
-			}, (err) => {
-				res.header("Content-Type",'text/plain');
-				res.send(`${err}`.split('<').join('&lt;').split('>').join('&gt;'));
+		if (props.domainsWhitelist) {
+			app.get('*', function (req, res, next) {
+				if (props.domainsWhitelist?.has(req.hostname)) {
+					next('route');
+				} else {
+					req.socket.end();
+				} 
 			});
-		});
+		}
 
-/*
-		// rate limit {
-		// Enable if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
-		// see https://expressjs.com/en/guide/behind-proxies.html
-		// app.set('trust proxy', 1);
-		const pageLimiter = rateLimit({
-			windowMs: 10 * 60 * 1000,
-			max: 1200,
-			standardHeaders: true,
-			legacyHeaders: false,
-		});
-		// Apply the rate limiting middleware to API calls only
-		app.use('*', pageLimiter);
-		app.use('*.html', pageLimiter);
-		// } rate limit
-*/
+		if (init) {
+			init(props, app);
+		}
+
+		if (props.pageLimit) {
+			AremelServer.setLimiter(props.pageLimit, ['*', '*.html'], app);
+		}
 
 		app.get("*", (req, res, next) => {
+			console.log(`${this._getTimestamp()}: GET ${req.url}`);
 			if (/^[^\.]+$/.test(req.url)) {
 				var base = `http://${req.headers.host}`;
 				var url = new URL(req.url, base);
-				var pathname = path.join(rootpath, url.pathname);
+				var pathname = path.join(props.rootPath, url.pathname);
 				if (fs.existsSync(pathname) && fs.statSync(pathname)?.isDirectory()) {
 					if (url.pathname.endsWith('/')) {
 						req.url = path.join(req.url, 'index.html');
@@ -97,7 +86,7 @@ export default class AremelServer {
 		});
 		
 		app.get('*.html', (req, res) => {
-			var prepro = new Preprocessor(rootpath);
+			var prepro = new Preprocessor(props.rootPath);
 			var base = `http://${req.headers.host}`;
 			var url = new URL(req.url, base);
 			AremelServer._getPageWithCache(prepro, url, cb ? null : pageCache,
@@ -106,18 +95,20 @@ export default class AremelServer {
 				res.send(html);
 			}, (err) => {
 				res.header("Content-Type",'text/plain');
-				res.send(`${err}`.split('<').join('&lt;').split('>').join('&gt;'));
-				console.log(`[server]: error for ${url.toString()}: ${err}`);
+				res.send(`${err}`);
+				console.log(`${this._getTimestamp()}: `
+					+ `ERROR ${url.toString()}: ${err}`);
 			});
 		});
 
-		app.use(express.static(rootpath));
+		app.use(express.static(props.rootPath));
 
-		this.server = app.listen(port, () => {
+		this.server = app.listen(props.port, () => {
 			if (cb) {
 				cb();
 			} else {
-				console.log(`[server]: http://localhost:${port} [${rootpath}]`);
+				console.log(`${this._getTimestamp()}: START `
+					+ `http://localhost:${props.port} [${props.rootPath}]`);
 			}
 		});
 	}
@@ -127,6 +118,28 @@ export default class AremelServer {
 			this.server.close(cb);
 		} catch (ex:any) {
 			cb ? cb() : null;
+		}
+	}
+
+	_getTimestamp(): string {
+		const d = new Date();
+		return d.getFullYear() + '-'
+				+ ('' + (d.getMonth() + 1)).padStart(2, '0') + '-'
+				+ ('' + d.getDate()).padStart(2, '0') + ' '
+				+ ('' + d.getHours()).padStart(2, '0') + ':'
+				+ ('' + d.getMinutes()).padStart(2, '0') + ':'
+				+ ('' + d.getSeconds()).padStart(2, '0');
+	}
+
+	static setLimiter(props:TrafficLimit, paths:Array<string>, app:Application) {
+		const limiter = rateLimit({
+			windowMs: props.windowMs,
+			max: props.maxRequests,
+			standardHeaders: true,
+			legacyHeaders: false,
+		});
+		for (var path of paths) {
+			app.use(path, limiter);
 		}
 	}
 
@@ -287,6 +300,27 @@ export default class AremelServer {
 		f(doc.firstElementChild);
 	}
 
+	// static _logDocNodeCounts(label:string, doc:DomDocument) {
+	// 	const n = this._countDocNodes(doc);
+	// 	console.log(`${label}: ${n.ee}, ${n.tt}, ${n.cc}, ${n.oo}`);
+	// }
+
+	// static _countDocNodes(doc:DomDocument): {ee:number, tt:number, cc:number, oo:number} {
+	// 	const ret = {ee:0, tt:0, cc:0, oo:0};
+	// 	function f(e:DomElement) {
+	// 		e.childNodes.forEach((n, i) => {
+	// 			switch (n.nodeType) {
+	// 				case ELEMENT_NODE: ret.ee++; f(n as DomElement); break;
+	// 				case TEXT_NODE: ret.tt++; break;
+	// 				case COMMENT_NODE: ret.ee++; break;
+	// 				default: ret.oo++;
+	// 			}
+	// 		});
+	// 	}
+	// 	f(doc.firstElementChild as DomElement);
+	// 	return ret;
+	// }
+
 }
 
 class CachedPage {
@@ -308,7 +342,6 @@ class CachedPage {
 	//TODO: no two actual checks within the same second
 	isUpToDate(cb:(ok:boolean)=>void) {
 		var that = this;
-		var i = this.sources.length - 1;
 		function f(i:number) {
 			fs.stat(that.sources[i], (err, stats) => {
 				if (err) {
