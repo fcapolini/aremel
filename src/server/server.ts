@@ -24,6 +24,7 @@ export interface TrafficLimit {
 export interface ServerProps {
 	port: number,
 	rootPath: string,
+	useCache?: boolean,
 	behindProxy?: boolean,
 	domainsWhitelist?: Set<string>,
 	pageLimit?: TrafficLimit,
@@ -35,6 +36,7 @@ export default class AremelServer {
 	constructor(props:ServerProps,
 				init?:(props:ServerProps, app:Application)=>void,
 				cb?:()=>void) {
+		const that = this;
 		const app = express();
 		const pageCache = new Map<string, CachedPage>();
 		app.use(express.json());
@@ -89,7 +91,7 @@ export default class AremelServer {
 			var prepro = new Preprocessor(props.rootPath);
 			var base = `http://${req.headers.host}`;
 			var url = new URL(req.url, base);
-			AremelServer._getPageWithCache(prepro, url, cb ? null : pageCache,
+			that._getPageWithCache(prepro, url, props.useCache ? pageCache : null,
 			(html) => {
 				res.header("Content-Type",'text/html');
 				res.send(html);
@@ -144,7 +146,7 @@ export default class AremelServer {
 	}
 
 	//TODO: prevent concurrency problems
-	static _getPageWithCache(prepro:Preprocessor,
+	_getPageWithCache(prepro:Preprocessor,
 							url:URL,
 							cache:Map<string,CachedPage>|null,
 							cb:(doc:string)=>void,
@@ -200,8 +202,8 @@ export default class AremelServer {
 					}
 				});
 			} else {
-				that.getPage(prepro, url, (doc) => {
-					that._normalizeSpace(doc);
+				AremelServer.getPage(prepro, url, (doc) => {
+					AremelServer._normalizeSpace(doc);
 					var html = doc.toString();
 					cb(html);
 					if (cache) {
