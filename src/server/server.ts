@@ -25,6 +25,7 @@ export interface ServerProps {
 	port: number,
 	rootPath: string,
 	useCache?: boolean,
+	assumeHttps?: boolean,
 	behindProxy?: boolean,
 	domainsWhitelist?: Set<string>,
 	pageLimit?: TrafficLimit,
@@ -58,13 +59,17 @@ export default class AremelServer {
 		}
 
 		if (init) {
+			// initialize app-specific web services
 			init(props, app);
 		}
 
+		// limit page requests rate
 		if (props.pageLimit) {
 			AremelServer.setLimiter(props.pageLimit, ['*', '*.html'], app);
 		}
 
+		// externally redirect requests for directories to <dir>/index
+		// internally redirect requests to files w/o suffix to <file>.html
 		app.get("*", (req, res, next) => {
 			console.log(`${this._getTimestamp()}: GET ${req.url}`);
 			if (/^[^\.]+$/.test(req.url)) {
@@ -87,10 +92,13 @@ export default class AremelServer {
 			}
 		});
 		
+		// serve pages
 		app.get('*.html', (req, res) => {
 			var prepro = new Preprocessor(props.rootPath);
 			var base = `http://${req.headers.host}`;
 			var url = new URL(req.url, base);
+			url.protocol = (props.assumeHttps ? 'https' : req.protocol);
+			url.hostname = req.hostname;
 			that._getPageWithCache(prepro, url, props.useCache ? pageCache : null,
 			(html) => {
 				res.header("Content-Type",'text/html');
@@ -103,6 +111,7 @@ export default class AremelServer {
 			});
 		});
 
+		// serve static content
 		app.use(express.static(props.rootPath));
 
 		this.server = app.listen(props.port, () => {
@@ -171,6 +180,7 @@ export default class AremelServer {
 		}
 		
 		function f(useCache:boolean) {
+			const t1 = new Date().getTime();
 			if (useCache) {
 				fs.readFile(filePath, 'utf8', (error, data) => {
 					if (error) {
@@ -196,7 +206,15 @@ export default class AremelServer {
 							requester: requester,
 							script: code
 						};
-						var rt = make(page, () => cb(doc.toString()));
+						var rt = make(page, () => {
+							cb(doc.toString());
+							const t2 = new Date().getTime();
+							setTimeout(() => {
+								console.log(`${that._getTimestamp()}: `
+									+ `OLDPAGE ${url.toString()} `
+									+ `[${t2 - t1}]`);
+							}, 0);
+						});
 						eval(`(${page.script})(rt)`);
 						rt.start();
 					}
@@ -206,6 +224,12 @@ export default class AremelServer {
 					AremelServer._normalizeSpace(doc);
 					var html = doc.toString();
 					cb(html);
+					const t2 = new Date().getTime();
+					setTimeout(() => {
+						console.log(`${that._getTimestamp()}: `
+							+ `NEWPAGE ${url.toString()} `
+							+ `[${t2 - t1}]`);
+					}, 0);
 					if (cache) {
 						fs.writeFile(filePath, html, {encoding:'utf8'}, (error) => {
 							if (error) {
