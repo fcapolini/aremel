@@ -46,7 +46,8 @@ export default class App {
 				hljs: hljs,
 			}
 		}
-		var base = `http://${this.url.hostname}:${this.url.port}`;
+		var base = `http://${this.url.hostname}`;
+		this.url.port ? base += `:${this.url.port}` : null;
 		function requester(req:RequestObj, cb:(s:string)=>void) {
 			//TODO: req.post
 			//TODO: req.params
