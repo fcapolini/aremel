@@ -1,4 +1,5 @@
-import { request } from 'http';
+import { request as httpRequest } from 'http';
+import { request as httpsRequest } from 'https';
 import Showdown from 'showdown';
 import hljs from 'highlight.js';
 import { DomDocument } from "../shared/dom";
@@ -37,6 +38,8 @@ export default class App {
 	output(window?:RuntimeWindow): PageObj {
 		var sb = new StringBuf();
 		this.root.output(sb);
+
+		// window object
 		if (!window) {
 			window = {
 				addEventListener: (t:string, h:any) => {},
@@ -46,21 +49,37 @@ export default class App {
 				hljs: hljs,
 			}
 		}
-		var base = `http://${this.url.hostname}`;
+
+		// requester function
+		var base = `${this.url.protocol}//${this.url.hostname}`;
 		this.url.port ? base += `:${this.url.port}` : null;
 		function requester(req:RequestObj, cb:(s:string)=>void) {
 			//TODO: req.post
 			//TODO: req.params
-			var output = '';
-			var url = new URL(req.url, base);
-			const r = request(url, r => {
-				r.setEncoding('utf8');
-				r.on('data', (chunk) => output += chunk);
-				r.on('end', () => cb(output));
-			});
-			r.on('error', e => cb(`{"httpError":"${e}"}`));
-			r.end();
+			try {
+				var output = '';
+				var url = new URL(req.url, base);
+				console.log('requester(): "' + url + '"');
+				function onData(r:any) {
+					r.setEncoding('utf8');
+					r.on('data', (chunk:string) => output += chunk);
+					r.on('end', () => {
+						cb(output);
+					});
+				}
+				const r = url.protocol === 'https:'
+					? httpsRequest(url, onData)
+					: httpRequest(url, onData);
+				r.on('error', e => {
+					cb(`{"error":"${e}"}`);
+				});
+				r.end();
+			} catch (ex:any) {
+				cb(`{"error":"${ex}"}`);
+			}
 		}
+
+		// return PageObj
 		return {
 			doc: this.doc as DomDocument,
 			window: window,

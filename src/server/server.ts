@@ -26,7 +26,7 @@ export interface ServerProps {
 	rootPath: string,
 	useCache?: boolean,
 	assumeHttps?: boolean,
-	behindProxy?: boolean,
+	trustProxy?: boolean,
 	domainsWhitelist?: Set<string>,
 	pageLimit?: TrafficLimit,
 }
@@ -43,7 +43,7 @@ export default class AremelServer {
 		app.use(express.json());
 		app.use(express.urlencoded({ extended: true }));
 
-		if (props.behindProxy) {
+		if (props.trustProxy) {
 			// see https://expressjs.com/en/guide/behind-proxies.html
 			app.set('trust proxy', 1);
 		}
@@ -173,9 +173,13 @@ export default class AremelServer {
 			const r = request(url, r => {
 				r.setEncoding('utf8');
 				r.on('data', (chunk) => output += chunk);
-				r.on('end', () => cb(output));
+				r.on('end', () => {
+					cb(output);
+				});
 			});
-			r.on('error', e => cb(`{"httpError":"${e}"}`));
+			r.on('error', e => {
+				cb(`{"httpError":"${e}"}`);
+			});
 			r.end();
 		}
 		
