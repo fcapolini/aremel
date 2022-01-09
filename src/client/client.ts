@@ -10,11 +10,12 @@ export default class AremelClient {
 	constructor(doc:DomDocument, window:RuntimeWindow, getAndCleanScript=false) {
 		window.aremelEregMap = eregMap;
 		this.pageObj = {
+			url: new URL((window as Window).location.toString()),
 			doc: doc,
 			nodes: AremelClient.collectNodes(doc),
 			window: window,
 			isClient: true,
-			requester: AremelClient.httpRequest,
+			requester: AremelClient.requester,
 			script: getAndCleanScript ? this.getScript(doc) : undefined,
 		};
 		this.runtime = make(this.pageObj);
@@ -77,7 +78,7 @@ export default class AremelClient {
 		return code;
 	}
 
-	static httpRequest(req:RequestObj, cb:(s:string)=>void) {
+	static requester(base:URL, req:RequestObj, cb:(s:string)=>void) {
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState === 4) {

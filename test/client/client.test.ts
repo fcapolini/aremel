@@ -1,5 +1,5 @@
 import AremelClient from "../../src/client/client";
-import { CSS_AUTOHIDE_CLASS } from "../../src/shared/runtime";
+import { CSS_AUTOHIDE_CLASS, RuntimeWindow } from "../../src/shared/runtime";
 import { HtmlDocument } from "../../src/compiler/htmldom";
 import Preprocessor from "../../src/compiler/preprocessor";
 import { normalizeText } from "../../src/shared/util";
@@ -58,9 +58,10 @@ describe("test client", () => {
 function load(fname:string, cb:(client:AremelClient)=>void) {
 	var url = new URL('http://localhost/' + fname);
 	AramelServer.getPage(prepro, url, (doc) => {
-		var win:any = {
+		var win:RuntimeWindow = {
 			addEventListener: (t:string,h:any)=>{},
 			removeEventListener: (t:string,h:any)=>{},
+			location: {toString: () => 'http://localhost/'},
 		};
 		var client = new AremelClient(doc as unknown as DomDocument, win, true);
 		expect(client.runtime).toBeDefined();

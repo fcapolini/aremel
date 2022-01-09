@@ -44,50 +44,51 @@ export default class App {
 			window = {
 				addEventListener: (t:string, h:any) => {},
 				removeEventListener: (t:string, h:any) => {},
+				location: {toString:() => this.url.toString()},
 				aremelEregMap: eregMap,
 				showdown: Showdown,
 				hljs: hljs,
 			}
 		}
 
-		// requester function
-		var base = `${this.url.protocol}//${this.url.hostname}`;
-		this.url.port ? base += `:${this.url.port}` : null;
-		function requester(req:RequestObj, cb:(s:string)=>void) {
-			//TODO: req.post
-			//TODO: req.params
-			try {
-				var output = '';
-				var url = new URL(req.url, base);
-				console.log('requester(): "' + url + '"');
-				function onData(r:any) {
-					r.setEncoding('utf8');
-					r.on('data', (chunk:string) => output += chunk);
-					r.on('end', () => {
-						cb(output);
-					});
-				}
-				const r = url.protocol === 'https:'
-					? httpsRequest(url, onData)
-					: httpRequest(url, onData);
-				r.on('error', e => {
-					cb(`{"error":"${e}"}`);
-				});
-				r.end();
-			} catch (ex:any) {
-				cb(`{"error":"${ex}"}`);
-			}
-		}
-
 		// return PageObj
 		return {
+			url: this.url,
 			doc: this.doc as DomDocument,
 			window: window,
 			isClient: false,
 			nodes: this.nodes,
-			requester: requester,
+			requester: App.requester,
 			script: sb.toString()
 		};
+	}
+
+	static requester(pageUrl:URL, req:RequestObj, cb:(s:string)=>void) {
+		var base = `${pageUrl.protocol}//${pageUrl.hostname}`;
+		pageUrl.port ? base += `:${pageUrl.port}` : null;
+		//TODO: req.post
+		//TODO: req.params
+		try {
+			var output = '';
+			var url = new URL(req.url, base);
+			console.log('requester(): "' + url + '"');
+			function onData(r:any) {
+				r.setEncoding('utf8');
+				r.on('data', (chunk:string) => output += chunk);
+				r.on('end', () => {
+					cb(output);
+				});
+			}
+			const r = url.protocol === 'https:'
+				? httpsRequest(url, onData)
+				: httpRequest(url, onData);
+			r.on('error', e => {
+				cb(`{"error":"${e}"}`);
+			});
+			r.end();
+		} catch (ex:any) {
+			cb(`{"error":"${ex}"}`);
+		}
 	}
 
 	//TODO: forbid reserved props (__*)

@@ -156,32 +156,13 @@ export default class AremelServer {
 
 	//TODO: prevent concurrency problems
 	_getPageWithCache(prepro:Preprocessor,
-							url:URL,
-							cache:Map<string,CachedPage>|null,
-							cb:(doc:string)=>void,
-							err:(err:any)=>void) {
+					url:URL,
+					cache:Map<string,CachedPage>|null,
+					cb:(doc:string)=>void,
+					err:(err:any)=>void) {
 		var that = this;
 		var filePath = path.normalize(path.join(prepro.rootPath, url.pathname) + '_');
 		var cachedPage;
-		
-		//TODO unify with app.ts requester function
-		var base = `http://${url.hostname}:${url.port}`;
-		function requester(req:RequestObj, cb:(s:string)=>void) {
-			//TODO: req.post
-			var output = '';
-			var url = new URL(req.url, base);
-			const r = request(url, r => {
-				r.setEncoding('utf8');
-				r.on('data', (chunk) => output += chunk);
-				r.on('end', () => {
-					cb(output);
-				});
-			});
-			r.on('error', e => {
-				cb(`{"httpError":"${e}"}`);
-			});
-			r.end();
-		}
 		
 		function f(useCache:boolean) {
 			const t1 = new Date().getTime();
@@ -198,16 +179,18 @@ export default class AremelServer {
 						var window = {
 							addEventListener: (t:string, h:any) => {},
 							removeEventListener: (t:string, h:any) => {},
+							location: {toString: () => url.toString()},
 						};
 						var script = scripts.pop() as HtmlElement;
 						var code = (script.firstChild as HtmlText).nodeValue;
 						code = code.substring(CODE_PREFIX_LEN);
 						var page:PageObj = {
+							url: url,
 							doc: doc as DomDocument,
 							nodes: AremelClient.collectNodes(doc as DomDocument),
 							window: window,
 							isClient: false,
-							requester: requester,
+							requester: App.requester,
 							script: code
 						};
 						var rt = make(page, () => {

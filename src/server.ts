@@ -5,5 +5,5 @@ new AremelServer({
     rootPath: process.cwd(),
     trustProxy: true,
     assumeHttps: true,
-    useCache: false,
+    useCache: true,
 });

@@ -38,12 +38,17 @@ export interface RuntimeEventSource {
 }
 
 export interface RuntimeWindow extends RuntimeEventSource {
+	location: RuntimeLocation,
 	aremelEregMap?: any,
 	showdown?: any,
 	hljs?: any,
 	// client-side stuff
 	__aremel?: any,
 	aremel?: any,
+}
+
+export interface RuntimeLocation {
+	toString: ()=>string,
 }
 
 export interface RuntimeObj {
@@ -73,11 +78,12 @@ export interface RuntimeObj {
 }
 
 export interface PageObj {
+	url: URL,
 	doc: DomDocument,
 	window: RuntimeWindow,
 	isClient: boolean,
 	nodes: Array<any>,
-	requester: (req:RequestObj, cb:(s:string)=>void)=>void,
+	requester: (base:URL, req:RequestObj, cb:(s:string)=>void)=>void,
 	script?: string,
 }
 
@@ -444,7 +450,7 @@ export function make(page:PageObj, cb?:()=>void): RuntimeObj {
 
 		if (r.url) {
 			runtime.requests.push(r);
-			runtime.page.requester(r, res);
+			runtime.page.requester(runtime.page.url, r, res);
 		}
 	}
 
