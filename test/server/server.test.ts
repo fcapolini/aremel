@@ -14,7 +14,8 @@ describe("test server", () => {
 	beforeAll((done) => {
 		server = new AremelServer({
 			port: port,
-			rootPath: process.cwd() + '/test/server/pages'
+			rootPath: process.cwd() + '/test/server/pages',
+			mute: true,
 		}, undefined, done);
 	});
 

@@ -29,6 +29,8 @@ export interface ServerProps {
 	trustProxy?: boolean,
 	domainsWhitelist?: Set<string>,
 	pageLimit?: TrafficLimit,
+	logger?: (type:string, msg:string)=>void,
+	mute?: boolean,
 }
 
 export default class AremelServer {
@@ -71,7 +73,8 @@ export default class AremelServer {
 		// externally redirect requests for directories to <dir>/index
 		// internally redirect requests to files w/o suffix to <file>.html
 		app.get("*", (req, res, next) => {
-			console.log(`${this._getTimestamp()}: GET ${req.url}`);
+			// console.log(`${this._getTimestamp()}: GET ${req.url}`);
+			AremelServer.log(props, 'info', `${this._getTimestamp()}: GET ${req.url}`);
 			if (/^[^\.]+$/.test(req.url)) {
 				var base = `http://${req.headers.host}`;
 				var url = new URL(req.url, base);
@@ -99,14 +102,15 @@ export default class AremelServer {
 			var url = new URL(req.url, base);
 			url.protocol = (props.assumeHttps ? 'https' : req.protocol);
 			url.hostname = req.hostname;
-			that._getPageWithCache(prepro, url, props.useCache ? pageCache : null,
+			that._getPageWithCache(props, prepro, url, props.useCache ? pageCache : null,
 			(html) => {
 				res.header("Content-Type",'text/html');
 				res.send(html);
 			}, (err) => {
 				res.header("Content-Type",'text/plain');
 				res.send(`${err}`);
-				console.log(`${this._getTimestamp()}: `
+				// console.log(`${this._getTimestamp()}: ERROR ${url.toString()}: ${err}`);
+				AremelServer.log(props, 'error', `${this._getTimestamp()}: `
 					+ `ERROR ${url.toString()}: ${err}`);
 			});
 		});
@@ -118,7 +122,8 @@ export default class AremelServer {
 			if (cb) {
 				cb();
 			} else {
-				console.log(`${this._getTimestamp()}: START `
+				// console.log(`${this._getTimestamp()}: START http://localhost:${props.port} [${props.rootPath}]`);
+				AremelServer.log(props, 'info',`${this._getTimestamp()}: START `
 					+ `http://localhost:${props.port} [${props.rootPath}]`);
 			}
 		});
@@ -129,6 +134,21 @@ export default class AremelServer {
 			this.server.close(cb);
 		} catch (ex:any) {
 			cb ? cb() : null;
+		}
+	}
+
+	static log(props:ServerProps, type:string, msg:string) {
+		if (!props.mute) {
+			if (props.logger) {
+				props.logger(type, msg);
+			} else {
+				switch (type) {
+					case 'error': console.error(msg); break;
+					case 'info': console.info(msg); break;
+					case 'warn': console.warn(msg); break;
+					default: console.log(msg);
+				}
+			}
 		}
 	}
 
@@ -155,7 +175,8 @@ export default class AremelServer {
 	}
 
 	//TODO: prevent concurrency problems
-	_getPageWithCache(prepro:Preprocessor,
+	_getPageWithCache(props:ServerProps,
+					prepro:Preprocessor,
 					url:URL,
 					cache:Map<string,CachedPage>|null,
 					cb:(doc:string)=>void,
@@ -197,7 +218,10 @@ export default class AremelServer {
 							cb(doc.toString());
 							const t2 = new Date().getTime();
 							setTimeout(() => {
-								console.log(`${that._getTimestamp()}: `
+								// console.log(`${that._getTimestamp()}: `
+								// 	+ `OLDPAGE ${url.toString()} `
+								// 	+ `[${t2 - t1}]`);
+								AremelServer.log(props, 'info', `${that._getTimestamp()}: `
 									+ `OLDPAGE ${url.toString()} `
 									+ `[${t2 - t1}]`);
 							}, 0);
@@ -213,14 +237,18 @@ export default class AremelServer {
 					cb(html);
 					const t2 = new Date().getTime();
 					setTimeout(() => {
-						console.log(`${that._getTimestamp()}: `
+						// console.log(`${that._getTimestamp()}: `
+						// 	+ `NEWPAGE ${url.toString()} `
+						// 	+ `[${t2 - t1}]`);
+						AremelServer.log(props, 'info', `${that._getTimestamp()}: `
 							+ `NEWPAGE ${url.toString()} `
 							+ `[${t2 - t1}]`);
 					}, 0);
 					if (cache) {
 						fs.writeFile(filePath, html, {encoding:'utf8'}, (error) => {
 							if (error) {
-								console.log(error);//TODO
+								// console.log(error);//TODO
+								AremelServer.log(props, 'error', `${error}`);//TODO
 							} else {
 								var tstamp = new Date().valueOf();
 								cachedPage = new CachedPage(tstamp, prepro);

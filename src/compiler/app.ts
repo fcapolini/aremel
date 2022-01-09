@@ -71,7 +71,6 @@ export default class App {
 		try {
 			var output = '';
 			var url = new URL(req.url, base);
-			console.log('requester(): "' + url + '"');
 			function onData(r:any) {
 				r.setEncoding('utf8');
 				r.on('data', (chunk:string) => output += chunk);
