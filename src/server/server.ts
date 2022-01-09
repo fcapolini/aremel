@@ -287,8 +287,9 @@ export default class AremelServer {
 					:params=[[null]]
 
 					type=[[type]]
+					:lastUrl=""
 					:on-url=[[
-						if (autoGet) {
+						if (autoGet && url !== lastUrl) {
 							__rt.addRequest({
 								url:url, type:type,
 								post:post, params:undefined,
@@ -305,7 +306,23 @@ export default class AremelServer {
 							scriptElement:__this.__dom
 						});
 					}]]
-					:content=[[undefined]]
+					:content=[[
+						var ret = undefined;
+						if (__this.__dom.firstChild
+								&& __this.__dom.firstChild.nodeType === 3/*TEXT_NODE*/) {
+							try {
+								var s = __this.__dom.firstChild.nodeValue;
+								if (type === 'text/json') {
+									ret = JSON.parse(s);
+								} else {
+									ret = s;
+								}
+							} catch (ex) {
+								//TODO
+							}
+						}
+						ret;
+					]]
 				/>
 			</lib>`) as HtmlDocument;
 			var app = new App(url, doc);
