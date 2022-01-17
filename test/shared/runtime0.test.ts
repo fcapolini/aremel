@@ -713,11 +713,11 @@ describe("test runtime", () => {
 		expect(doc.toString(true)).toBe(`<html data-aremel="0">
 			<body data-aremel="1">
 				<div data-aremel="2" data-aremel-i="0">
-					<p>a</p>
-					<span data-aremel="3" data-aremel-i="0">data: 1</span><span data-aremel="3">data: 2</span>
+					<p data-aremel="3">a</p>
+					<span data-aremel="4" data-aremel-i="0">data: 1</span><span data-aremel="4">data: 2</span>
 				</div><div data-aremel="2">
-					<p>b</p>
-					<span data-aremel="3" data-aremel-i="0">data: 3</span><span data-aremel="3" data-aremel-i="1">data: 4</span><span data-aremel="3">data: 5</span>
+					<p data-aremel="3">b</p>
+					<span data-aremel="4" data-aremel-i="0">data: 3</span><span data-aremel="4" data-aremel-i="1">data: 4</span><span data-aremel="4">data: 5</span>
 				</div>
 			</body>
 		</html>`);
@@ -731,11 +731,11 @@ describe("test runtime", () => {
 		expect(doc.toString(true)).toBe(`<html data-aremel="0">
 			<body data-aremel="1">
 				<div data-aremel="2" data-aremel-i="0">
-					<p>x</p>
-					<span data-aremel="3" data-aremel-i="0">data: 1</span><span data-aremel="3">data: 2</span>
+					<p data-aremel="3">x</p>
+					<span data-aremel="4" data-aremel-i="0">data: 1</span><span data-aremel="4">data: 2</span>
 				</div><div data-aremel="2">
-					<p>y</p>
-					<span data-aremel="3">data: 3</span>
+					<p data-aremel="3">y</p>
+					<span data-aremel="4">data: 3</span>
 				</div>
 			</body>
 		</html>`);
@@ -744,11 +744,11 @@ describe("test runtime", () => {
 		expect(doc.toString(true)).toBe(`<html data-aremel="0">
 			<body data-aremel="1">
 				<div data-aremel="2" data-aremel-i="0">
-					<p>x</p>
-					<span data-aremel="3" data-aremel-i="0">number: 1</span><span data-aremel="3">number: 2</span>
+					<p data-aremel="3">x</p>
+					<span data-aremel="4" data-aremel-i="0">number: 1</span><span data-aremel="4">number: 2</span>
 				</div><div data-aremel="2">
-					<p>y</p>
-					<span data-aremel="3">number: 3</span>
+					<p data-aremel="3">y</p>
+					<span data-aremel="4">number: 3</span>
 				</div>
 			</body>
 		</html>`);
