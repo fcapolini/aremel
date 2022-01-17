@@ -3,11 +3,12 @@ import { request as httpsRequest } from 'https';
 import Showdown from 'showdown';
 import hljs from 'highlight.js';
 import { DomDocument } from "../shared/dom";
-import { DOM_AKA_ATTR, DOM_ATTR_ATTR_PREFIX, DOM_CLASS_ATTR_PREFIX, DOM_DYNAMIC_ATTR_PREFIX, DOM_EVENT_ATTR_PREFIX, DOM_EXP_MARKER1, DOM_EXP_MARKER2, DOM_HANDLER_ATTR_PREFIX, DOM_HIDDEN_ATTR, DOM_STYLE_ATTR_PREFIX, JS_AKA_VAR, JS_ATTR_VALUE_PREFIX, JS_AUTOHIDE_CLASS, JS_CLASS_VALUE_PREFIX, JS_DATALENGTH_VAR, JS_DATAOFFSET_VAR, JS_DATA_VAR, JS_EVENT_VALUE_PREFIX, JS_HANDLER_VALUE_PREFIX, JS_STYLE_VALUE_PREFIX, PageObj, RequestObj, RuntimeWindow } from "../shared/runtime";
+import { DOM_AKA_ATTR, DOM_AKA_ATTR2, DOM_ATTR_ATTR_PREFIX, DOM_CLASS_ATTR_PREFIX, DOM_DATA_ATTR, DOM_DYNAMIC_ATTR_PREFIX, DOM_EVENT_ATTR_PREFIX, DOM_EXP_MARKER1, DOM_EXP_MARKER2, DOM_HANDLER_ATTR_PREFIX, DOM_HIDDEN_ATTR, DOM_STYLE_ATTR_PREFIX, JS_AKA_VAR, JS_ATTR_VALUE_PREFIX, JS_AUTOHIDE_CLASS, JS_CLASS_VALUE_PREFIX, JS_DATALENGTH_VAR, JS_DATAOFFSET_VAR, JS_DATA_VAR, JS_EVENT_VALUE_PREFIX, JS_HANDLER_VALUE_PREFIX, JS_STYLE_VALUE_PREFIX, PageObj, RequestObj, RuntimeWindow } from "../shared/runtime";
 import { eregMap, makeCamelName, StringBuf } from "../shared/util";
 import { AppScope } from "./appscope";
 import { ELEMENT_NODE, HtmlDocument, HtmlElement, HtmlNode, HtmlPos, HtmlText, TEXT_NODE } from "./htmldom";
 import Preprocessor from "./preprocessor";
+import { isDynamic } from './expr';
 
 export const nonValues = new Set([JS_AKA_VAR]);
 
@@ -21,6 +22,7 @@ export default class App {
 	scopes: Array<AppScope>;
 	errors: Array<any>;
 	root: AppScope;
+	proformaId = 0;
 
 	constructor(url:URL, doc:HtmlDocument, prepro?:Preprocessor) {
 		this.url = url;
@@ -29,6 +31,7 @@ export default class App {
 		this.scopes = [];
 		this.errors = [];
 		var root = doc.getFirstElementChild() as HtmlElement;
+		this._addProformaScopes(root);
 		var props = this._loadProps(root);
 		this.root = this._loadScope(root, props, 0, prepro);
 		this.root.compile();
@@ -88,6 +91,57 @@ export default class App {
 		} catch (ex:any) {
 			cb(`{"error":"${ex}"}`);
 		}
+	}
+
+	/**
+	 * Elements with `:data` make all siblings have their own scope.
+	 * 
+	 * Sibling elements are given a pro forma `:aka` attribute if they
+	 * don't have one. Sibling texts containing a dynamic expression
+	 * `[[...]]`` will be wrapped in a `<data>` tag again with a
+	 * pro forma `:aka` attribute.
+	 * 
+	 * Dynamic texts are "based" in the nearest outer scope and are
+	 * identified with a sequence of DOM indexes starting from the
+	 * scope's DOM element.
+	 * 
+	 * Cloning can interfere with this form of addressing and this
+	 * method is used to ensure it can still be used safely.
+	 */
+	_addProformaScopes(e:HtmlElement) {
+		var hasClonableElements = false;
+		e.childNodes.forEach((n, i) => {
+			if (n.nodeType === ELEMENT_NODE) {
+				if ((n as HtmlElement).getAttribute(DOM_DATA_ATTR)) {
+					hasClonableElements = true;
+				}
+			}
+		});
+		if (hasClonableElements) {
+			e.childNodes.forEach((n, i) => {
+				if (n.nodeType === ELEMENT_NODE) {
+					if (!(n as HtmlElement).getAttribute(DOM_AKA_ATTR2)) {
+						(n as HtmlElement).setAttribute(DOM_AKA_ATTR2, `pfid_${++this.proformaId}`);
+					}
+				} else if (n.nodeType === TEXT_NODE) {
+					if (isDynamic((n as HtmlText).nodeValue)) {
+						const hn = n as HtmlText;
+						const wrapper = new HtmlElement(
+							n.ownerDocument as HtmlDocument,
+							undefined, 'data',
+							hn.pos.i1, hn.pos.i2, hn.pos.origin);
+						hn.parentElement?.addChild(wrapper, hn);
+						hn.remove();
+						wrapper.addChild(hn);
+					}
+				}
+			});
+		}
+		e.childNodes.forEach((n, i) => {
+			if (n.nodeType === ELEMENT_NODE) {
+				this._addProformaScopes(n as HtmlElement);
+			}
+		});
 	}
 
 	//TODO: forbid reserved props (__*)
