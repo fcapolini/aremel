@@ -1,7 +1,7 @@
 import express, { Application } from 'express';
 import rateLimit from 'express-rate-limit';
 import fs from "fs";
-import { request, Server } from 'http';
+import { Server } from 'http';
 import path from "path";
 import AremelClient from '../client/client';
 import App from '../compiler/app';
@@ -9,7 +9,7 @@ import { HtmlDocument, HtmlElement, HtmlText } from '../compiler/htmldom';
 import HtmlParser from '../compiler/htmlparser';
 import Preprocessor, { lookupTags } from '../compiler/preprocessor';
 import { DomDocument, ELEMENT_NODE, TEXT_NODE } from '../shared/dom';
-import { CSS_AUTOHIDE_CLASS, make, PageObj, RequestObj } from '../shared/runtime';
+import { CSS_AUTOHIDE_CLASS, make, PageObj } from '../shared/runtime';
 import { normalizeText } from '../shared/util';
 import safeEval from './safe-eval';
 
@@ -42,6 +42,7 @@ export default class AremelServer {
 		const that = this;
 		const app = express();
 		const pageCache = new Map<string, CachedPage>();
+
 		app.use(express.json());
 		app.use(express.urlencoded({ extended: true }));
 
@@ -122,7 +123,6 @@ export default class AremelServer {
 			if (cb) {
 				cb();
 			} else {
-				// console.log(`${this._getTimestamp()}: START http://localhost:${props.port} [${props.rootPath}]`);
 				AremelServer.log(props, 'info',`${this._getTimestamp()}: START `
 					+ `http://localhost:${props.port} [${props.rootPath}]`);
 			}
@@ -357,27 +357,6 @@ export default class AremelServer {
 		}
 		f(doc.firstElementChild);
 	}
-
-	// static _logDocNodeCounts(label:string, doc:DomDocument) {
-	// 	const n = this._countDocNodes(doc);
-	// 	console.log(`${label}: ${n.ee}, ${n.tt}, ${n.cc}, ${n.oo}`);
-	// }
-
-	// static _countDocNodes(doc:DomDocument): {ee:number, tt:number, cc:number, oo:number} {
-	// 	const ret = {ee:0, tt:0, cc:0, oo:0};
-	// 	function f(e:DomElement) {
-	// 		e.childNodes.forEach((n, i) => {
-	// 			switch (n.nodeType) {
-	// 				case ELEMENT_NODE: ret.ee++; f(n as DomElement); break;
-	// 				case TEXT_NODE: ret.tt++; break;
-	// 				case COMMENT_NODE: ret.ee++; break;
-	// 				default: ret.oo++;
-	// 			}
-	// 		});
-	// 	}
-	// 	f(doc.firstElementChild as DomElement);
-	// 	return ret;
-	// }
 
 }
 
