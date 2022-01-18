@@ -11,6 +11,7 @@ import Preprocessor, { lookupTags } from '../compiler/preprocessor';
 import { DomDocument, ELEMENT_NODE, TEXT_NODE } from '../shared/dom';
 import { CSS_AUTOHIDE_CLASS, make, PageObj } from '../shared/runtime';
 import { normalizeText } from '../shared/util';
+import exitHook from './exit-hook';
 import safeEval from './safe-eval';
 
 const CODE_PREFIX = 'window.__aremel = ';
@@ -127,6 +128,10 @@ export default class AremelServer {
 					+ `http://localhost:${props.port} [${props.rootPath}]`);
 			}
 		});
+
+		exitHook(() => {
+			console.log('WILL EXIT');
+		});
 	}
 
 	close(cb?:()=>void) {
@@ -226,7 +231,7 @@ export default class AremelServer {
 									+ `[${t2 - t1}]`);
 							}, 0);
 						});
-						eval(`(${page.script})(rt)`);
+						safeEval(`(${page.script})(rt)`, {rt:rt});
 						rt.start();
 					}
 				});
