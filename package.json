@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
+    "browserify": "browserify docroot/.aremel/bin/client.js -o docroot/.aremel/bin/aremel.js",
     "test": "jest"
   },
   "keywords": [],

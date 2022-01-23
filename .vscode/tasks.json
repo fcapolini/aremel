@@ -6,7 +6,13 @@
             "group": "build",
             "problemMatcher": [],
             "label": "npm: build",
-            "detail": "tsc"
-        }
+        },
+		{
+            "type": "npm",
+            "script": "browserify",
+            "group": "build",
+            "problemMatcher": [],
+            "label": "npm: browserify",
+		},
     ]
 }
