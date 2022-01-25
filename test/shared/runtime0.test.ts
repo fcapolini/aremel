@@ -215,8 +215,8 @@ describe("test runtime", () => {
 		var doc = HtmlParser.parse(`<html :hidden=[[false]]></html>`);
 		var root = run(doc);
 		expect(doc.toString(true)).toBe(`<html data-aremel="0"></html>`);
-		root.class___aremelAutohide = true;
-		expect(doc.toString(true)).toBe(`<html class="__aremel-autohide" data-aremel="0"></html>`);
+		root.class_aremelAutohide = true;
+		expect(doc.toString(true)).toBe(`<html class="aremel-autohide" data-aremel="0"></html>`);
 	});
 
 	// =========================================================================
@@ -518,7 +518,7 @@ describe("test runtime", () => {
 		var rt = new Array<RuntimeObj>();
 		var root = run(doc, rt);
 		expect(doc.toString(true)).toBe(`<html data-aremel="0">
-			<body class="__aremel-autohide" data-aremel="1">&zwnj;</body>
+			<body class="aremel-autohide" data-aremel="1">&zwnj;</body>
 		</html>`);
 		root.data = {"info":{"name":"Jane"}};
 		expect(doc.toString(true)).toBe(`<html data-aremel="0">

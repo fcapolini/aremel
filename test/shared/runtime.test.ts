@@ -113,7 +113,7 @@ describe("test runtime", () => {
 		</html>`);
 		root.body.data = null;
 		expect(doc.toString(true)).toBe(`<html data-aremel="0">
-			<body class="__aremel-autohide" data-aremel="1">
+			<body class="aremel-autohide" data-aremel="1">
 				<span>Hello .</span>
 			</body>
 		</html>`);

@@ -127,7 +127,7 @@ describe("test server", () => {
 									<label style="width:100%;">
 										<input class="form-check-input me-1" type="checkbox" value="" />
 									</label>
-									<span class="badge bg-primary rounded-pill __aremel-autohide">&zwnj;</span>
+									<span class="badge bg-primary rounded-pill aremel-autohide">&zwnj;</span>
 								</a>
 							</ul>
 							<!--<script src="/.kit/bootstrap/res/bootstrap.bundle.min.js"></script>-->
