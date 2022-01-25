@@ -5,6 +5,8 @@
 
 Aremel is a groundbreaking [Node.js](https://nodejs.dev)/[Express](http://expressjs.com) web framework that adds *reactivity*, *modularity* and *isomorphism* to plain HTML.
 
+Live examples are available at https://aremel.org/index.html.
+
 👉  Aremel is currently in active development and will be published via npm.
 
 ## Concepts
@@ -135,8 +137,8 @@ ReactDOM.render(
 * Aremel components can be based on any tag (`div` is the default) and can include `<:slot>`s where content can be added. Components can extend other components much like classes can extend other classes in object oriented languages.
 * In addition to values, `:` attributes can define functions which act as methods in the context of their tag.
 * Tags in Aremel work as visibility scopes for page logic: nested tags can access outer values and functions, while outer tags can only access a nested tag's values via dot notation if it'a given a name with the `:aka` attribute.
-* The preprocessor supports multiline attributes with unescaped `<` and `>` characters in their content so tag attributes can be comfortably used to contain blocks of code. Of course, output HTML is always standars compliant.
+* The preprocessor supports multiline attributes with unescaped `<` and `>` characters in their content so tag attributes can be comfortably used to contain blocks of code. Of course, output HTML is always standards compliant.
 * The construct `attribute=[[<code>]]` is syntactic sugar for `attribute="[[<code>]]"` where you don't need to escape attribute's quotes in your code.
 * Any tag can be self closed and it's turned into an open/close tag combination if needed in the output HTML. E.g. `<div/>` becomes `<div></div>`, while `<meta/>` and  `<meta>` both become `<meta />`. You can just self close tags with no content as you would in XML.
 * Aremel uses the [Babel](https://babeljs.io) JavaScript compiler to validate expressions and infer their dependencies in order to implement reactivity.
-* Subjects we haven't touched upon here include Aremel's support for data binding, replication, JSON/XML data and services.
+* Subjects we haven't touched upon here include Aremel's support for data binding, replication, JSON/XML data and services. Please refer to the live examples at https://aremel.org/index.html.
