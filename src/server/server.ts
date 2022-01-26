@@ -3,16 +3,8 @@ import rateLimit from 'express-rate-limit';
 import fs from "fs";
 import { Server } from 'http';
 import path from "path";
-import AremelClient from '../client/client';
-import App from '../compiler/app';
 import Compiler from '../compiler/compiler';
-import { HtmlElement, HtmlText } from '../compiler/htmldom';
-import HtmlParser from '../compiler/htmlparser';
-import { lookupTags } from '../compiler/preprocessor';
-import { DomDocument } from '../shared/dom';
-import { make, PageObj } from '../shared/runtime';
 import exitHook from './exit-hook';
-import safeEval from './safe-eval';
 
 export const CODE_PREFIX = 'window.__aremel = ';
 export const CODE_PREFIX_LEN = CODE_PREFIX.length;
@@ -102,7 +94,7 @@ export default class AremelServer {
 			var url = new URL(req.url, base);
 			url.protocol = (props.assumeHttps ? 'https' : req.protocol);
 			url.hostname = req.hostname;
-			that._getPageWithCache(props, url, props.useCache ? pageCache : null,
+			that._getPage(props, url, props.useCache ? pageCache : null,
 			(html) => {
 				res.header("Content-Type",'text/html');
 				res.send(html);
@@ -177,11 +169,11 @@ export default class AremelServer {
 	}
 
 	//TODO: prevent concurrency problems
-	_getPageWithCache(props:ServerProps,
-					url:URL,
-					cache:Map<string,CachedPage>|null,
-					cb:(doc:string)=>void,
-					err:(err:any)=>void) {
+	_getPage(props:ServerProps,
+			url:URL,
+			cache:Map<string,CachedPage>|null,
+			cb:(doc:string)=>void,
+			err:(err:any)=>void) {
 		var that = this;
 		var filePath = path.normalize(path.join(props.rootPath, url.pathname) + '_');
 		var cachedPage;
@@ -189,50 +181,17 @@ export default class AremelServer {
 		function f(useCache:boolean) {
 			const t1 = new Date().getTime();
 			if (useCache) {
-				fs.readFile(filePath, 'utf8', (error, data) => {
-					if (error) {
-						err(error);
-					} else {
-						var doc = HtmlParser.parse(data);
-						var body = lookupTags(
-							doc.firstElementChild,
-							new Set(['BODY'])
-						)[0] as HtmlElement;
-						// last two scripts are always: page code, runtime loading
-						var scripts = lookupTags(body, new Set(['SCRIPT']));
-						scripts.pop();
-						var window = {
-							addEventListener: (t:string, h:any) => {},
-							removeEventListener: (t:string, h:any) => {},
-							location: {toString: () => url.toString()},
-						};
-						var script = scripts.pop() as HtmlElement;
-						var code = (script.firstChild as HtmlText).nodeValue;
-						code = code.substring(CODE_PREFIX_LEN);
-						var page:PageObj = {
-							url: url,
-							doc: doc as DomDocument,
-							nodes: AremelClient.collectNodes(doc as DomDocument),
-							window: window,
-							isClient: false,
-							requester: App.requester,
-							script: code
-						};
-						var rt = make(page, () => {
-							cb(doc.toString());
-							const t2 = new Date().getTime();
-							setTimeout(() => {
-								AremelServer.log(props, 'info', `${that._getTimestamp()}: `
-									+ `OLDPAGE ${url.toString()} `
-									+ `[${t2 - t1}]`);
-							}, 0);
-						});
-						safeEval(`(${page.script})(rt)`, {rt:rt});
-						rt.start();
-					}
-				});
+				Compiler.recoverPage(filePath, url.toString(), (html:string) => {
+                    cb(html);
+                    const t2 = new Date().getTime();
+                    setTimeout(() => {
+                        AremelServer.log(props, 'info', `${that._getTimestamp()}: `
+                            + `OLDPAGE ${url.toString()} `
+                            + `[${t2 - t1}]`);
+                    }, 0);
+				}, err);
 			} else {
-				Compiler.getPage(props.rootPath, url, (html, sources) => {
+				Compiler.getPage(props.rootPath, url.toString(), (html, sources) => {
 					cb(html);
 					const t2 = new Date().getTime();
 					setTimeout(() => {

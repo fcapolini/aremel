@@ -1,21 +1,25 @@
 import safeEval from "../server/safe-eval";
-import { CODE_PREFIX } from "../server/server";
-import { ELEMENT_NODE } from "../shared/dom";
-import { CSS_AUTOHIDE_CLASS, make } from "../shared/runtime";
+import { CODE_PREFIX, CODE_PREFIX_LEN } from "../server/server";
+import { DomDocument, ELEMENT_NODE } from "../shared/dom";
+import { CSS_AUTOHIDE_CLASS, make, PageObj } from "../shared/runtime";
 import { normalizeText } from "../shared/util";
 import App from "./app";
 import { HtmlDocument, HtmlElement, HtmlText, TEXT_NODE } from "./htmldom";
-import Preprocessor from "./preprocessor";
+import Preprocessor, { lookupTags } from "./preprocessor";
+import fs from "fs";
+import HtmlParser from "./htmlparser";
+import AremelClient from "../client/client";
 
 export default class Compiler {
 
     static getPage(rootPath: string,
-                   url: URL,
+                   url: string,
                    cb: (html: string, sources: Array<string>) => void,
                    err: (err: any) => void) {
         var prepro = new Preprocessor(rootPath);
         try {
-            var doc = prepro.read(url.pathname, `<lib>
+            var u = new URL(url);
+            var doc = prepro.read(u.pathname, `<lib>
                 <style data-name="aremel">
                     .${CSS_AUTOHIDE_CLASS} {
                         display: none;
@@ -67,7 +71,7 @@ export default class Compiler {
                     ]]
                 />
             </lib>`) as HtmlDocument;
-            var app = new App(url, doc);
+            var app = new App(u, doc);
             var page = app.output();
             var rt = make(page, () => {
                 Compiler._normalizeSpace(doc);
@@ -85,6 +89,43 @@ export default class Compiler {
             // console.trace(ex);
             err(ex);
         }
+    }
+
+    static recoverPage(filePath:string, url:string, cb:(html:string)=>void, err:(err:any)=>void) {
+        fs.readFile(filePath, 'utf8', (error, data) => {
+            if (error) {
+                err(error);
+            } else {
+                var doc = HtmlParser.parse(data);
+                var body = lookupTags(
+                    doc.firstElementChild,
+                    new Set(['BODY'])
+                )[0] as HtmlElement;
+                // last two scripts are always: page code, runtime loading
+                var scripts = lookupTags(body, new Set(['SCRIPT']));
+                scripts.pop();
+                var window = {
+                    addEventListener: (t:string, h:any) => {},
+                    removeEventListener: (t:string, h:any) => {},
+                    location: {toString: () => url},
+                };
+                var script = scripts.pop() as HtmlElement;
+                var code = (script.firstChild as HtmlText).nodeValue;
+                code = code.substring(CODE_PREFIX_LEN);
+                var page:PageObj = {
+                    url: new URL(url),
+                    doc: doc as DomDocument,
+                    nodes: AremelClient.collectNodes(doc as DomDocument),
+                    window: window,
+                    isClient: false,
+                    requester: App.requester,
+                    script: code
+                };
+                var rt = make(page, () => cb(doc.toString()));
+                safeEval(`(${page.script})(rt)`, {rt:rt});
+                rt.start();
+            }
+        });
     }
 
     static _normalizeSpace(doc: HtmlDocument) {

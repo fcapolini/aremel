@@ -57,7 +57,7 @@ describe("test client", () => {
 
 function load(fname:string, cb:(client:AremelClient)=>void) {
 	var url = new URL('http://localhost/' + fname);
-	Compiler.getPage(rootPath, url, (html, _) => {
+	Compiler.getPage(rootPath, url.toString(), (html, _) => {
 		var win:RuntimeWindow = {
 			addEventListener: (t:string,h:any)=>{},
 			removeEventListener: (t:string,h:any)=>{},
