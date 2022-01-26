@@ -5,6 +5,7 @@ import { Server } from 'http';
 import path from "path";
 import Compiler from '../compiler/compiler';
 import exitHook from './exit-hook';
+import { Worker } from 'worker_threads';
 
 export const CODE_PREFIX = 'window.__aremel = ';
 export const CODE_PREFIX_LEN = CODE_PREFIX.length;
@@ -190,6 +191,29 @@ export default class AremelServer {
                             + `[${t2 - t1}]`);
                     }, 0);
 				}, err);
+
+				//TODO: https://www.nearform.com/blog/learning-to-swim-with-piscina-the-node-js-worker-pool/
+				// const worker = new Worker(__dirname + "/recover-worker.js", {
+				// 	// @ts-ignore
+				// 	workerData: {filePath:filePath, url:url.toString()}
+				// });
+				// worker.on('message', (msg) => {
+				// 	if (msg.err) {
+				// 		err(msg.err);
+				// 	} else {
+				// 		cb(msg.html);
+				// 		const t2 = new Date().getTime();
+				// 		setTimeout(() => {
+				// 			AremelServer.log(props, 'info', `${that._getTimestamp()}: `
+				// 				+ `OLDPAGE ${url.toString()} `
+				// 				+ `[${t2 - t1}]`);
+				// 		}, 0);
+				// 	}
+				// });
+				// worker.on('error', (error) => {
+				// 	err(error);
+				// });
+
 			} else {
 				Compiler.getPage(props.rootPath, url.toString(), (html, sources) => {
 					cb(html);
@@ -211,6 +235,40 @@ export default class AremelServer {
 						});
 					}
 				}, err);
+
+				//TODO: https://www.nearform.com/blog/learning-to-swim-with-piscina-the-node-js-worker-pool/
+				// const worker = new Worker(__dirname + "/compile-worker.js", {
+				// 	// @ts-ignore
+				// 	workerData: {rootPath:props.rootPath, url:url.toString()}
+				// });
+				// worker.on('message', (msg) => {
+				// 	if (msg.err) {
+				// 		err(msg.err);
+				// 	} else {
+				// 		cb(msg.html);
+				// 		const t2 = new Date().getTime();
+				// 		setTimeout(() => {
+				// 			AremelServer.log(props, 'info', `${that._getTimestamp()}: `
+				// 				+ `NEWPAGE ${url.toString()} `
+				// 				+ `[${t2 - t1}]`);
+				// 		}, 0);
+				// 		if (cache) {
+				// 			fs.writeFile(filePath, msg.html, {encoding:'utf8'}, (error) => {
+				// 				if (error) {
+				// 					AremelServer.log(props, 'error', `${error}`);//TODO
+				// 				} else {
+				// 					var tstamp = new Date().valueOf();
+				// 					cachedPage = new CachedPage(tstamp, msg.sources);
+				// 					cache.set(filePath, cachedPage);
+				// 				}
+				// 			});
+				// 		}
+				// 	}
+				// });
+				// worker.on('error', (error) => {
+				// 	err(error);
+				// });
+				
 			}
 		}
 
