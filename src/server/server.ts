@@ -5,17 +5,17 @@ import { Server } from 'http';
 import path from "path";
 import AremelClient from '../client/client';
 import App from '../compiler/app';
-import { HtmlDocument, HtmlElement, HtmlText } from '../compiler/htmldom';
+import Compiler from '../compiler/compiler';
+import { HtmlElement, HtmlText } from '../compiler/htmldom';
 import HtmlParser from '../compiler/htmlparser';
-import Preprocessor, { lookupTags } from '../compiler/preprocessor';
-import { DomDocument, ELEMENT_NODE, TEXT_NODE } from '../shared/dom';
-import { CSS_AUTOHIDE_CLASS, make, PageObj } from '../shared/runtime';
-import { normalizeText } from '../shared/util';
+import { lookupTags } from '../compiler/preprocessor';
+import { DomDocument } from '../shared/dom';
+import { make, PageObj } from '../shared/runtime';
 import exitHook from './exit-hook';
 import safeEval from './safe-eval';
 
-const CODE_PREFIX = 'window.__aremel = ';
-const CODE_PREFIX_LEN = CODE_PREFIX.length;
+export const CODE_PREFIX = 'window.__aremel = ';
+export const CODE_PREFIX_LEN = CODE_PREFIX.length;
 
 export interface TrafficLimit {
 	windowMs: number,
@@ -75,7 +75,6 @@ export default class AremelServer {
 		// externally redirect requests for directories to <dir>/index
 		// internally redirect requests to files w/o suffix to <file>.html
 		app.get("*", (req, res, next) => {
-			// console.log(`${this._getTimestamp()}: GET ${req.url}`);
 			AremelServer.log(props, 'info', `${this._getTimestamp()}: GET ${req.url}`);
 			if (/^[^\.]+$/.test(req.url)) {
 				var base = `http://${req.headers.host}`;
@@ -99,19 +98,17 @@ export default class AremelServer {
 		
 		// serve pages
 		app.get('*.html', (req, res) => {
-			var prepro = new Preprocessor(props.rootPath);
 			var base = `http://${req.headers.host}`;
 			var url = new URL(req.url, base);
 			url.protocol = (props.assumeHttps ? 'https' : req.protocol);
 			url.hostname = req.hostname;
-			that._getPageWithCache(props, prepro, url, props.useCache ? pageCache : null,
+			that._getPageWithCache(props, url, props.useCache ? pageCache : null,
 			(html) => {
 				res.header("Content-Type",'text/html');
 				res.send(html);
 			}, (err) => {
 				res.header("Content-Type",'text/plain');
 				res.send(`${err}`);
-				// console.log(`${this._getTimestamp()}: ERROR ${url.toString()}: ${err}`);
 				AremelServer.log(props, 'error', `${this._getTimestamp()}: `
 					+ `ERROR ${url.toString()}: ${err}`);
 			});
@@ -181,13 +178,12 @@ export default class AremelServer {
 
 	//TODO: prevent concurrency problems
 	_getPageWithCache(props:ServerProps,
-					prepro:Preprocessor,
 					url:URL,
 					cache:Map<string,CachedPage>|null,
 					cb:(doc:string)=>void,
 					err:(err:any)=>void) {
 		var that = this;
-		var filePath = path.normalize(path.join(prepro.rootPath, url.pathname) + '_');
+		var filePath = path.normalize(path.join(props.rootPath, url.pathname) + '_');
 		var cachedPage;
 		
 		function f(useCache:boolean) {
@@ -198,7 +194,10 @@ export default class AremelServer {
 						err(error);
 					} else {
 						var doc = HtmlParser.parse(data);
-						var body = lookupTags(doc.firstElementChild, new Set(['BODY']))[0] as HtmlElement;
+						var body = lookupTags(
+							doc.firstElementChild,
+							new Set(['BODY'])
+						)[0] as HtmlElement;
 						// last two scripts are always: page code, runtime loading
 						var scripts = lookupTags(body, new Set(['SCRIPT']));
 						scripts.pop();
@@ -223,9 +222,6 @@ export default class AremelServer {
 							cb(doc.toString());
 							const t2 = new Date().getTime();
 							setTimeout(() => {
-								// console.log(`${that._getTimestamp()}: `
-								// 	+ `OLDPAGE ${url.toString()} `
-								// 	+ `[${t2 - t1}]`);
 								AremelServer.log(props, 'info', `${that._getTimestamp()}: `
 									+ `OLDPAGE ${url.toString()} `
 									+ `[${t2 - t1}]`);
@@ -236,15 +232,10 @@ export default class AremelServer {
 					}
 				});
 			} else {
-				AremelServer.getPage(prepro, url, (doc) => {
-					AremelServer._normalizeSpace(doc);
-					var html = doc.toString();
+				Compiler.getPage(props.rootPath, url, (html, sources) => {
 					cb(html);
 					const t2 = new Date().getTime();
 					setTimeout(() => {
-						// console.log(`${that._getTimestamp()}: `
-						// 	+ `NEWPAGE ${url.toString()} `
-						// 	+ `[${t2 - t1}]`);
 						AremelServer.log(props, 'info', `${that._getTimestamp()}: `
 							+ `NEWPAGE ${url.toString()} `
 							+ `[${t2 - t1}]`);
@@ -252,11 +243,10 @@ export default class AremelServer {
 					if (cache) {
 						fs.writeFile(filePath, html, {encoding:'utf8'}, (error) => {
 							if (error) {
-								// console.log(error);//TODO
 								AremelServer.log(props, 'error', `${error}`);//TODO
 							} else {
 								var tstamp = new Date().valueOf();
-								cachedPage = new CachedPage(tstamp, prepro);
+								cachedPage = new CachedPage(tstamp, sources);
 								cache.set(filePath, cachedPage);
 							}
 						});
@@ -273,105 +263,15 @@ export default class AremelServer {
 		}
 	}
 
-	static getPage(prepro:Preprocessor,
-					url:URL,
-					cb:(doc:HtmlDocument)=>void,
-					err:(err:any)=>void) {
-		try {
-			var doc = prepro.read(url.pathname, `<lib>
-				<style data-name="aremel">
-					.${CSS_AUTOHIDE_CLASS} {
-						display: none;
-					}
-				</style>
-				<:define tag=":data-source:script"
-					:url=""
-					:autoGet=[[true]]
-					:type="text/json"
-					:post=[[false]]
-					:params=[[null]]
-
-					type=[[type]]
-					:lastUrl=""
-					:on-url=[[
-						if (autoGet && url !== lastUrl) {
-							__rt.addRequest({
-								url:url, type:type,
-								post:post, params:undefined,
-								target:__this.__value_content,
-								scriptElement:__this.__dom
-							});
-						}
-					]]
-					:doRequest=[[(params) => {
-						__rt.addRequest({
-							url:url, type:type,
-							post:post, params:params,
-							target:__this.__value_content,
-							scriptElement:__this.__dom
-						});
-					}]]
-					:content=[[
-						var ret = undefined;
-						if (__this.__dom.firstChild
-								&& __this.__dom.firstChild.nodeType === 3/*TEXT_NODE*/) {
-							try {
-								var s = __this.__dom.firstChild.nodeValue;
-								if (type === 'text/json') {
-									ret = JSON.parse(s);
-								} else {
-									ret = s;
-								}
-							} catch (ex) {
-								//TODO
-							}
-						}
-						ret;
-					]]
-				/>
-			</lib>`) as HtmlDocument;
-			var app = new App(url, doc);
-			var page = app.output();
-			var rt = make(page, () => cb(doc));
-			var root = safeEval(`(${page.script})(rt)`, {rt:rt});
-			rt.start();
-			var code = new HtmlElement(doc, root.body.__dom, 'script', 0, 0, 0);
-			new HtmlText(doc, code, CODE_PREFIX + page.script, 0, 0, 0, false);
-			var script = new HtmlElement(doc, root.body.__dom, 'script', 0, 0, 0);
-			script.setAttribute('src', '/.aremel/bin/aremel.js');
-			script.setAttribute('defer', '');
-		} catch (ex:any) {
-			// console.trace(ex);
-			err(ex);
-		}
-	}
-
-	static _normalizeSpace(doc:HtmlDocument) {
-		function f(e:HtmlElement) {
-			for (var n of e.children) {
-				if (n.nodeType === TEXT_NODE) {
-					(n as HtmlText).nodeValue = normalizeText((n as HtmlText).nodeValue);
-				} else if (n.nodeType === ELEMENT_NODE) {
-					if ((n as HtmlElement).tagName === 'SCRIPT'
-							|| (n as HtmlElement).tagName === 'PRE') {
-						continue;
-					}
-					f(n as HtmlElement);
-				}
-			}
-		}
-		f(doc.firstElementChild);
-	}
-
 }
 
 class CachedPage {
 	tstamp: number;
 	sources: string[];
 
-	constructor(tstamp:number, prepro:Preprocessor) {
+	constructor(tstamp:number, sources:Array<string>) {
 		this.tstamp = tstamp;
-		this.sources = prepro.parser.origins.slice();
+		this.sources = sources;
 		while (this.sources.length > 0) {
 			if (this.sources[this.sources.length - 1] === 'embedded') {
 				this.sources.pop();

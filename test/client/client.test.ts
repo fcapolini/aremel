@@ -1,17 +1,17 @@
 import AremelClient from "../../src/client/client";
-import { CSS_AUTOHIDE_CLASS, RuntimeWindow } from "../../src/shared/runtime";
+import Compiler from "../../src/compiler/compiler";
 import { HtmlDocument } from "../../src/compiler/htmldom";
-import Preprocessor from "../../src/compiler/preprocessor";
-import { normalizeText } from "../../src/shared/util";
-import AramelServer from "../../src/server/server";
+import HtmlParser from "../../src/compiler/htmlparser";
 import { DomDocument } from "../../src/shared/dom";
+import { CSS_AUTOHIDE_CLASS, RuntimeWindow } from "../../src/shared/runtime";
+import { normalizeText } from "../../src/shared/util";
 
-let prepro: Preprocessor;
+let rootPath: string;
 
 describe("test client", () => {
 
 	beforeAll(() => {
-		prepro = new Preprocessor(process.cwd() + '/test/client/pages');
+		rootPath = process.cwd() + '/test/client/pages';
 	});
 
 	it("should load page1.html", (done) => {
@@ -57,12 +57,13 @@ describe("test client", () => {
 
 function load(fname:string, cb:(client:AremelClient)=>void) {
 	var url = new URL('http://localhost/' + fname);
-	AramelServer.getPage(prepro, url, (doc) => {
+	Compiler.getPage(rootPath, url, (html, _) => {
 		var win:RuntimeWindow = {
 			addEventListener: (t:string,h:any)=>{},
 			removeEventListener: (t:string,h:any)=>{},
 			location: {toString: () => 'http://localhost/'},
 		};
+		var doc = HtmlParser.parse(html);
 		var client = new AremelClient(doc as unknown as DomDocument, win, true);
 		expect(client.runtime).toBeDefined();
 		expect(win.__aremel).toBeDefined();
