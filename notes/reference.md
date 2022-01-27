@@ -43,3 +43,5 @@
 
 * [mocha](https://mochajs.org)
   * [Unit testing node applications with TypeScript](https://journal.artfuldev.com/unit-testing-node-applications-with-typescript-using-mocha-and-chai-384ef05f32b2)
+
+* [Learning to Swim with Piscina, the node.js worker pool](https://www.nearform.com/blog/learning-to-swim-with-piscina-the-node-js-worker-pool/#content)

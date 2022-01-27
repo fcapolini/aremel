@@ -16,6 +16,7 @@ describe("test server", () => {
 			port: port,
 			rootPath: process.cwd() + '/test/server/pages',
 			mute: true,
+			workersPath: process.cwd() + '/docroot/.aremel/bin/server',
 		}, undefined, done);
 	});
 

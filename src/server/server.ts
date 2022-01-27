@@ -3,9 +3,8 @@ import rateLimit from 'express-rate-limit';
 import fs from "fs";
 import { Server } from 'http';
 import path from "path";
-import Compiler from '../compiler/compiler';
+import { default as piscina, default as Piscina } from 'piscina';
 import exitHook from './exit-hook';
-import { Worker } from 'worker_threads';
 
 export const CODE_PREFIX = 'window.__aremel = ';
 export const CODE_PREFIX_LEN = CODE_PREFIX.length;
@@ -25,10 +24,13 @@ export interface ServerProps {
 	pageLimit?: TrafficLimit,
 	logger?: (type:string, msg:string)=>void,
 	mute?: boolean,
+	workersPath?: string,
 }
 
 export default class AremelServer {
 	server: Server;
+	compilePool: Piscina;
+	recoverPool: Piscina;
 
 	constructor(props:ServerProps,
 				init?:(props:ServerProps, app:Application)=>void,
@@ -36,6 +38,14 @@ export default class AremelServer {
 		const that = this;
 		const app = express();
 		const pageCache = new Map<string, CachedPage>();
+
+		var wpath = (props.workersPath ? props.workersPath : __dirname);
+		this.compilePool = new piscina.Piscina({
+			filename: path.resolve(wpath, "compile-worker.js")
+		});
+		this.recoverPool = new piscina.Piscina({
+			filename: path.resolve(wpath, "recover-worker.js")
+		});
 
 		app.use(express.json());
 		app.use(express.urlencoded({ extended: true }));
@@ -182,93 +192,58 @@ export default class AremelServer {
 		function f(useCache:boolean) {
 			const t1 = new Date().getTime();
 			if (useCache) {
-				Compiler.recoverPage(filePath, url.toString(), (html:string) => {
-                    cb(html);
-                    const t2 = new Date().getTime();
-                    setTimeout(() => {
-                        AremelServer.log(props, 'info', `${that._getTimestamp()}: `
-                            + `OLDPAGE ${url.toString()} `
-                            + `[${t2 - t1}]`);
-                    }, 0);
-				}, err);
+				(async function() {
 
-				//TODO: https://www.nearform.com/blog/learning-to-swim-with-piscina-the-node-js-worker-pool/
-				// const worker = new Worker(__dirname + "/recover-worker.js", {
-				// 	// @ts-ignore
-				// 	workerData: {filePath:filePath, url:url.toString()}
-				// });
-				// worker.on('message', (msg) => {
-				// 	if (msg.err) {
-				// 		err(msg.err);
-				// 	} else {
-				// 		cb(msg.html);
-				// 		const t2 = new Date().getTime();
-				// 		setTimeout(() => {
-				// 			AremelServer.log(props, 'info', `${that._getTimestamp()}: `
-				// 				+ `OLDPAGE ${url.toString()} `
-				// 				+ `[${t2 - t1}]`);
-				// 		}, 0);
-				// 	}
-				// });
-				// worker.on('error', (error) => {
-				// 	err(error);
-				// });
+					const res = await that.recoverPool.run({
+						filePath: filePath,
+						url: url.toString()
+					});
 
-			} else {
-				Compiler.getPage(props.rootPath, url.toString(), (html, sources) => {
-					cb(html);
-					const t2 = new Date().getTime();
-					setTimeout(() => {
-						AremelServer.log(props, 'info', `${that._getTimestamp()}: `
-							+ `NEWPAGE ${url.toString()} `
-							+ `[${t2 - t1}]`);
-					}, 0);
-					if (cache) {
-						fs.writeFile(filePath, html, {encoding:'utf8'}, (error) => {
-							if (error) {
-								AremelServer.log(props, 'error', `${error}`);//TODO
-							} else {
-								var tstamp = new Date().valueOf();
-								cachedPage = new CachedPage(tstamp, sources);
-								cache.set(filePath, cachedPage);
-							}
-						});
+					if (res?.html) {
+						cb(res.html);
+						const t2 = new Date().getTime();
+						setTimeout(() => {
+							AremelServer.log(props, 'info', `${that._getTimestamp()}: `
+								+ `OLDPAGE ${url.toString()} `
+								+ `[${t2 - t1}]`);
+						}, 0);
+					} else {
+						err(res?.err);
 					}
-				}, err);
 
-				//TODO: https://www.nearform.com/blog/learning-to-swim-with-piscina-the-node-js-worker-pool/
-				// const worker = new Worker(__dirname + "/compile-worker.js", {
-				// 	// @ts-ignore
-				// 	workerData: {rootPath:props.rootPath, url:url.toString()}
-				// });
-				// worker.on('message', (msg) => {
-				// 	if (msg.err) {
-				// 		err(msg.err);
-				// 	} else {
-				// 		cb(msg.html);
-				// 		const t2 = new Date().getTime();
-				// 		setTimeout(() => {
-				// 			AremelServer.log(props, 'info', `${that._getTimestamp()}: `
-				// 				+ `NEWPAGE ${url.toString()} `
-				// 				+ `[${t2 - t1}]`);
-				// 		}, 0);
-				// 		if (cache) {
-				// 			fs.writeFile(filePath, msg.html, {encoding:'utf8'}, (error) => {
-				// 				if (error) {
-				// 					AremelServer.log(props, 'error', `${error}`);//TODO
-				// 				} else {
-				// 					var tstamp = new Date().valueOf();
-				// 					cachedPage = new CachedPage(tstamp, msg.sources);
-				// 					cache.set(filePath, cachedPage);
-				// 				}
-				// 			});
-				// 		}
-				// 	}
-				// });
-				// worker.on('error', (error) => {
-				// 	err(error);
-				// });
-				
+				})();
+			} else {
+				(async function() {
+
+					const res = await that.compilePool.run({
+						rootPath: props.rootPath,
+						url: url.toString()
+					});
+
+					if (res?.html) {
+						cb(res.html);
+						const t2 = new Date().getTime();
+						setTimeout(() => {
+							AremelServer.log(props, 'info', `${that._getTimestamp()}: `
+								+ `NEWPAGE ${url.toString()} `
+								+ `[${t2 - t1}]`);
+						}, 0);
+						if (cache) {
+							fs.writeFile(filePath, res.html, {encoding:'utf8'}, (error) => {
+								if (error) {
+									AremelServer.log(props, 'error', `${error}`);//TODO
+								} else {
+									var tstamp = new Date().valueOf();
+									cachedPage = new CachedPage(tstamp, res.sources);
+									cache.set(filePath, cachedPage);
+								}
+							});
+						}
+					} else {
+						err(res?.err);
+					}
+					
+				})();
 			}
 		}
 

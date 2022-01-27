@@ -175,3 +175,11 @@ Since we're actually executing more controlled code (even in the playground) saf
 ```bash
 npm install express-rate-limit
 ```
+
+### Compiler thread pool
+
+* https://www.nearform.com/blog/learning-to-swim-with-piscina-the-node-js-worker-pool/#content
+
+```bash
+npm install piscina
+```
