@@ -4,4 +4,6 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   testRegex: '\\.test\\.ts$',
+  maxConcurrency: 3,
+  maxWorkers: 3,
 };
