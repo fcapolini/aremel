@@ -12,11 +12,10 @@ import AremelClient from "../client/client";
 
 export default class Compiler {
 
-    static getPage(rootPath: string,
+    static getPage(prepro: Preprocessor,
                    url: string,
                    cb: (html: string, sources: Array<string>) => void,
                    err: (err: any) => void) {
-        var prepro = new Preprocessor(rootPath);
         try {
             var u = new URL(url);
             var doc = prepro.read(u.pathname, `<lib>
