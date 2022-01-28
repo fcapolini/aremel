@@ -27,10 +27,20 @@ export interface ServerProps {
 	workersPath?: string,
 }
 
+interface CachedPageRequest {
+	filePath: string,
+	url: string,
+}
+
 export default class AremelServer {
 	server: Server;
 	compilePool: Piscina;
-	recoverPool: Piscina;
+	deliveryPool: Piscina;
+	/**
+	 * While a specific page is being compiled, further requests
+	 * of the same page are enqueued here
+	 */
+	_compilingPageQueues = new Map<string, Array<URL>>();
 
 	constructor(props:ServerProps,
 				init?:(props:ServerProps, app:Application)=>void,
@@ -41,10 +51,10 @@ export default class AremelServer {
 
 		var wpath = (props.workersPath ? props.workersPath : __dirname);
 		this.compilePool = new piscina.Piscina({
-			filename: path.resolve(wpath, "compile-worker.js")
+			filename: path.resolve(wpath, "compiler-worker.js")
 		});
-		this.recoverPool = new piscina.Piscina({
-			filename: path.resolve(wpath, "recover-worker.js")
+		this.deliveryPool = new piscina.Piscina({
+			filename: path.resolve(wpath, "delivery-worker.js")
 		});
 
 		app.use(express.json());
@@ -179,7 +189,6 @@ export default class AremelServer {
 		}
 	}
 
-	//TODO: prevent concurrency problems
 	_getPage(props:ServerProps,
 			url:URL,
 			cache:Map<string,CachedPage>|null,
@@ -191,59 +200,86 @@ export default class AremelServer {
 		
 		function f(useCache:boolean) {
 			const t1 = new Date().getTime();
-			if (useCache) {
-				(async function() {
 
-					const res = await that.recoverPool.run({
+			async function deliverFromCache(page:CachedPageRequest) {
+				const res = await that.deliveryPool.run(page);
+				if (res?.html) {
+					cb(res.html);
+					const t2 = new Date().getTime();
+					setTimeout(() => {
+						AremelServer.log(props, 'info', `${that._getTimestamp()}: `
+							+ `OLDPAGE ${url.toString()} `
+							+ `[${t2 - t1}]`);
+					}, 0);
+				} else {
+					err(res?.err);
+				}
+	
+			}
+	
+			async function compileAndDeliver(callback:()=>void) {
+				const res = await that.compilePool.run({
+					rootPath: props.rootPath,
+					url: url.toString()
+				});
+				if (res?.html) {
+					cb(res.html);
+					const t2 = new Date().getTime();
+					setTimeout(() => {
+						AremelServer.log(props, 'info', `${that._getTimestamp()}: `
+							+ `NEWPAGE ${url.toString()} `
+							+ `[${t2 - t1}]`);
+					}, 0);
+					if (cache) {
+						fs.writeFile(filePath, res.html, {encoding:'utf8'}, (error) => {
+							if (error) {
+								AremelServer.log(props, 'error', `${error}`);//TODO
+							} else {
+								var tstamp = new Date().valueOf();
+								cachedPage = new CachedPage(tstamp, res.sources);
+								cache.set(filePath, cachedPage);
+							}
+							callback();
+						});
+					} else {
+						callback();
+					}
+				} else {
+					err(res?.err);
+					callback();
+				}
+						
+			}
+
+			async function emptyQueue(filePath:string) {
+				var queue = that._compilingPageQueues.get(filePath);
+				if (queue) {
+					while (queue.length > 0) {
+						await deliverFromCache({
+							filePath: filePath,
+							url: (queue.shift() as URL).toString()
+						});
+					}
+					that._compilingPageQueues.delete(filePath);
+				}
+			}
+
+			if (useCache) {
+				var queue = that._compilingPageQueues.get(filePath);
+				if (queue) {
+					queue.push(url);
+				} else {
+					deliverFromCache({
 						filePath: filePath,
 						url: url.toString()
 					});
-
-					if (res?.html) {
-						cb(res.html);
-						const t2 = new Date().getTime();
-						setTimeout(() => {
-							AremelServer.log(props, 'info', `${that._getTimestamp()}: `
-								+ `OLDPAGE ${url.toString()} `
-								+ `[${t2 - t1}]`);
-						}, 0);
-					} else {
-						err(res?.err);
-					}
-
-				})();
+				}
 			} else {
-				(async function() {
-
-					const res = await that.compilePool.run({
-						rootPath: props.rootPath,
-						url: url.toString()
+				emptyQueue(filePath).finally(() => {
+					compileAndDeliver(() => {
+						emptyQueue(filePath);
 					});
-
-					if (res?.html) {
-						cb(res.html);
-						const t2 = new Date().getTime();
-						setTimeout(() => {
-							AremelServer.log(props, 'info', `${that._getTimestamp()}: `
-								+ `NEWPAGE ${url.toString()} `
-								+ `[${t2 - t1}]`);
-						}, 0);
-						if (cache) {
-							fs.writeFile(filePath, res.html, {encoding:'utf8'}, (error) => {
-								if (error) {
-									AremelServer.log(props, 'error', `${error}`);//TODO
-								} else {
-									var tstamp = new Date().valueOf();
-									cachedPage = new CachedPage(tstamp, res.sources);
-									cache.set(filePath, cachedPage);
-								}
-							});
-						}
-					} else {
-						err(res?.err);
-					}
-					
-				})();
+				});
 			}
 		}
 
