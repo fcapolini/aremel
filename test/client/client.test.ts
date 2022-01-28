@@ -2,7 +2,6 @@ import AremelClient from "../../src/client/client";
 import Compiler from "../../src/compiler/compiler";
 import { HtmlDocument } from "../../src/compiler/htmldom";
 import HtmlParser from "../../src/compiler/htmlparser";
-import Preprocessor from "../../src/compiler/preprocessor";
 import { DomDocument } from "../../src/shared/dom";
 import { CSS_AUTOHIDE_CLASS, RuntimeWindow } from "../../src/shared/runtime";
 import { normalizeText } from "../../src/shared/util";
@@ -58,8 +57,7 @@ describe("test client", () => {
 
 function load(fname:string, cb:(client:AremelClient)=>void) {
 	var url = new URL('http://localhost/' + fname);
-	var prepro = new Preprocessor(rootPath);
-	Compiler.getPage(prepro, url.toString(), (html, _) => {
+	Compiler.getPage(rootPath, url.toString(), (html, _) => {
 		var win:RuntimeWindow = {
 			addEventListener: (t:string,h:any)=>{},
 			removeEventListener: (t:string,h:any)=>{},

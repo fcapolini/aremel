@@ -33,7 +33,6 @@ interface CachedPageRequest {
 }
 
 export default class AremelServer {
-	props: ServerProps;
 	server: Server;
 	compilePool: Piscina;
 	deliveryPool: Piscina;
@@ -46,7 +45,6 @@ export default class AremelServer {
 	constructor(props:ServerProps,
 				init?:(props:ServerProps, app:Application)=>void,
 				cb?:()=>void) {
-		this.props = props;
 		const that = this;
 		const app = express();
 		const pageCache = new Map<string, CachedPage>();
@@ -117,7 +115,7 @@ export default class AremelServer {
 			var url = new URL(req.url, base);
 			url.protocol = (props.assumeHttps ? 'https' : req.protocol);
 			url.hostname = req.hostname;
-			that.getPage(url, props.useCache ? pageCache : null,
+			that._getPage(props, url, props.useCache ? pageCache : null,
 			(html) => {
 				res.header("Content-Type",'text/html');
 				res.send(html);
@@ -191,12 +189,13 @@ export default class AremelServer {
 		}
 	}
 
-	getPage(url:URL,
+	_getPage(props:ServerProps,
+			url:URL,
 			cache:Map<string,CachedPage>|null,
 			cb:(doc:string)=>void,
 			err:(err:any)=>void) {
 		var that = this;
-		var filePath = path.normalize(path.join(that.props.rootPath, url.pathname) + '_');
+		var filePath = path.normalize(path.join(props.rootPath, url.pathname) + '_');
 		var cachedPage;
 		
 		function f(useCache:boolean) {
@@ -208,7 +207,7 @@ export default class AremelServer {
 					cb(res.html);
 					const t2 = new Date().getTime();
 					setTimeout(() => {
-						AremelServer.log(that.props, 'info', `${that._getTimestamp()}: `
+						AremelServer.log(props, 'info', `${that._getTimestamp()}: `
 							+ `OLDPAGE ${url.toString()} `
 							+ `[${t2 - t1}]`);
 					}, 0);
@@ -218,18 +217,19 @@ export default class AremelServer {
 	
 			}
 	
-			async function compileAndDeliver(
-					props:ServerProps,
-					url:string,
-					callback:(t2:number)=>void
-			) {
+			async function compileAndDeliver(callback:()=>void) {
 				const res = await that.compilePool.run({
 					rootPath: props.rootPath,
-					url: url
+					url: url.toString()
 				});
-				const t2 = new Date().getTime();
 				if (res?.html) {
 					cb(res.html);
+					const t2 = new Date().getTime();
+					setTimeout(() => {
+						AremelServer.log(props, 'info', `${that._getTimestamp()}: `
+							+ `NEWPAGE ${url.toString()} `
+							+ `[${t2 - t1}]`);
+					}, 0);
 					if (cache) {
 						fs.writeFile(filePath, res.html, {encoding:'utf8'}, (error) => {
 							if (error) {
@@ -239,14 +239,14 @@ export default class AremelServer {
 								cachedPage = new CachedPage(tstamp, res.sources);
 								cache.set(filePath, cachedPage);
 							}
-							callback(t2);
+							callback();
 						});
 					} else {
-						callback(t2);
+						callback();
 					}
 				} else {
 					err(res?.err);
-					callback(t2);
+					callback();
 				}
 						
 			}
@@ -276,14 +276,8 @@ export default class AremelServer {
 				}
 			} else {
 				emptyQueue(filePath).finally(() => {
-					that._compilingPageQueues.set(filePath, []);
-					compileAndDeliver(that.props, url.toString(), (t2) => {
+					compileAndDeliver(() => {
 						emptyQueue(filePath);
-						setTimeout(() => {
-							AremelServer.log(that.props, 'info', `${that._getTimestamp()}: `
-								+ `NEWPAGE ${url.toString()} `
-								+ `[${t2 - t1}]`);
-						}, 0);
 					});
 				});
 			}
