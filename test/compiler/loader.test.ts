@@ -16,9 +16,9 @@ describe('compiler/loader', function () {
     const nodes = dump(source.ast);
     assert.deepEqual(nodes, [
       "JSXOpeningElement html",
-      "JSXText \"\n  \"",
+      "JSXText \"\n\"",
       "JSXOpeningElement body",
-      "JSXText \"\n    Hi\n  \"",
+      "JSXText \"\nHi\n\"",
       "JSXClosingElement body",
       "JSXText \"\n\"",
       "JSXClosingElement html",
@@ -54,9 +54,9 @@ describe('compiler/loader', function () {
     const nodes = dump(source.ast);
     assert.deepEqual(nodes, [
       "JSXOpeningElement html",
-      "JSXText \"\n  \"",
+      "JSXText \"\n\"",
       "JSXOpeningElement body",
-      "JSXText \"\n    Hi\n  \"",
+      "JSXText \"\nHi\n\"",
       "JSXClosingElement body",
       "JSXText \"\n\"",
       "JSXClosingElement html",
@@ -87,9 +87,9 @@ describe('compiler/loader', function () {
     const nodes = dump(source.ast);
     assert.deepEqual(nodes, [
       "JSXOpeningElement html",
-      "JSXText \"\n  \"",
+      "JSXText \"\n\"",
       "JSXOpeningElement body",
-      "JSXText \"\n    \n  Hi\n  \n  there\n\n\n  \"",
+      "JSXText \"\nHi\nthere\n\"",
       "JSXClosingElement body",
       "JSXText \"\n\"",
       "JSXClosingElement html",
@@ -106,9 +106,9 @@ describe('compiler/loader', function () {
     const nodes = dump(source.ast);
     assert.deepEqual(nodes, [
       "JSXOpeningElement html",
-      "JSXText \"\n  \"",
+      "JSXText \"\n\"",
       "JSXOpeningElement body",
-      "JSXText \"\n    Hi\n    \n  \"",
+      "JSXText \"\nHi\n\"",
       "JSXClosingElement body",
       "JSXText \"\n\"",
       "JSXClosingElement html",
@@ -119,14 +119,31 @@ describe('compiler/loader', function () {
     const source = await factory.load('file6.html');
     assert.deepEqual(dump(source.ast, true), [
       'JSXOpeningElement html',
-      'JSXText "\n  "',
+      'JSXText "\n"',
       'JSXAttribute $v0="value0a"',
       'JSXAttribute $v1="value1a"',
       'JSXAttribute $v2="value2b"',
       'JSXAttribute $v4="value4c"',
       'JSXOpeningElement head',
-      'JSXText "\n    Hello there\n  "',
+      'JSXText "\nHello there\n"',
       'JSXClosingElement head',
+      'JSXText "\n"',
+      'JSXClosingElement html'
+    ]);
+  });
+
+  it(`shouldn't normalize text in <pre> tags (file7.html)`, async () => {
+    const source = await factory.load('file7.html');
+    assert.deepEqual(dump(source.ast), [
+      'JSXOpeningElement html',
+      'JSXText "\n"',
+      'JSXOpeningElement body',
+      'JSXText "\nText 1\n"',
+      'JSXOpeningElement pre',
+      'JSXText "\n      Text 2\n    "',
+      'JSXClosingElement pre',
+      'JSXText "\n"',
+      'JSXClosingElement body',
       'JSXText "\n"',
       'JSXClosingElement html'
     ]);

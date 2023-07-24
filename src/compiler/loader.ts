@@ -125,6 +125,7 @@ class LoaderInstance implements Source {
 
   async #processInclusions(root: acorn.Node, cwd: string, nesting: number) {
     const includes: any[] = [];
+    const canNormalizeText: boolean[] = [];
     walk.ancestor(root, {
       JSXOpeningElement: (node: any, _, ancestors) => {
         const tagname = node.name.name;
@@ -133,6 +134,21 @@ class LoaderInstance implements Source {
             parent: ancestors[ancestors.length - 3],
             element: ancestors[ancestors.length - 2]
           });
+        }
+        if (!node.selfClosing) {
+          if (tagname === 'pre') {
+            canNormalizeText.push(false);
+          } else {
+            canNormalizeText.push(peek(canNormalizeText, true));
+          }
+        }
+      },
+      JSXClosingElement: () => {
+        canNormalizeText.pop();
+      },
+      JSXText: (node: any) => {
+        if (peek(canNormalizeText, true)) {
+          node.value = normalizeText(node.value);
         }
       }
     });
@@ -200,7 +216,7 @@ class LoaderInstance implements Source {
         let tt: any[] = [];
         function join() {
           if (tt.length > 1) {
-            tt[0].value = tt.map(t => t.value).join('');
+            tt[0].value = normalizeText(tt.map(t => t.value).join(''));
             toRemove.push({
               parent: node,
               i: node.children.indexOf(tt[1]),
@@ -240,4 +256,23 @@ class LoaderInstance implements Source {
   #addError(name: string, message: string, origin?: acorn.Node) {
     this.errors.push(new SourceError(name, message, origin));
   }
+}
+
+export function normalizeText(s?: string): string | undefined {
+  s = s?.split(/\n\s+/).join('\n').split(/\s{2,}/).join(' ');
+  s = s?.split(/\n{2,}/).join('\n');
+  // if (s && s.indexOf('\n\n') >= 0) {
+  //   const a1 = s.split('\n');
+  //   const a2 = s.split('\n\n');
+  //   console.log('normalizeText()', a1.length, a2.length);//tempdebug
+  // }
+  return s;
+}
+
+// export function normalizeSpace(s?: string): string | undefined {
+//   return s?.split(/\s+/).join(' ');
+// }
+
+export function peek(a: any[], defval: any): any | null {
+  return (a.length > 0 ? a[a.length - 1] : defval);
 }
