@@ -9,3 +9,6 @@ Aremel stands for Reactive Markup Language. It adds reactivity, modularity and i
 </html>
 ```
 
+# v2
+
+* jest -> mocha + nyc

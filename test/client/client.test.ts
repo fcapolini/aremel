@@ -1,3 +1,4 @@
+import { assert } from "chai";
 import AremelClient from "../../src/client/client";
 import Compiler from "../../src/compiler/compiler";
 import { HtmlDocument } from "../../src/compiler/htmldom";
@@ -7,17 +8,13 @@ import { DomDocument } from "../../src/shared/dom";
 import { CSS_AUTOHIDE_CLASS, RuntimeWindow } from "../../src/shared/runtime";
 import { normalizeText } from "../../src/shared/util";
 
-let rootPath: string;
+let rootPath = process.cwd() + '/test/client/pages';
 
 describe("test client", () => {
 
-	beforeAll(() => {
-		rootPath = process.cwd() + '/test/client/pages';
-	});
-
 	it("should load page1.html", (done) => {
 		load('page1.html', client => {
-			expect(client).toBeDefined();
+      assert.isDefined(client);
 			done();
 		});
 	});
@@ -25,11 +22,11 @@ describe("test client", () => {
 	it("should load page2.html", (done) => {
 		load('page2.html', client => {
 			var doc:HtmlDocument = client.pageObj.doc as unknown as HtmlDocument;
-			expect(doc).toBeDefined();
+      assert.isDefined(doc);
 			var html = doc.firstElementChild;
-			expect(html?.getAttribute('lang')).toBe('en');
+      assert.equal(html?.getAttribute('lang'), 'en');
 			client.root.l = 'es';
-			expect(html?.getAttribute('lang')).toBe('es');
+      assert.equal(html?.getAttribute('lang'), 'es');
 			done();
 		});
 	});
@@ -37,8 +34,8 @@ describe("test client", () => {
 	it("should load page3.html", (done) => {
 		load('page3.html', client => {
 			var doc:HtmlDocument = client.pageObj.doc as unknown as HtmlDocument;
-			expect(doc).toBeDefined();
-			expect(normalizeText(doc.toString(true))).toBe(normalizeText(`<html data-aremel="0">
+      assert.isDefined(doc);
+			assert.equal(normalizeText(doc.toString(true)), normalizeText(`<html data-aremel="0">
 				<head data-aremel="1">
 					<style data-name="aremel">
 						.${CSS_AUTOHIDE_CLASS} {
@@ -67,11 +64,11 @@ function load(fname:string, cb:(client:AremelClient)=>void) {
 		};
 		var doc = HtmlParser.parse(html);
 		var client = new AremelClient(doc as unknown as DomDocument, win, true);
-		expect(client.runtime).toBeDefined();
-		expect(win.__aremel).toBeDefined();
-		expect(client.root).toBeDefined();
+    assert.isDefined(client.runtime);
+    assert.isDefined(win.__aremel);
+    assert.isDefined(client.root);
 		cb(client);
 	}, (err) => {
-		expect(err).toBeUndefined();
+    assert.isUndefined(err);
 	});
 }
