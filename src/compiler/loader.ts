@@ -3,6 +3,7 @@ import jsx from "acorn-jsx";
 import * as walk from "acorn-walk";
 import fs from "fs";
 import path from "path";
+import { JSXElement } from "./jsx-nodes";
 require("acorn-jsx-walk").extend(walk.base);
 
 const MAX_NESTINGS = 100;
@@ -16,7 +17,7 @@ export interface Source {
   ast: acorn.Node | null;
 }
 
-export default class SourceError implements Error {
+export class SourceError implements Error {
   name: string;
   message: string;
   origin?: acorn.Node;
@@ -29,7 +30,7 @@ export default class SourceError implements Error {
   }
 }
 
-export class Loader {
+export default class Loader {
   rootPath: string;
 
   constructor(rootPath: string) {
@@ -189,7 +190,7 @@ class LoaderInstance implements Source {
     }
   }
 
-  #processInclusion(parent: any, include: any, incRoot: any) {
+  #processInclusion(parent: any, include: any, incRoot: JSXElement) {
     //
     // incRoot children
     //
@@ -240,8 +241,8 @@ class LoaderInstance implements Source {
     });
   }
 
-  #getRootJSXElement(root: acorn.Node): any | null {
-    let ret: any | null = null;
+  #getRootJSXElement(root: acorn.Node): JSXElement | null {
+    let ret: JSXElement | null = null;
     try {
       walk.simple(root, {
         JSXElement(node: any) {
@@ -261,17 +262,8 @@ class LoaderInstance implements Source {
 export function normalizeText(s?: string): string | undefined {
   s = s?.split(/\n\s+/).join('\n').split(/\s{2,}/).join(' ');
   s = s?.split(/\n{2,}/).join('\n');
-  // if (s && s.indexOf('\n\n') >= 0) {
-  //   const a1 = s.split('\n');
-  //   const a2 = s.split('\n\n');
-  //   console.log('normalizeText()', a1.length, a2.length);//tempdebug
-  // }
   return s;
 }
-
-// export function normalizeSpace(s?: string): string | undefined {
-//   return s?.split(/\s+/).join(' ');
-// }
 
 export function peek(a: any[], defval: any): any | null {
   return (a.length > 0 ? a[a.length - 1] : defval);
